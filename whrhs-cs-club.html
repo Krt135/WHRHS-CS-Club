@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WHRHS Computer Science Club — Build. Learn. Ship.</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --background: oklch(0.16 0.005 240);
+    --foreground: oklch(0.96 0.005 90);
+    --surface: oklch(0.19 0.006 240);
+    --card: oklch(0.20 0.006 240);
+    --primary: oklch(0.89 0.22 122);
+    --primary-fg: oklch(0.16 0.005 240);
+    --secondary: oklch(0.26 0.007 240);
+    --muted: oklch(0.24 0.006 240);
+    --muted-fg: oklch(0.65 0.01 240);
+    --border: oklch(0.30 0.007 240);
+    --hairline: oklch(1 0 0 / 8%);
+    --radius-sm: 2px;
+    --radius-md: 4px;
+    --radius-lg: 6px;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--background);
+    color: var(--foreground);
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 15px;
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  ::selection { background: var(--primary); color: var(--primary-fg); }
+
+  a { color: inherit; text-decoration: none; }
+
+  /* ── TOP BAR ── */
+  .topbar {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 20px; height: 36px;
+    border-bottom: 1px solid var(--hairline);
+    background: oklch(0.14 0.005 240 / 90%);
+    backdrop-filter: blur(8px);
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    color: var(--muted-fg);
+    text-transform: uppercase;
+  }
+  .topbar-center { display: flex; align-items: center; gap: 8px; }
+  .dot-live { width: 6px; height: 6px; border-radius: 50%; background: var(--primary); display: inline-block; animation: blink 2s infinite; }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+  /* ── NAV ── */
+  nav {
+    position: fixed; top: 36px; left: 0; right: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 24px; height: 52px;
+    border-bottom: 1px solid var(--hairline);
+    background: oklch(0.14 0.005 240 / 90%);
+    backdrop-filter: blur(8px);
+  }
+  .nav-logo { display: flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 600; }
+  .nav-logo-icon {
+    width: 28px; height: 28px; background: var(--primary);
+    display: grid; place-items: center; border-radius: var(--radius-sm);
+    font-family: 'Space Mono', monospace; font-size: 11px; font-weight: 700;
+    color: var(--primary-fg);
+  }
+  .nav-links { display: flex; gap: 28px; }
+  .nav-links a {
+    font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: 0.06em;
+    color: var(--muted-fg); transition: color 200ms;
+    display: flex; align-items: center; gap: 6px; text-transform: uppercase;
+  }
+  .nav-links a:hover { color: var(--foreground); }
+  .nav-links a .num { color: var(--primary); }
+  .nav-right { display: flex; align-items: center; gap: 14px; font-family: 'Space Mono', monospace; font-size: 10px; color: var(--muted-fg); }
+  .exec-badge {
+    border: 1px solid var(--primary); color: var(--primary);
+    padding: 2px 6px; border-radius: var(--radius-sm);
+    font-size: 10px; letter-spacing: 0.1em;
+  }
+
+  /* ── SIDE LABELS ── */
+  .side-label {
+    position: fixed; writing-mode: vertical-rl; font-family: 'Space Mono', monospace;
+    font-size: 9px; letter-spacing: 0.15em; color: var(--muted-fg);
+    text-transform: uppercase; z-index: 50;
+  }
+  .side-label-right { right: 0; top: 50%; transform: translateY(-50%) rotate(180deg); }
+  .side-label-left { left: 0; bottom: 120px; }
+
+  /* ── GRID OVERLAY ── */
+  .grid-overlay {
+    position: fixed; inset: 0; pointer-events: none; z-index: 1;
+    background-image:
+      linear-gradient(to right, var(--hairline) 1px, transparent 1px),
+      linear-gradient(to bottom, var(--hairline) 1px, transparent 1px);
+    background-size: 120px 120px;
+    opacity: 0.5;
+  }
+
+  /* ── HERO ── */
+  .hero {
+    min-height: 100vh; padding: 130px 36px 60px;
+    display: flex; flex-direction: column; justify-content: center;
+    position: relative; border-bottom: 1px solid var(--hairline);
+  }
+  .section-label {
+    font-family: 'Space Mono', monospace; font-size: 11px;
+    letter-spacing: 0.1em; color: var(--muted-fg);
+    margin-bottom: 40px; text-transform: uppercase;
+  }
+  .hero-headline {
+    font-size: clamp(52px, 9vw, 130px);
+    font-weight: 700; line-height: 1.0;
+    letter-spacing: -0.02em; margin-bottom: 0;
+  }
+  .hero-headline .dim { color: oklch(0.45 0.006 240); }
+  .hero-headline .accent { color: var(--primary); font-style: italic; }
+
+  .hero-bottom {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 40px;
+    margin-top: 60px; align-items: end;
+  }
+  .hero-desc { font-size: 15px; color: var(--muted-fg); line-height: 1.7; max-width: 420px; }
+  .hero-btns { display: flex; gap: 12px; margin-top: 28px; }
+  .btn-primary {
+    background: var(--primary); color: var(--primary-fg);
+    padding: 10px 20px; border-radius: var(--radius-sm);
+    font-family: 'Space Mono', monospace; font-size: 11px;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    display: flex; align-items: center; gap: 6px;
+    transition: opacity 150ms;
+  }
+  .btn-primary:hover { opacity: 0.85; }
+  .btn-outline {
+    border: 1px solid var(--border); color: var(--foreground);
+    padding: 10px 20px; border-radius: var(--radius-sm);
+    font-family: 'Space Mono', monospace; font-size: 11px;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    display: flex; align-items: center; gap: 6px;
+    transition: border-color 150ms;
+  }
+  .btn-outline:hover { border-color: var(--foreground); }
+
+  .hero-stats { display: flex; flex-direction: column; gap: 0; justify-self: end; width: 100%; max-width: 440px; }
+  .stat-row {
+    display: flex; justify-content: space-between; align-items: baseline;
+    padding: 14px 0; border-top: 1px solid var(--hairline);
+    font-family: 'Space Mono', monospace; font-size: 11px;
+    letter-spacing: 0.06em; text-transform: uppercase;
+  }
+  .stat-row:last-child { border-bottom: 1px solid var(--hairline); }
+  .stat-key { color: var(--muted-fg); }
+  .stat-val { color: var(--foreground); font-size: 13px; }
+
+  /* ── MARQUEE ── */
+  .marquee-wrap {
+    overflow: hidden; border-top: 1px solid var(--hairline);
+    border-bottom: 1px solid var(--hairline);
+    background: var(--background); position: relative;
+  }
+  .marquee-track {
+    display: flex; white-space: nowrap;
+    animation: marquee 40s linear infinite;
+  }
+  .marquee-track:hover { animation-play-state: paused; }
+  @keyframes marquee {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+  .marquee-item {
+    padding: 18px 0; font-size: clamp(28px, 4vw, 52px);
+    font-weight: 700; letter-spacing: -0.01em; color: var(--foreground);
+    flex-shrink: 0;
+  }
+  .marquee-sep {
+    padding: 18px 24px; color: var(--muted-fg); font-weight: 300;
+    font-size: clamp(28px, 4vw, 52px); flex-shrink: 0;
+  }
+
+  /* ── SECTIONS ── */
+  section { padding: 80px 36px; border-bottom: 1px solid var(--hairline); position: relative; }
+
+  .section-heading {
+    font-size: clamp(36px, 5vw, 64px); font-weight: 700;
+    line-height: 1.1; letter-spacing: -0.02em; margin-bottom: 60px;
+  }
+
+  /* ── SECTOR CARDS ── */
+  .sector-grid { display: grid; grid-template-columns: repeat(4, 1fr); border: 1px solid var(--border); }
+  .sector-card {
+    padding: 28px 24px 32px; border-right: 1px solid var(--border);
+    position: relative; transition: background 200ms;
+    cursor: pointer;
+  }
+  .sector-card:last-child { border-right: none; }
+  .sector-card:hover { background: var(--surface); }
+  .sector-card-num {
+    font-family: 'Space Mono', monospace; font-size: 11px;
+    color: var(--muted-fg); margin-bottom: 40px; display: flex;
+    justify-content: space-between; align-items: center;
+  }
+  .arrow-icon {
+    width: 18px; height: 18px; color: var(--primary);
+    transition: transform 200ms;
+  }
+  .sector-card:hover .arrow-icon { transform: translate(3px, -3px); }
+  .sector-icon { color: var(--primary); margin-bottom: 16px; font-size: 24px; }
+  .sector-title { font-size: 20px; font-weight: 600; margin-bottom: 8px; }
+  .sector-desc { font-size: 13px; color: var(--muted-fg); line-height: 1.5; }
+
+  /* ── HILLSHACKS ── */
+  .hillshacks-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: start; }
+  .hillshacks-title {
+    font-size: clamp(48px, 6vw, 80px); font-weight: 700;
+    letter-spacing: -0.02em; line-height: 1;
+    margin-bottom: 20px;
+  }
+  .hillshacks-title span { color: var(--primary); }
+  .hillshacks-date {
+    font-size: 28px; font-weight: 500; letter-spacing: -0.01em;
+    margin-bottom: 24px; color: var(--muted-fg);
+  }
+  .hillshacks-date span { color: var(--foreground); }
+  .hillshacks-desc { color: var(--muted-fg); line-height: 1.7; margin-bottom: 28px; }
+  .link-arrow {
+    font-family: 'Space Mono', monospace; font-size: 11px;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--foreground); display: inline-flex; align-items: center; gap: 6px;
+    border-bottom: 1px solid var(--border); padding-bottom: 2px;
+    transition: border-color 200ms, gap 200ms;
+  }
+  .link-arrow:hover { border-color: var(--foreground); gap: 10px; }
+
+  /* ── COUNTDOWN PANEL ── */
+  .countdown-panel {
+    border: 1px solid var(--border); aspect-ratio: 4/3;
+    position: relative; overflow: hidden;
+    background: var(--surface);
+  }
+  .countdown-grid {
+    position: absolute; inset: 0;
+    background-image:
+      linear-gradient(to right, var(--hairline) 1px, transparent 1px),
+      linear-gradient(to bottom, var(--hairline) 1px, transparent 1px);
+    background-size: 80px 80px;
+  }
+  .countdown-content {
+    position: absolute; inset: 0; display: flex;
+    flex-direction: column; align-items: center; justify-content: center;
+  }
+  .countdown-label {
+    font-family: 'Space Mono', monospace; font-size: 11px;
+    letter-spacing: 0.1em; color: var(--muted-fg); margin-bottom: 12px;
+  }
+  .countdown-number {
+    font-size: 80px; font-weight: 700; letter-spacing: -0.04em; line-height: 1;
+    font-family: 'Space Mono', monospace;
+  }
+  .countdown-number .cnt-num { color: var(--foreground); }
+  .countdown-number .cnt-unit { color: var(--primary); }
+  .countdown-footer {
+    position: absolute; bottom: 16px; left: 20px;
+    font-family: 'Space Mono', monospace; font-size: 10px; color: var(--muted-fg);
+  }
+  .live-badge {
+    position: absolute; top: 16px; right: 16px;
+    font-family: 'Space Mono', monospace; font-size: 10px; color: var(--primary);
+    display: flex; align-items: center; gap: 6px;
+    letter-spacing: 0.1em;
+  }
+
+  /* ── CTA CARDS ── */
+  .cta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .cta-card {
+    border: 1px solid var(--border); padding: 36px 32px 32px;
+    display: flex; flex-direction: column; gap: 10px;
+    transition: background 200ms;
+  }
+  .cta-card:hover { background: var(--surface); }
+  .cta-card.accent { border-color: var(--primary); background: oklch(0.89 0.22 122 / 6%); }
+  .cta-card.accent:hover { background: oklch(0.89 0.22 122 / 10%); }
+  .cta-label {
+    font-family: 'Space Mono', monospace; font-size: 10px;
+    color: var(--muted-fg); letter-spacing: 0.1em; text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+  .cta-title { font-size: clamp(28px, 3.5vw, 40px); font-weight: 700; line-height: 1.1; letter-spacing: -0.02em; }
+  .cta-desc { font-size: 13px; color: var(--muted-fg); margin-top: 4px; }
+
+  /* ── FOOTER ── */
+  footer {
+    padding: 64px 36px 36px;
+    display: grid; grid-template-columns: 1fr 1fr 1fr;
+    gap: 40px; align-items: start;
+  }
+  .footer-label {
+    font-family: 'Space Mono', monospace; font-size: 10px;
+    color: var(--muted-fg); letter-spacing: 0.1em; text-transform: uppercase;
+    margin-bottom: 24px;
+  }
+  .footer-headline {
+    font-size: clamp(28px, 3.5vw, 44px); font-weight: 700;
+    line-height: 1.1; letter-spacing: -0.02em;
+  }
+  .footer-headline .dim { color: var(--muted-fg); }
+  .footer-nav { display: flex; flex-direction: column; gap: 10px; }
+  .footer-nav a {
+    font-size: 14px; color: var(--muted-fg); display: flex; align-items: center; gap: 8px;
+    transition: color 150ms;
+  }
+  .footer-nav a:hover { color: var(--foreground); }
+  .footer-contact { display: flex; flex-direction: column; gap: 6px; }
+  .footer-contact span { font-size: 13px; color: var(--muted-fg); }
+  .footer-bottom {
+    border-top: 1px solid var(--hairline);
+    padding: 20px 36px;
+    display: flex; justify-content: space-between; align-items: center;
+    font-family: 'Space Mono', monospace; font-size: 10px; color: var(--muted-fg);
+    letter-spacing: 0.05em; text-transform: uppercase;
+  }
+
+  /* ── REVEAL ANIMATION ── */
+  .reveal {
+    opacity: 0; transform: translateY(24px);
+    transition: opacity 700ms cubic-bezier(.2,.7,.2,1), transform 700ms cubic-bezier(.2,.7,.2,1);
+  }
+  .reveal.in { opacity: 1; transform: translateY(0); }
+  .reveal-d1 { transition-delay: 100ms; }
+  .reveal-d2 { transition-delay: 200ms; }
+  .reveal-d3 { transition-delay: 300ms; }
+  .reveal-d4 { transition-delay: 400ms; }
+
+  /* ── MOBILE ── */
+  @media (max-width: 768px) {
+    .topbar { display: none; }
+    nav { top: 0; }
+    .hero { padding: 90px 20px 40px; }
+    .hero-bottom { grid-template-columns: 1fr; }
+    .hero-stats { max-width: 100%; justify-self: start; }
+    .sector-grid { grid-template-columns: 1fr 1fr; }
+    .hillshacks-grid { grid-template-columns: 1fr; }
+    .cta-grid { grid-template-columns: 1fr; }
+    footer { grid-template-columns: 1fr; }
+    .nav-links { display: none; }
+    section { padding: 48px 20px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Grid overlay -->
+<div class="grid-overlay"></div>
+
+<!-- Side labels -->
+<div class="side-label side-label-right">C&nbsp;&nbsp;S&nbsp;&nbsp;·&nbsp;&nbsp;Warren&nbsp;NJ&nbsp;&nbsp;·&nbsp;&nbsp;Est.&nbsp;2018</div>
+<div class="side-label side-label-left">Home</div>
+
+<!-- Top bar -->
+<div class="topbar">
+  <span>WHRHS // Computer Science Club</span>
+  <div class="topbar-center">
+    <span class="dot-live"></span>
+    <span>HillsHacks 2026 — March 21</span>
+  </div>
+  <span>v.2026.01 / Warren, NJ</span>
+</div>
+
+<!-- Nav -->
+<nav>
+  <a href="#" class="nav-logo">
+    <div class="nav-logo-icon">W</div>
+    <span>WHRHS · CS Club</span>
+  </a>
+  <div class="nav-links">
+    <a href="#about"><span class="num">01</span> About</a>
+    <a href="#projects"><span class="num">02</span> Projects</a>
+    <a href="#events"><span class="num">03</span> Events</a>
+    <a href="#resources"><span class="num">04</span> Resources</a>
+    <a href="#sponsors"><span class="num">05</span> Sponsors</a>
+  </div>
+  <div class="nav-right">
+    <span>kartikeyapant2009@gmail.com</span>
+    <span class="exec-badge">EXEC</span>
+    <span>Admin</span>
+    <span>→</span>
+  </div>
+</nav>
+
+<!-- Hero -->
+<section class="hero" id="about">
+  <div class="section-label reveal">/ 001 — Computer Science Club · WHRHS</div>
+  <h1 class="hero-headline reveal reveal-d1">
+    We write code<br>
+    <span class="dim">and we </span><span class="accent">ship</span><span class="dim"> it.</span>
+  </h1>
+  <div class="hero-bottom">
+    <div>
+      <p class="hero-desc reveal reveal-d2">
+        A student-run engineering collective at Watchung Hills Regional High School. We build games, websites, and the hackathon that teaches the next 50 students how to do the same.
+      </p>
+      <div class="hero-btns reveal reveal-d3">
+        <a href="#projects" class="btn-primary">See projects →</a>
+        <a href="#events" class="btn-outline">HillsHacks 2026 →</a>
+      </div>
+    </div>
+    <div class="hero-stats reveal reveal-d2">
+      <div class="stat-row">
+        <span class="stat-key">Members</span>
+        <span class="stat-val">40+</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-key">Active Projects</span>
+        <span class="stat-val">12</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-key">HillsHacks Attendance</span>
+        <span class="stat-val">50 students</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-key">Repos Shipped</span>
+        <span class="stat-val">27</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Marquee -->
+<div class="marquee-wrap">
+  <div class="marquee-track" id="marquee">
+    <!-- Duplicated for seamless loop -->
+    <span class="marquee-item">Game Dev</span><span class="marquee-sep">/</span>
+    <span class="marquee-item">Web Dev</span><span class="marquee-sep">/</span>
+    <span class="marquee-item">HillsHacks 2026</span><span class="marquee-sep">/</span>
+    <span class="marquee-item">Pygame</span><span class="marquee-sep">/</span>
+    <span class="marquee-item">Unity</span><span class="marquee-sep">/</span>
+    <span class="marquee-item">JS Canvas</span><span class="marquee-sep">/</span>
+    <span class="marquee-item">Open Source</span><span class="marquee-sep">/</span>
+    <span class="marquee-item">Competitive Programming</span><span class="marquee-sep">/</span>
+    <span class="marquee-item">Game Dev</span><span class="marquee-sep">/</span>
+    <span class="marquee-item">Web Dev</span><span class="marquee-sep">/</span>
+    <span class="marquee-item">HillsHacks 2026</span><span class="marquee-sep">/</span>
+    <span class="marquee-item">Pygame</span><span class="marquee-sep">/</span>
+    <span class="marquee-item">Unity</span><span class="marquee-sep">/</span>
+    <span class="marquee-item">JS Canvas</span><span class="marquee-sep">/</span>
+    <span class="marquee-item">Open Source</span><span class="marquee-sep">/</span>
+    <span class="marquee-item">Competitive Programming</span><span class="marquee-sep">/</span>
+  </div>
+</div>
+
+<!-- Sectors -->
+<section id="projects">
+  <div class="section-label reveal">/ 002 — Sectors</div>
+  <h2 class="section-heading reveal reveal-d1">Four disciplines.<br>One club.</h2>
+  <div class="sector-grid reveal reveal-d2">
+    <div class="sector-card">
+      <div class="sector-card-num">
+        <span>/01</span>
+        <svg class="arrow-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17L17 7M17 7H7M17 7v10"/></svg>
+      </div>
+      <div class="sector-icon">🎮</div>
+      <div class="sector-title">Game Dev</div>
+      <div class="sector-desc">Unity, Pygame, JS Canvas. Individual &amp; group games.</div>
+    </div>
+    <div class="sector-card">
+      <div class="sector-card-num">
+        <span>/02</span>
+        <svg class="arrow-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17L17 7M17 7H7M17 7v10"/></svg>
+      </div>
+      <div class="sector-icon">&lt;/&gt;</div>
+      <div class="sector-title">Web Dev</div>
+      <div class="sector-desc">Live sites we built for other WHRHS clubs.</div>
+    </div>
+    <div class="sector-card">
+      <div class="sector-card-num">
+        <span>/03</span>
+        <svg class="arrow-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17L17 7M17 7H7M17 7v10"/></svg>
+      </div>
+      <div class="sector-icon">📅</div>
+      <div class="sector-title">HillsHacks</div>
+      <div class="sector-desc">Our student-run hackathon. March 21, 2026.</div>
+    </div>
+    <div class="sector-card">
+      <div class="sector-card-num">
+        <span>/04</span>
+        <svg class="arrow-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17L17 7M17 7H7M17 7v10"/></svg>
+      </div>
+      <div class="sector-icon">⚙️</div>
+      <div class="sector-title">Competitive Prog.</div>
+      <div class="sector-desc">Weekly practice. USACO, codeforces, leaderboards.</div>
+    </div>
+  </div>
+</section>
+
+<!-- HillsHacks -->
+<section id="events">
+  <div class="section-label reveal">/ 003 — Flagship Event</div>
+  <div class="hillshacks-grid">
+    <div>
+      <h2 class="hillshacks-title reveal reveal-d1">Hills<span>Hacks</span></h2>
+      <div class="hillshacks-date reveal reveal-d2">
+        <span>03</span> / <span>21</span> / <span>2026</span>
+      </div>
+      <p class="hillshacks-desc reveal reveal-d2">
+        A one-day, student-run hackathon teaching 50+ elementary and middle schoolers Web Development, Hex Code pixel art, and Game Development. Saturday, 11am – 4pm.
+      </p>
+      <a href="#" class="link-arrow reveal reveal-d3">Event Details →</a>
+    </div>
+    <div class="countdown-panel reveal reveal-d2">
+      <div class="countdown-grid"></div>
+      <div class="live-badge">
+        <span class="dot-live"></span> LIVE
+      </div>
+      <div class="countdown-content">
+        <div class="countdown-label">/ T-MINUS</div>
+        <div class="countdown-number">
+          <span class="cnt-num" id="days">0</span><span class="cnt-unit">d</span>
+          <span style="margin: 0 8px; color: var(--muted-fg); font-size: 48px;">:</span>
+          <span class="cnt-num" id="hours">00</span><span class="cnt-unit">h</span>
+          <span style="margin: 0 8px; color: var(--muted-fg); font-size: 48px;">:</span>
+          <span class="cnt-num" id="mins">00</span><span class="cnt-unit">m</span>
+        </div>
+      </div>
+      <div class="countdown-footer">WHRHS // Warren, NJ</div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA Cards -->
+<section>
+  <div class="cta-grid">
+    <div class="cta-card reveal">
+      <div class="cta-label">/ Members</div>
+      <div class="cta-title">Upload your game.</div>
+      <div class="cta-desc">Got something built? Push it to the people's games gallery.</div>
+      <div style="margin-top: 24px;">
+        <a href="#" class="link-arrow">Upload →</a>
+      </div>
+    </div>
+    <div class="cta-card accent reveal reveal-d1" id="sponsors">
+      <div class="cta-label">/ Sponsors</div>
+      <div class="cta-title">Back HillsHacks.</div>
+      <div class="cta-desc">$605 of $1,500 raised. Silver, Gold, or Platinum tier.</div>
+      <div style="margin-top: 24px;">
+        <a href="#" class="link-arrow">View Tiers →</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer>
+  <div>
+    <div class="footer-label">/ Footer · 00</div>
+    <div class="footer-headline reveal">
+      Build with us.<br>
+      <span class="dim">Or sponsor what we build.</span>
+    </div>
+    <div style="margin-top: 28px;">
+      <a href="#" class="link-arrow">Get in touch →</a>
+    </div>
+  </div>
+  <div>
+    <div class="footer-label">/ Sitemap</div>
+    <nav class="footer-nav">
+      <a href="#about">→ About</a>
+      <a href="#projects">→ Projects</a>
+      <a href="#events">→ Events</a>
+      <a href="#resources">→ Resources</a>
+      <a href="#sponsors">→ Sponsors</a>
+    </nav>
+  </div>
+  <div>
+    <div class="footer-label">/ Contact</div>
+    <div class="footer-contact">
+      <span>Watchung Hills Regional HS</span>
+      <span>108 Stirling Rd, Warren NJ</span>
+      <span>cs.club@whrhs.org</span>
+      <span>github.com/whrhs-cs</span>
+    </div>
+  </div>
+</footer>
+<div class="footer-bottom">
+  <span>© 2026 WHRHS Computer Science Club</span>
+  <span>Built by members. For members.</span>
+</div>
+
+<script>
+  // ── Scroll reveal ──
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) e.target.classList.add('in');
+    });
+  }, { threshold: 0.1 });
+
+  document.querySelectorAll('.reveal').forEach(el => {
+    observer.observe(el);
+    // Trigger hero items immediately
+    if (el.closest('.hero')) el.classList.add('in');
+  });
+
+  // ── Countdown to HillsHacks (March 21, 2026) ──
+  function updateCountdown() {
+    const target = new Date('2026-03-21T11:00:00');
+    const now = new Date();
+    const diff = target - now;
+    const el_d = document.getElementById('days');
+    const el_h = document.getElementById('hours');
+    const el_m = document.getElementById('mins');
+    if (!el_d) return;
+    if (diff <= 0) {
+      el_d.textContent = '0'; el_h.textContent = '00'; el_m.textContent = '00';
+      return;
+    }
+    const d = Math.floor(diff / 86400000);
+    const h = Math.floor((diff % 86400000) / 3600000);
+    const m = Math.floor((diff % 3600000) / 60000);
+    el_d.textContent = d;
+    el_h.textContent = String(h).padStart(2, '0');
+    el_m.textContent = String(m).padStart(2, '0');
+  }
+  updateCountdown();
+  setInterval(updateCountdown, 60000);
+
+  // ── Smooth scroll inertia (lightweight) ──
+  let ease = 0, target_y = 0, current_y = 0, raf;
+  function lerp(a, b, t) { return a + (b - a) * t; }
+
+  window.addEventListener('scroll', () => {
+    target_y = window.scrollY;
+    if (!raf) tick();
+  });
+
+  function tick() {
+    current_y = lerp(current_y, target_y, 0.12);
+    if (Math.abs(current_y - target_y) < 0.5) {
+      current_y = target_y;
+      raf = null;
+      return;
+    }
+    raf = requestAnimationFrame(tick);
+  }
+</script>
+</body>
+</html>
