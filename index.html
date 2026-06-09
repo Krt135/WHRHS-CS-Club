@@ -3,755 +3,804 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>WHRHS Computer Science Club — Build / Teach / Ship</title>
+<title>WHRHS Computer Science Club — Build. Learn. Ship.</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --background: oklch(16% 0.005 240);
+    --foreground: oklch(96% 0.005 90);
+    --surface: oklch(19% 0.006 240);
+    --primary: oklch(89% 0.22 122);
+    --primary-fg: oklch(16% 0.005 240);
+    --muted-fg: oklch(65% 0.01 240);
+    --border: oklch(30% 0.007 240);
+    --hairline: oklch(100% 0 0 / 8%);
+    --radius-sm: 2px;
+  }
 
-:root {
-  --background: #FAF9F7;
-  --foreground: #1F2228;
-  --surface: #F4F2EF;
-  --card: #FFFFFF;
-  --primary: #1F2228;
-  --primary-fg: #FAF9F7;
-  --secondary: #ECEAE6;
-  --muted-fg: #6B6F76;
-  --accent: #B8E61F;
-  --accent-fg: #1F2228;
-  --border: #DEDBD6;
-  --border-strong: #1F2228;
-  --font-display: 'Space Grotesk', sans-serif;
-  --font-sans: 'Inter', sans-serif;
-  --font-mono: 'JetBrains Mono', monospace;
-}
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-html { scroll-behavior: smooth; }
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-sans);
-  font-size: 16px;
-  line-height: 1.6;
-  overflow-x: hidden;
-}
+  html { scroll-behavior: smooth; }
 
-/* NAV */
-nav {
-  position: fixed;
-  top: 0; left: 0; right: 0;
-  z-index: 100;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 2rem;
-  height: 60px;
-  background: var(--background);
-  border-bottom: 1px solid var(--border);
-}
-.nav-logo {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  text-decoration: none;
-  color: var(--foreground);
-}
-.nav-logo-box {
-  width: 32px;
-  height: 32px;
-  border: 1.5px solid var(--foreground);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-.nav-logo-dot { width: 10px; height: 10px; background: var(--accent); }
-.nav-logo-text { display: flex; flex-direction: column; line-height: 1.25; }
-.nav-logo-main { font-family: var(--font-display); font-size: 13px; font-weight: 600; }
-.nav-logo-sub { font-family: var(--font-mono); font-size: 9px; color: var(--muted-fg); letter-spacing: 0.1em; text-transform: uppercase; }
+  body {
+    background: var(--background);
+    color: var(--foreground);
+    font-family: 'Space Grotesk', system-ui, sans-serif;
+    font-size: 15px;
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
 
-.nav-links { display: flex; align-items: center; gap: 2rem; list-style: none; }
-.nav-links a {
-  font-family: var(--font-sans);
-  font-size: 14px;
-  color: var(--foreground);
-  text-decoration: none;
-  display: flex;
-  align-items: center;
-  gap: 0.35rem;
-  transition: opacity 0.15s;
-}
-.nav-links a:hover { opacity: 0.55; }
-.nav-num { font-family: var(--font-mono); font-size: 10px; color: var(--muted-fg); }
-.nav-active { font-weight: 500; }
+  ::selection { background: var(--primary); color: var(--primary-fg); }
 
-.nav-cta {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  background: var(--primary);
-  color: var(--primary-fg);
-  font-family: var(--font-sans);
-  font-size: 14px;
-  font-weight: 500;
-  padding: 0.5rem 1.25rem;
-  text-decoration: none;
-  transition: opacity 0.15s;
-  white-space: nowrap;
-}
-.nav-cta:hover { opacity: 0.85; }
-.nav-cta-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); flex-shrink: 0; }
+  a { color: inherit; text-decoration: none; }
 
-/* SIDE LABELS */
-.side-left {
-  position: fixed;
-  left: 0.75rem;
-  top: 50%;
-  transform: translateY(-50%) rotate(-90deg);
-  font-family: var(--font-mono);
-  font-size: 9px;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: var(--muted-fg);
-  white-space: nowrap;
-  z-index: 50;
-  pointer-events: none;
-}
-.side-right {
-  position: fixed;
-  right: 0.75rem;
-  top: 50%;
-  transform: translateY(-50%) rotate(90deg);
-  font-family: var(--font-mono);
-  font-size: 9px;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: var(--muted-fg);
-  white-space: nowrap;
-  z-index: 50;
-  pointer-events: none;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-.side-right-dot {
-  width: 6px; height: 6px;
-  border-radius: 50%;
-  background: var(--accent);
-  animation: blink 2s ease-in-out infinite;
-  flex-shrink: 0;
-}
-@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
+  .hairline { border-color: var(--hairline); }
 
-/* GRID LINES */
-.grid-cols {
-  position: absolute;
-  inset: 0;
-  display: grid;
-  grid-template-columns: repeat(8, 1fr);
-  pointer-events: none;
-  z-index: 0;
-}
-.grid-cols > div { border-right: 1px solid var(--border); }
-.grid-cols > div:first-child { border-left: 1px solid var(--border); }
+  .eyebrow {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 11px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--muted-fg);
+  }
 
-/* HERO */
-.hero {
-  min-height: 100vh;
-  padding-top: 60px;
-  position: relative;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-}
-.hero-inner {
-  position: relative;
-  z-index: 1;
-  padding: 3rem 5rem 2rem;
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-}
-.hero-eyebrow {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  margin-bottom: 2.5rem;
-}
-.eyebrow-num { font-family: var(--font-mono); font-size: 11px; color: var(--muted-fg); }
-.eyebrow-line { width: 36px; height: 1px; background: var(--muted-fg); }
-.eyebrow-text { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted-fg); }
+  .vtext {
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 10px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--muted-fg);
+  }
 
-h1.hero-title {
-  font-family: var(--font-display);
-  font-size: clamp(80px, 13vw, 168px);
-  font-weight: 700;
-  line-height: 0.92;
-  letter-spacing: -0.035em;
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-}
-.hero-line1 { color: var(--foreground); }
-.hero-line2 {
-  color: var(--muted-fg);
-  display: flex;
-  align-items: center;
-  gap: 0.2em;
-}
-.hero-circle {
-  width: 0.16em;
-  height: 0.16em;
-  border-radius: 50%;
-  background: var(--foreground);
-  flex-shrink: 0;
-  align-self: center;
-  margin-bottom: 0.06em;
-}
+  .grid-bg {
+    background-image:
+      linear-gradient(to right, var(--hairline) 1px, transparent 1px),
+      linear-gradient(to bottom, var(--hairline) 1px, transparent 1px);
+    background-size: 80px 80px;
+  }
 
-.hero-bottom-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  position: relative;
-  z-index: 1;
-}
-.hero-bottom-left { /* empty */ }
-.hero-bottom-right {
-  padding: 2rem 0 2rem 2rem;
-  font-family: var(--font-sans);
-  font-size: 17px;
-  line-height: 1.7;
-  color: var(--foreground);
-}
+  /* ── TOP BAR ── */
+  .topbar {
+    display: none;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 24px;
+    border-bottom: 1px solid var(--hairline);
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 10px;
+    letter-spacing: 0.25em;
+    color: var(--muted-fg);
+    text-transform: uppercase;
+  }
+  @media (min-width: 768px) { .topbar { display: flex; } }
 
-.hero-buttons {
-  position: relative;
-  z-index: 1;
-  padding: 0 5rem 4rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-  max-width: 400px;
-}
-.btn-dark {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background: var(--primary);
-  color: var(--primary-fg);
-  font-family: var(--font-sans);
-  font-size: 15px;
-  font-weight: 500;
-  padding: 1rem 1.5rem;
-  text-decoration: none;
-  transition: opacity 0.15s;
-}
-.btn-dark:hover { opacity: 0.85; }
-.btn-outline {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background: transparent;
-  color: var(--foreground);
-  font-family: var(--font-sans);
-  font-size: 15px;
-  padding: 1rem 1.5rem;
-  text-decoration: none;
-  border: 1px solid var(--border-strong);
-  transition: background 0.15s;
-}
-.btn-outline:hover { background: var(--secondary); }
+  .topbar-center { display: flex; align-items: center; gap: 8px; }
+  .dot-live {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--primary); display: inline-block;
+    animation: blink 2s infinite;
+  }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
 
-/* META BAR */
-.meta-bar {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  border-top: 1px solid var(--border);
-  border-bottom: 1px solid var(--border);
-}
-.meta-item {
-  padding: 1rem 2rem;
-  border-right: 1px solid var(--border);
-  font-family: var(--font-mono);
-  font-size: 11px;
-  letter-spacing: 0.08em;
-  display: flex;
-  gap: 0.6rem;
-  align-items: center;
-}
-.meta-item:last-child { border-right: none; }
-.meta-key { color: var(--muted-fg); text-transform: uppercase; }
-.meta-val { color: var(--foreground); font-weight: 500; }
+  /* ── HEADER ── */
+  header {
+    position: sticky; top: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 24px; height: 64px;
+    border-bottom: 1px solid var(--hairline);
+    background: oklch(16% 0.005 240 / 75%);
+    backdrop-filter: blur(8px);
+  }
 
-/* TICKER */
-.ticker {
-  overflow: hidden;
-  border-bottom: 1px solid var(--border);
-  padding: 1rem 0;
-}
-.ticker-track {
-  display: flex;
-  white-space: nowrap;
-  animation: ticker 32s linear infinite;
-}
-.ticker-item {
-  font-family: var(--font-display);
-  font-size: 24px;
-  font-weight: 500;
-  color: var(--foreground);
-  padding-right: 0.5rem;
-}
-.ticker-dot { font-size: 20px; color: var(--accent); padding-right: 0.75rem; }
-@keyframes ticker { from{transform:translateX(0)} to{transform:translateX(-50%)} }
+  .nav-logo { display: flex; align-items: center; gap: 12px; font-size: 15px; font-weight: 500; letter-spacing: -0.01em; }
+  .nav-logo-icon {
+    width: 32px; height: 32px;
+    border: 1px solid var(--primary); color: var(--primary);
+    display: grid; place-items: center;
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 13px; transition: background 200ms, color 200ms;
+  }
+  .nav-logo:hover .nav-logo-icon { background: var(--primary); color: var(--primary-fg); }
+  .nav-logo .muted { color: var(--muted-fg); }
 
-/* SECTION LABEL */
-.section-label {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  margin-bottom: 3rem;
-}
-.sl-num { font-family: var(--font-mono); font-size: 11px; color: var(--muted-fg); }
-.sl-line { width: 36px; height: 1px; background: var(--muted-fg); }
-.sl-text { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted-fg); }
+  .nav-links { display: none; align-items: center; gap: 4px; }
+  @media (min-width: 768px) { .nav-links { display: flex; } }
 
-/* OPERATIONS */
-.operations {
-  padding: 5rem;
-  display: grid;
-  grid-template-columns: 1fr 2fr;
-  gap: 4rem;
-  align-items: start;
-}
-.ops-heading {
-  font-family: var(--font-display);
-  font-size: clamp(36px, 4vw, 54px);
-  font-weight: 700;
-  line-height: 1.1;
-  letter-spacing: -0.025em;
-}
-.ops-heading .dim { color: var(--muted-fg); }
+  .nav-links a {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 11px; letter-spacing: 0.2em;
+    color: var(--muted-fg); text-transform: uppercase;
+    padding: 8px 16px;
+    border: 1px solid transparent;
+    transition: color 200ms, border-color 200ms;
+  }
+  .nav-links a:hover { color: var(--foreground); border-color: var(--border); }
+  .nav-links a .num { color: oklch(89% 0.22 122 / 60%); margin-right: 8px; }
 
-.ops-cards {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  border: 1px solid var(--border);
-}
-.ops-card {
-  padding: 2rem;
-  border-right: 1px solid var(--border);
-  display: flex;
-  flex-direction: column;
-}
-.ops-card:last-child { border-right: none; }
-.ops-num { font-family: var(--font-mono); font-size: 11px; color: var(--muted-fg); margin-bottom: 1.5rem; }
-.ops-title { font-family: var(--font-display); font-size: 22px; font-weight: 600; margin-bottom: 0.75rem; }
-.ops-desc { font-size: 14px; color: var(--muted-fg); line-height: 1.65; flex: 1; margin-bottom: 2rem; }
-.ops-link {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  font-family: var(--font-mono);
-  font-size: 10px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--foreground);
-  text-decoration: none;
-  border-top: 1px solid var(--border);
-  padding-top: 1.25rem;
-  transition: opacity 0.15s;
-}
-.ops-link:hover { opacity: 0.6; }
+  .nav-right { display: none; }
+  @media (min-width: 768px) { .nav-right { display: flex; } }
 
-/* HILLSHACKS */
-.hillshacks {
-  background: var(--foreground);
-  color: var(--primary-fg);
-  padding: 5rem;
-}
-.hh-tag {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  letter-spacing: 0.12em;
-  color: rgba(250,249,247,0.4);
-  margin-bottom: 2.5rem;
-}
-.hh-layout {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 5rem;
-  align-items: start;
-}
-.hh-title {
-  font-family: var(--font-display);
-  font-size: clamp(60px, 8vw, 108px);
-  font-weight: 700;
-  line-height: 0.95;
-  letter-spacing: -0.035em;
-  margin-bottom: 2rem;
-}
-.hh-title span { color: var(--accent); }
-.hh-desc {
-  font-size: 15px;
-  line-height: 1.75;
-  color: rgba(250,249,247,0.6);
-  max-width: 460px;
-}
-.hh-stats {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  margin-bottom: 0;
-}
-.hh-stat {
-  padding: 1.75rem 0;
-  border-bottom: 1px solid rgba(250,249,247,0.1);
-}
-.hh-stat:nth-child(1), .hh-stat:nth-child(2) { padding-top: 0; }
-.hh-stat:nth-child(3), .hh-stat:nth-child(4) { border-bottom: none; padding-bottom: 0; }
-.hh-stat:nth-child(odd)  { padding-right: 2rem; border-right: 1px solid rgba(250,249,247,0.1); }
-.hh-stat:nth-child(even) { padding-left: 2rem; }
-.hh-stat-val {
-  font-family: var(--font-display);
-  font-size: 42px;
-  font-weight: 700;
-  line-height: 1;
-  color: var(--primary-fg);
-  margin-bottom: 0.35rem;
-}
-.hh-stat-label {
-  font-family: var(--font-mono);
-  font-size: 9px;
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
-  color: rgba(250,249,247,0.35);
-}
-.hh-btn {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background: transparent;
-  color: var(--primary-fg);
-  font-family: var(--font-sans);
-  font-size: 15px;
-  padding: 1rem 1.5rem;
-  text-decoration: none;
-  border: 1px solid rgba(250,249,247,0.2);
-  margin-top: 2.5rem;
-  transition: border-color 0.15s;
-}
-.hh-btn:hover { border-color: rgba(250,249,247,0.55); }
+  .btn-signin {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase;
+    border: 1px solid var(--primary); color: var(--primary);
+    padding: 8px 16px;
+    transition: background 200ms, color 200ms;
+  }
+  .btn-signin:hover { background: var(--primary); color: var(--primary-fg); }
 
-/* STEP IN */
-.step-in {
-  padding: 6rem 5rem 0;
-}
-.cta-heading {
-  font-family: var(--font-display);
-  font-size: clamp(56px, 10vw, 128px);
-  font-weight: 700;
-  line-height: 0.95;
-  letter-spacing: -0.035em;
-  text-align: center;
-  margin-bottom: 3rem;
-}
-.cta-buttons {
-  display: flex;
-  gap: 1rem;
-  justify-content: center;
-  padding-bottom: 6rem;
-  border-bottom: 1px solid var(--border);
-}
-.btn-cta-dark {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  background: var(--primary);
-  color: var(--primary-fg);
-  font-family: var(--font-sans);
-  font-size: 15px;
-  font-weight: 500;
-  padding: 0.9rem 1.75rem;
-  text-decoration: none;
-  transition: opacity 0.15s;
-}
-.btn-cta-dark:hover { opacity: 0.85; }
-.btn-cta-outline {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  background: transparent;
-  color: var(--foreground);
-  font-family: var(--font-sans);
-  font-size: 15px;
-  padding: 0.9rem 1.75rem;
-  text-decoration: none;
-  border: 1px solid var(--border-strong);
-  transition: background 0.15s;
-}
-.btn-cta-outline:hover { background: var(--secondary); }
+  .menu-btn {
+    display: flex; padding: 8px;
+    border: 1px solid var(--hairline);
+    background: none; color: var(--foreground); cursor: pointer;
+  }
+  @media (min-width: 768px) { .menu-btn { display: none; } }
 
-/* FOOTER */
-footer {
-  background: var(--surface);
-  padding: 4rem 5rem 0;
-}
-.footer-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 3rem;
-  padding-bottom: 4rem;
-}
-.footer-col-label {
-  font-family: var(--font-mono);
-  font-size: 10px;
-  letter-spacing: 0.15em;
-  color: var(--muted-fg);
-  margin-bottom: 1.5rem;
-}
-.footer-tagline {
-  font-family: var(--font-display);
-  font-size: 28px;
-  font-weight: 700;
-  line-height: 1.2;
-  letter-spacing: -0.02em;
-  margin-bottom: 1rem;
-}
-/* Use darkened lime for legibility on light bg */
-.footer-tagline .accent { color: #6ea000; }
-.footer-tagline-desc {
-  font-size: 14px;
-  color: var(--muted-fg);
-  line-height: 1.65;
-}
-.footer-nav { list-style: none; display: flex; flex-direction: column; gap: 0.75rem; }
-.footer-nav a { font-size: 15px; color: var(--foreground); text-decoration: none; transition: color 0.15s; }
-.footer-nav a:hover { color: var(--muted-fg); }
-.footer-contact { font-size: 14px; color: var(--foreground); line-height: 1.8; }
-.footer-contact a {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.3rem;
-  color: var(--foreground);
-  text-decoration: none;
-  margin-top: 0.75rem;
-}
-.footer-contact a:hover { text-decoration: underline; }
+  .mobile-nav {
+    display: none; flex-direction: column;
+    border-bottom: 1px solid var(--hairline);
+    background: var(--background);
+    padding: 12px 24px 20px;
+  }
+  .mobile-nav.open { display: flex; }
+  .mobile-nav a {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--muted-fg); padding: 10px 0;
+    border-bottom: 1px solid var(--hairline);
+  }
+  .mobile-nav a:hover { color: var(--foreground); }
 
-.footer-bottom {
-  border-top: 1px solid var(--border);
-  padding: 1.25rem 0;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-.footer-copy { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted-fg); }
-.footer-version { display: flex; align-items: center; gap: 0.5rem; font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted-fg); }
-.footer-version-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
+  /* ── HERO ── */
+  .hero {
+    position: relative;
+    border-bottom: 1px solid var(--hairline);
+    overflow: hidden;
+  }
+  .hero-grid-bg {
+    position: absolute; inset: 0;
+    pointer-events: none; opacity: 0.6;
+  }
+  .hero-rail {
+    position: absolute; inset-block: 0;
+    width: 40px;
+    border-color: var(--hairline);
+    display: none;
+    padding: 12px;
+  }
+  @media (min-width: 768px) { .hero-rail { display: flex; } }
+  .hero-rail-left {
+    left: 0; border-right: 1px solid var(--hairline);
+    align-items: flex-end;
+  }
+  .hero-rail-right {
+    right: 0; border-left: 1px solid var(--hairline);
+    align-items: flex-start;
+  }
+  .hero-inner {
+    position: relative;
+    padding: 96px 24px 128px;
+  }
+  @media (min-width: 768px) { .hero-inner { padding: 96px 64px 128px; } }
+
+  .hero-headline {
+    font-size: clamp(52px, 14vw, 130px);
+    font-weight: 700;
+    line-height: 0.85;
+    letter-spacing: -0.04em;
+  }
+  @media (min-width: 768px) { .hero-headline { font-size: clamp(72px, 9.5vw, 130px); } }
+  .hero-headline .dim { color: var(--muted-fg); }
+  .hero-headline .accent { color: var(--primary); font-style: italic; }
+
+  .hero-bottom {
+    display: grid; grid-template-columns: 1fr; gap: 32px;
+    margin-top: 64px;
+  }
+  @media (min-width: 768px) {
+    .hero-bottom { grid-template-columns: repeat(12, 1fr); gap: 32px; }
+    .hero-desc-col { grid-column: span 5; }
+    .hero-stats { grid-column: 4 / span 4; grid-column-start: 9; }
+  }
+
+  .hero-desc { font-size: clamp(17px, 2vw, 20px); color: var(--muted-fg); line-height: 1.6; max-width: 32rem; }
+  .hero-btns { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 32px; }
+
+  .btn-primary {
+    background: var(--primary); color: var(--primary-fg);
+    padding: 12px 20px;
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 12px; letter-spacing: 0.2em; text-transform: uppercase;
+    display: inline-flex; align-items: center; gap: 12px;
+    border: 1px solid var(--primary);
+    transition: opacity 150ms;
+  }
+  .btn-primary:hover { opacity: 0.9; }
+  .btn-primary:hover .arrow, .btn-outline:hover .arrow { transform: translateX(4px); }
+
+  .btn-outline {
+    border: 1px solid var(--border); color: var(--foreground);
+    padding: 12px 20px;
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 12px; letter-spacing: 0.2em; text-transform: uppercase;
+    display: inline-flex; align-items: center; gap: 12px;
+    transition: border-color 200ms, color 200ms;
+  }
+  .btn-outline:hover { border-color: var(--primary); color: var(--primary); }
+
+  .arrow { transition: transform 200ms; display: inline-block; }
+
+  .hero-stats {
+    border-top: 1px solid var(--hairline);
+    padding-top: 24px;
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 12px;
+  }
+  .stat-row {
+    display: flex; justify-content: space-between; align-items: baseline;
+    padding-bottom: 8px;
+    margin-bottom: 12px;
+    border-bottom: 1px solid var(--hairline);
+    letter-spacing: 0.2em; text-transform: uppercase;
+  }
+  .stat-key { color: var(--muted-fg); }
+  .stat-val { color: var(--foreground); text-transform: none; letter-spacing: normal; }
+
+  /* ── MARQUEE ── */
+  .marquee-wrap {
+    overflow: hidden;
+    border-top: 1px solid var(--hairline);
+    background: var(--background);
+  }
+  .marquee-track {
+    display: flex; white-space: nowrap;
+    padding: 16px 0;
+    animation: marquee 40s linear infinite;
+  }
+  .marquee-track:hover { animation-play-state: paused; }
+  @keyframes marquee {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+  .marquee-group { display: flex; align-items: center; flex-shrink: 0; }
+  .marquee-item {
+    padding: 0 32px;
+    font-size: clamp(28px, 4vw, 48px);
+    font-weight: 700; letter-spacing: -0.01em;
+    color: var(--muted-fg);
+  }
+  .marquee-sep { color: var(--primary); font-weight: 700; font-size: clamp(28px, 4vw, 48px); flex-shrink: 0; }
+
+  /* ── SECTIONS ── */
+  section { padding: 80px 24px; border-bottom: 1px solid var(--hairline); position: relative; }
+  @media (min-width: 768px) { section { padding: 112px 64px; } }
+
+  .sectors-header {
+    display: grid; grid-template-columns: 1fr; gap: 32px;
+    margin-bottom: 64px;
+  }
+  @media (min-width: 768px) {
+    .sectors-header { grid-template-columns: repeat(12, 1fr); }
+    .sectors-header .eyebrow { grid-column: span 3; }
+    .section-heading { grid-column: span 7; }
+  }
+
+  .section-heading {
+    font-size: clamp(36px, 5vw, 60px);
+    font-weight: 700; line-height: 0.95;
+    letter-spacing: -0.02em;
+  }
+
+  /* ── SECTOR CARDS ── */
+  .sector-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    border: 1px solid var(--hairline);
+  }
+  @media (min-width: 768px) { .sector-grid { grid-template-columns: 1fr 1fr; } }
+  @media (min-width: 1024px) { .sector-grid { grid-template-columns: repeat(4, 1fr); } }
+
+  .sector-card {
+    display: flex; flex-direction: column;
+    padding: 32px;
+    min-height: 280px;
+    border-right: 1px solid var(--hairline);
+    border-bottom: 1px solid var(--hairline);
+    transition: background 200ms;
+  }
+  .sector-card:hover { background: var(--surface); }
+  @media (min-width: 1024px) {
+    .sector-card:nth-child(4n) { border-right: none; }
+    .sector-card:nth-last-child(-n+4) { border-bottom: none; }
+  }
+  @media (min-width: 768px) and (max-width: 1023px) {
+    .sector-card:nth-child(2n) { border-right: none; }
+    .sector-card:nth-last-child(-n+2) { border-bottom: none; }
+  }
+  @media (max-width: 767px) {
+    .sector-card { border-right: none; }
+    .sector-card:last-child { border-bottom: none; }
+  }
+
+  .sector-card-num {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 12px; color: var(--muted-fg);
+    margin-bottom: 48px;
+    display: flex; justify-content: space-between; align-items: flex-start;
+  }
+  .arrow-icon {
+    width: 16px; height: 16px;
+    color: var(--muted-fg);
+    transition: transform 200ms, color 200ms;
+  }
+  .sector-card:hover .arrow-icon { color: var(--primary); transform: translate(4px, -4px); }
+
+  .sector-icon {
+    width: 32px; height: 32px;
+    color: var(--primary); margin-bottom: 24px;
+    stroke-width: 1.2;
+  }
+  .sector-title { font-size: 24px; font-weight: 600; margin-bottom: 8px; letter-spacing: -0.01em; }
+  .sector-desc { font-size: 14px; color: var(--muted-fg); line-height: 1.6; }
+
+  /* ── HILLSHACKS ── */
+  .hillshacks-grid {
+    display: grid; grid-template-columns: 1fr; gap: 48px;
+  }
+  @media (min-width: 768px) {
+    .hillshacks-grid { grid-template-columns: repeat(12, 1fr); gap: 32px; }
+    .hillshacks-copy { grid-column: span 6; }
+    .hillshacks-visual { grid-column: 7 / span 6; }
+  }
+
+  .hillshacks-title {
+    font-size: clamp(48px, 6vw, 72px);
+    font-weight: 700; letter-spacing: -0.02em; line-height: 0.9;
+    margin-bottom: 32px;
+  }
+  .hillshacks-title .accent { color: var(--primary); }
+  .hillshacks-date {
+    display: block;
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: clamp(28px, 3vw, 36px);
+    font-weight: 400; color: var(--muted-fg);
+    margin-top: 8px;
+  }
+  .hillshacks-desc { color: var(--muted-fg); line-height: 1.7; margin-bottom: 32px; max-width: 28rem; }
+
+  .link-arrow {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 12px; letter-spacing: 0.25em; text-transform: uppercase;
+    color: var(--primary);
+    display: inline-flex; align-items: center; gap: 12px;
+    border-bottom: 1px solid var(--primary); padding-bottom: 4px;
+    transition: gap 200ms;
+  }
+  .link-arrow:hover { gap: 16px; }
+  .link-arrow:hover .arrow { transform: translateX(4px); }
+
+  /* ── COUNTDOWN PANEL ── */
+  .countdown-outer { border: 1px solid var(--hairline); padding: 4px; }
+  .countdown-panel {
+    border: 1px solid var(--hairline);
+    aspect-ratio: 4/3;
+    position: relative; overflow: hidden;
+    background: var(--surface);
+  }
+  .countdown-cells {
+    position: absolute; inset: 0;
+    display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(3, 1fr);
+  }
+  .countdown-cells > div { border: 1px solid var(--hairline); }
+  .countdown-content {
+    position: absolute; inset: 0;
+    display: grid; place-items: center;
+    text-align: center;
+  }
+  .countdown-label {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 12px; letter-spacing: 0.3em;
+    color: var(--muted-fg); margin-bottom: 8px;
+    text-transform: uppercase;
+  }
+  .countdown-number {
+    font-size: clamp(56px, 8vw, 72px);
+    font-weight: 700; letter-spacing: -0.02em; line-height: 1;
+  }
+  .countdown-number .cnt-unit { color: var(--primary); }
+  .countdown-footer {
+    position: absolute; bottom: 12px; left: 12px;
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 10px; color: var(--muted-fg);
+  }
+  .live-badge {
+    position: absolute; top: 12px; right: 12px;
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 10px; color: var(--primary);
+    letter-spacing: 0.1em;
+  }
+
+  /* ── CTA CARDS ── */
+  .cta-grid { display: grid; grid-template-columns: 1fr; gap: 32px; }
+  @media (min-width: 768px) { .cta-grid { grid-template-columns: 1fr 1fr; } }
+
+  .cta-card {
+    border: 1px solid var(--hairline);
+    padding: 40px;
+    min-height: 280px;
+    display: flex; flex-direction: column; justify-content: space-between;
+    transition: background 200ms, border-color 200ms;
+  }
+  .cta-card:hover { border-color: var(--primary); }
+  .cta-card.accent {
+    border-color: var(--primary);
+    background: oklch(89% 0.22 122 / 5%);
+  }
+  .cta-card.accent:hover { background: oklch(89% 0.22 122 / 10%); }
+  .cta-card.accent .cta-label { color: var(--primary); }
+  .cta-label { margin-bottom: 0; }
+  .cta-title {
+    font-size: clamp(32px, 4vw, 48px);
+    font-weight: 700; line-height: 1; letter-spacing: -0.02em;
+    margin-top: auto;
+  }
+  .cta-desc { font-size: 15px; color: var(--muted-fg); margin-top: 16px; }
+  .cta-link {
+    margin-top: 24px;
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 12px; letter-spacing: 0.25em; text-transform: uppercase;
+    color: var(--primary);
+    display: inline-flex; align-items: center; gap: 8px;
+  }
+  .cta-card:hover .cta-link .arrow { transform: translateX(4px); }
+
+  /* ── FOOTER ── */
+  footer {
+    margin-top: 128px;
+    border-top: 1px solid var(--hairline);
+    padding: 64px 24px;
+    display: grid; grid-template-columns: 1fr; gap: 40px;
+  }
+  @media (min-width: 768px) {
+    footer {
+      padding: 64px;
+      grid-template-columns: repeat(12, 1fr);
+    }
+    .footer-main { grid-column: span 5; }
+    .footer-sitemap { grid-column: span 3; grid-column-start: 7; }
+    .footer-contact { grid-column: span 3; }
+  }
+
+  .footer-headline {
+    font-size: clamp(32px, 4vw, 48px);
+    font-weight: 700; line-height: 0.95; letter-spacing: -0.02em;
+    margin-top: 16px;
+  }
+  .footer-headline .dim { color: var(--muted-fg); }
+  .footer-nav { display: flex; flex-direction: column; gap: 8px; margin-top: 16px; }
+  .footer-nav a {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 14px; color: var(--muted-fg);
+    transition: color 150ms;
+  }
+  .footer-nav a:hover { color: var(--foreground); }
+  .footer-contact-list { display: flex; flex-direction: column; gap: 8px; margin-top: 16px; }
+  .footer-contact-list li {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 14px; color: var(--muted-fg);
+    list-style: none;
+  }
+  .footer-bottom {
+    border-top: 1px solid var(--hairline);
+    padding: 16px 24px;
+    display: flex; flex-direction: column; gap: 8px;
+    justify-content: space-between; align-items: flex-start;
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 10px; color: var(--muted-fg);
+    letter-spacing: 0.25em; text-transform: uppercase;
+  }
+  @media (min-width: 768px) {
+    .footer-bottom {
+      flex-direction: row; align-items: center;
+      padding: 16px 64px;
+    }
+  }
+
+  /* ── REVEAL ── */
+  .reveal {
+    opacity: 0; transform: translateY(24px);
+    transition: opacity 700ms cubic-bezier(.2,.7,.2,1), transform 700ms cubic-bezier(.2,.7,.2,1);
+  }
+  .reveal.in { opacity: 1; transform: none; }
+  .reveal-d1 { transition-delay: 80ms; }
+  .reveal-d2 { transition-delay: 160ms; }
+  .reveal-d3 { transition-delay: 240ms; }
 </style>
 </head>
 <body>
 
-<!-- SIDE LABELS -->
-<div class="side-left">WHRHS // CS-CLUB // 2026</div>
-<div class="side-right">SYS.STATUS — ONLINE <div class="side-right-dot"></div></div>
+<div class="topbar">
+  <span>WHRHS // Computer Science Club</span>
+  <div class="topbar-center">
+    <span class="dot-live"></span>
+    <span>HillsHacks 2026 — March 21</span>
+  </div>
+  <span>v.2026.01 / Warren, NJ</span>
+</div>
 
-<!-- NAV -->
-<nav>
+<header>
   <a href="#" class="nav-logo">
-    <div class="nav-logo-box"><div class="nav-logo-dot"></div></div>
-    <div class="nav-logo-text">
-      <span class="nav-logo-main">WHRHS / CS Club</span>
-      <span class="nav-logo-sub">Est. Watchung Hills</span>
-    </div>
+    <span class="nav-logo-icon">W/</span>
+    <span>WHRHS<span class="muted"> · CS Club</span></span>
   </a>
-  <ul class="nav-links">
-    <li><a href="#" class="nav-active"><span class="nav-num">01</span> Index</a></li>
-    <li><a href="#about"><span class="nav-num">02</span> About</a></li>
-    <li><a href="#events"><span class="nav-num">03</span> Events</a></li>
-    <li><a href="#projects"><span class="nav-num">04</span> Projects</a></li>
-    <li><a href="#sponsors"><span class="nav-num">05</span> Sponsors</a></li>
-    <li><a href="#join"><span class="nav-num">06</span> Join</a></li>
-  </ul>
-  <a href="#join" class="nav-cta"><div class="nav-cta-dot"></div> Get Involved</a>
+  <nav class="nav-links">
+    <a href="#about"><span class="num">01</span>About</a>
+    <a href="#projects"><span class="num">02</span>Projects</a>
+    <a href="#events"><span class="num">03</span>Events</a>
+    <a href="#resources"><span class="num">04</span>Resources</a>
+    <a href="#sponsors"><span class="num">05</span>Sponsors</a>
+  </nav>
+  <div class="nav-right">
+    <a href="#" class="btn-signin">Sign in →</a>
+  </div>
+  <button class="menu-btn" id="menu-btn" aria-label="Toggle navigation">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 5h16M4 12h16M4 19h16"/></svg>
+  </button>
+</header>
+
+<nav class="mobile-nav" id="mobile-nav" aria-label="Mobile navigation">
+  <a href="#about">01 About</a>
+  <a href="#projects">02 Projects</a>
+  <a href="#events">03 Events</a>
+  <a href="#resources">04 Resources</a>
+  <a href="#sponsors">05 Sponsors</a>
+  <a href="#">Sign in →</a>
 </nav>
 
-<!-- HERO -->
-<section class="hero">
-  <div class="grid-cols">
-    <div></div><div></div><div></div><div></div>
-    <div></div><div></div><div></div><div></div>
-  </div>
+<!-- Hero -->
+<section class="hero" id="about">
+  <div class="hero-grid-bg grid-bg"></div>
+  <div class="hero-rail hero-rail-left"><span class="vtext">/ Index · Home</span></div>
+  <div class="hero-rail hero-rail-right"><span class="vtext">est. 2018 · Warren NJ</span></div>
   <div class="hero-inner">
-    <div class="hero-eyebrow">
-      <span class="eyebrow-num">01</span>
-      <div class="eyebrow-line"></div>
-      <span class="eyebrow-text">Computer Science Club</span>
-    </div>
-    <h1 class="hero-title">
-      <span class="hero-line1">Code is</span>
-      <span class="hero-line2"><span class="hero-circle"></span>infrastructure.</span>
+    <p class="eyebrow reveal" style="margin-bottom:32px">/ 001 — Computer Science Club · WHRHS</p>
+    <h1 class="hero-headline reveal reveal-d1">
+      We write code<br>
+      <span class="dim">and we </span><span class="accent">ship</span><span class="dim"> it.</span>
     </h1>
-    <div class="hero-bottom-row">
-      <div class="hero-bottom-left"></div>
-      <div class="hero-bottom-right">
-        A student-run collective at Watchung Hills Regional High School building software, teaching kids to think computationally, and running a hackathon for the next generation.
-      </div>
-    </div>
-  </div>
-  <div class="hero-buttons">
-    <a href="#sponsors" class="btn-dark">Sponsor HillsHacks <span>→</span></a>
-    <a href="#about" class="btn-outline">Read the manifesto <span>→</span></a>
-  </div>
-</section>
-
-<!-- META BAR -->
-<div class="meta-bar">
-  <div class="meta-item"><span class="meta-key">LAT</span><span class="meta-val">40.6248° N</span></div>
-  <div class="meta-item"><span class="meta-key">LON</span><span class="meta-val">74.5018° W</span></div>
-  <div class="meta-item"><span class="meta-key">MEMBERS</span><span class="meta-val">60+</span></div>
-  <div class="meta-item"><span class="meta-key">MISSION</span><span class="meta-val">EDUCATE / BUILD / SHIP</span></div>
-</div>
-
-<!-- TICKER -->
-<div class="ticker">
-  <div class="ticker-track">
-    <span class="ticker-item">HillsHacks 2026</span><span class="ticker-dot">●</span>
-    <span class="ticker-item">Web Dev</span><span class="ticker-dot">●</span>
-    <span class="ticker-item">Pixel Art</span><span class="ticker-dot">●</span>
-    <span class="ticker-item">Game Dev</span><span class="ticker-dot">●</span>
-    <span class="ticker-item">Open Source</span><span class="ticker-dot">●</span>
-    <span class="ticker-item">Teach the next gen</span><span class="ticker-dot">●</span>
-    <span class="ticker-item">WHRHS / CS</span><span class="ticker-dot">●</span>
-    <span class="ticker-item">HillsHacks 2026</span><span class="ticker-dot">●</span>
-    <span class="ticker-item">Web Dev</span><span class="ticker-dot">●</span>
-    <span class="ticker-item">Pixel Art</span><span class="ticker-dot">●</span>
-    <span class="ticker-item">Game Dev</span><span class="ticker-dot">●</span>
-    <span class="ticker-item">Open Source</span><span class="ticker-dot">●</span>
-    <span class="ticker-item">Teach the next gen</span><span class="ticker-dot">●</span>
-    <span class="ticker-item">WHRHS / CS</span><span class="ticker-dot">●</span>
-  </div>
-</div>
-
-<!-- OPERATIONS -->
-<section id="about">
-  <div class="operations">
-    <div>
-      <div class="section-label">
-        <span class="sl-num">02</span>
-        <div class="sl-line"></div>
-        <span class="sl-text">Operations</span>
-      </div>
-      <h2 class="ops-heading">Three<br>vectors.<br><span class="dim">One mission.</span></h2>
-    </div>
-    <div class="ops-cards">
-      <div class="ops-card">
-        <div class="ops-num">01</div>
-        <div class="ops-title">Educate</div>
-        <p class="ops-desc">We run workshops on web dev, pixel art and game design — bringing CS to elementary, middle, and high school students.</p>
-        <a href="#events" class="ops-link">READ MORE <span>→</span></a>
-      </div>
-      <div class="ops-card">
-        <div class="ops-num">02</div>
-        <div class="ops-title">Build</div>
-        <p class="ops-desc">Members ship side-projects, contribute to open source, and prototype tools for the school community.</p>
-        <a href="#projects" class="ops-link">READ MORE <span>→</span></a>
-      </div>
-      <div class="ops-card">
-        <div class="ops-num">03</div>
-        <div class="ops-title">Connect</div>
-        <p class="ops-desc">We partner with local sponsors and industry mentors to expand opportunities for our members.</p>
-        <a href="#sponsors" class="ops-link">READ MORE <span>→</span></a>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- HILLSHACKS -->
-<section id="events">
-  <div class="hillshacks">
-    <div class="hh-tag">[ FLAGSHIP / 03 ]</div>
-    <div class="hh-layout">
-      <div>
-        <h2 class="hh-title">Hills<span>Hacks</span></h2>
-        <p class="hh-desc">A student-run hackathon where high schoolers teach elementary and middle school students to build their first websites, games, and pixel-art creations.</p>
-      </div>
-      <div>
-        <div class="hh-stats">
-          <div class="hh-stat">
-            <div class="hh-stat-val">$1,500</div>
-            <div class="hh-stat-label">Fundraising Goal</div>
-          </div>
-          <div class="hh-stat">
-            <div class="hh-stat-val">3</div>
-            <div class="hh-stat-label">Teaching Tracks</div>
-          </div>
-          <div class="hh-stat">
-            <div class="hh-stat-val">100+</div>
-            <div class="hh-stat-label">Expected Students</div>
-          </div>
-          <div class="hh-stat">
-            <div class="hh-stat-val">1</div>
-            <div class="hh-stat-label">Day of Chaos</div>
-          </div>
+    <div class="hero-bottom">
+      <div class="hero-desc-col">
+        <p class="hero-desc reveal reveal-d2">
+          A student-run engineering collective at Watchung Hills Regional High School. We build games, websites, and the hackathon that teaches the next 50 students how to do the same.
+        </p>
+        <div class="hero-btns reveal reveal-d3">
+          <a href="#projects" class="btn-primary">See projects <span class="arrow">→</span></a>
+          <a href="#events" class="btn-outline">HillsHacks 2026 <span class="arrow">→</span></a>
         </div>
-        <a href="#events" class="hh-btn">See the program <span>→</span></a>
+      </div>
+      <div class="hero-stats reveal reveal-d2">
+        <div class="stat-row">
+          <span class="stat-key">Members</span>
+          <span class="stat-val">40+</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-key">Active projects</span>
+          <span class="stat-val">12</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-key">HillsHacks attendance</span>
+          <span class="stat-val">50 students</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-key">Repos shipped</span>
+          <span class="stat-val">27</span>
+        </div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- STEP IN / CTA -->
-<section id="join">
-  <div class="step-in">
-    <div class="section-label">
-      <span class="sl-num">04</span>
-      <div class="sl-line"></div>
-      <span class="sl-text">Step in</span>
+<!-- Marquee -->
+<div class="marquee-wrap">
+  <div class="marquee-track" id="marquee">
+    <div class="marquee-group">
+      <span class="marquee-item">Game Dev</span><span class="marquee-sep">/</span>
+      <span class="marquee-item">Web Dev</span><span class="marquee-sep">/</span>
+      <span class="marquee-item">HillsHacks 2026</span><span class="marquee-sep">/</span>
+      <span class="marquee-item">Pygame</span><span class="marquee-sep">/</span>
+      <span class="marquee-item">Unity</span><span class="marquee-sep">/</span>
+      <span class="marquee-item">JS Canvas</span><span class="marquee-sep">/</span>
+      <span class="marquee-item">Open Source</span><span class="marquee-sep">/</span>
+      <span class="marquee-item">Competitive Programming</span><span class="marquee-sep">/</span>
     </div>
-    <h2 class="cta-heading">Ready to<br>ship something?</h2>
-    <div class="cta-buttons">
-      <a href="mailto:cs.club@whrhs.org" class="btn-cta-dark">Join the club →</a>
-      <a href="#sponsors" class="btn-cta-outline">Become a sponsor →</a>
+    <div class="marquee-group">
+      <span class="marquee-item">Game Dev</span><span class="marquee-sep">/</span>
+      <span class="marquee-item">Web Dev</span><span class="marquee-sep">/</span>
+      <span class="marquee-item">HillsHacks 2026</span><span class="marquee-sep">/</span>
+      <span class="marquee-item">Pygame</span><span class="marquee-sep">/</span>
+      <span class="marquee-item">Unity</span><span class="marquee-sep">/</span>
+      <span class="marquee-item">JS Canvas</span><span class="marquee-sep">/</span>
+      <span class="marquee-item">Open Source</span><span class="marquee-sep">/</span>
+      <span class="marquee-item">Competitive Programming</span><span class="marquee-sep">/</span>
+    </div>
+  </div>
+</div>
+
+<!-- Sectors -->
+<section id="projects">
+  <div class="sectors-header">
+    <p class="eyebrow reveal">/ 002 — Sectors</p>
+    <h2 class="section-heading reveal reveal-d1">Four disciplines.<br>One club.</h2>
+  </div>
+  <div class="sector-grid reveal reveal-d2">
+    <a href="#projects" class="sector-card">
+      <div class="sector-card-num">
+        <span>/01</span>
+        <svg class="arrow-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7h10v10"/><path d="M7 17 17 7"/></svg>
+      </div>
+      <svg class="sector-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><line x1="6" x2="10" y1="11" y2="11"/><line x1="8" x2="8" y1="9" y2="13"/><line x1="15" x2="15.01" y1="12" y2="12"/><line x1="18" x2="18.01" y1="10" y2="10"/><path d="M17.32 5H6.68a4 4 0 0 0-3.978 3.59c-.006.052-.01.101-.017.152C2.604 9.416 2 14.456 2 16a3 3 0 0 0 3 3c1 0 1.5-.5 2-1l1.414-1.414A2 2 0 0 1 9.828 16h4.344a2 2 0 0 1 1.414.586L17 18c.5.5 1 1 2 1a3 3 0 0 0 3-3c0-1.545-.604-6.584-.685-7.258-.007-.05-.011-.1-.017-.151A4 4 0 0 0 17.32 5z"/></svg>
+      <div class="sector-title">Game Dev</div>
+      <div class="sector-desc">Unity, Pygame, JS Canvas. Individual &amp; group games.</div>
+    </a>
+    <a href="#projects" class="sector-card">
+      <div class="sector-card-num">
+        <span>/02</span>
+        <svg class="arrow-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7h10v10"/><path d="M7 17 17 7"/></svg>
+      </div>
+      <svg class="sector-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="m18 16 4-4-4-4"/><path d="m6 8-4 4 4 4"/><path d="m14.5 4-5 16"/></svg>
+      <div class="sector-title">Web Dev</div>
+      <div class="sector-desc">Live sites we built for other WHRHS clubs.</div>
+    </a>
+    <a href="#events" class="sector-card">
+      <div class="sector-card-num">
+        <span>/03</span>
+        <svg class="arrow-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7h10v10"/><path d="M7 17 17 7"/></svg>
+      </div>
+      <svg class="sector-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/></svg>
+      <div class="sector-title">HillsHacks</div>
+      <div class="sector-desc">Our student-run hackathon. March 21, 2026.</div>
+    </a>
+    <a href="#projects" class="sector-card">
+      <div class="sector-card-num">
+        <span>/04</span>
+        <svg class="arrow-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7h10v10"/><path d="M7 17 17 7"/></svg>
+      </div>
+      <svg class="sector-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect width="16" height="16" x="4" y="4" rx="2"/><rect width="6" height="6" x="9" y="9" rx="1"/><path d="M15 2v2"/><path d="M15 20v2"/><path d="M2 15h2"/><path d="M20 15h2"/><path d="M2 9h2"/><path d="M20 9h2"/><path d="M9 2v2"/><path d="M9 20v2"/></svg>
+      <div class="sector-title">Competitive Prog.</div>
+      <div class="sector-desc">Weekly practice. USACO, codeforces, leaderboards.</div>
+    </a>
+  </div>
+</section>
+
+<!-- HillsHacks -->
+<section id="events">
+  <p class="eyebrow reveal" style="margin-bottom:32px">/ 003 — Flagship event</p>
+  <div class="hillshacks-grid">
+    <div class="hillshacks-copy">
+      <h2 class="hillshacks-title reveal reveal-d1">
+        Hills<span class="accent">Hacks</span><br>
+        <span class="hillshacks-date">03 / 21 / 2026</span>
+      </h2>
+      <p class="hillshacks-desc reveal reveal-d2">
+        A one-day, student-run hackathon teaching 50+ elementary and middle schoolers Web Development, Hex Code pixel art, and Game Development. Saturday, 11am – 4pm.
+      </p>
+      <a href="#events" class="link-arrow reveal reveal-d3">Event details <span class="arrow">→</span></a>
+    </div>
+    <div class="hillshacks-visual reveal reveal-d2">
+      <div class="countdown-outer">
+        <div class="countdown-panel grid-bg">
+          <div class="countdown-cells">
+            <div></div><div></div><div></div>
+            <div></div><div></div><div></div>
+            <div></div><div></div><div></div>
+          </div>
+          <div class="live-badge">● LIVE</div>
+          <div class="countdown-content">
+            <p class="countdown-label">/ T-minus</p>
+            <div class="countdown-number">
+              <span id="days">0</span><span class="cnt-unit">d</span>
+            </div>
+          </div>
+          <div class="countdown-footer">WHRHS // Warren, NJ</div>
+        </div>
+      </div>
     </div>
   </div>
 </section>
 
-<!-- FOOTER -->
+<!-- CTA Cards -->
+<section>
+  <div class="cta-grid">
+    <a href="#projects" class="cta-card reveal">
+      <p class="eyebrow cta-label">/ Members</p>
+      <div>
+        <div class="cta-title">Upload your game.</div>
+        <p class="cta-desc">Got something built? Push it to the people's games gallery.</p>
+        <span class="cta-link">Upload <span class="arrow">→</span></span>
+      </div>
+    </a>
+    <a href="#sponsors" class="cta-card accent reveal reveal-d1" id="sponsors">
+      <p class="eyebrow cta-label">/ Sponsors</p>
+      <div>
+        <div class="cta-title">Back HillsHacks.</div>
+        <p class="cta-desc">$605 of $1,500 raised. Silver, Gold, or Platinum tier.</p>
+        <span class="cta-link">View tiers <span class="arrow">→</span></span>
+      </div>
+    </a>
+  </div>
+</section>
+
+<!-- Footer -->
 <footer>
-  <div class="footer-grid">
-    <div>
-      <div class="footer-col-label">[ 00 / Signal ]</div>
-      <div class="footer-tagline">Build the future.<br><span class="accent">Teach it forward.</span></div>
-      <p class="footer-tagline-desc">The WHRHS Computer Science Club is a student-run collective spreading computational literacy across our community.</p>
-    </div>
-    <div>
-      <div class="footer-col-label">[ Index ]</div>
-      <ul class="footer-nav">
-        <li><a href="#">Home</a></li>
-        <li><a href="#about">About</a></li>
-        <li><a href="#events">Events</a></li>
-        <li><a href="#projects">Projects</a></li>
-        <li><a href="#sponsors">Sponsors</a></li>
-        <li><a href="#join">Join</a></li>
-      </ul>
-    </div>
-    <div>
-      <div class="footer-col-label">[ Contact ]</div>
-      <div class="footer-contact">
-        Watchung Hills Regional High School<br>
-        108 Stirling Road, Warren, NJ 07059
-        <a href="mailto:cs.club@whrhs.org">cs.club@whrhs.org →</a>
-      </div>
-    </div>
+  <div class="footer-main">
+    <p class="eyebrow">/ Footer · 00</p>
+    <h2 class="footer-headline reveal">
+      Build with us.<br>
+      <span class="dim">Or sponsor what we build.</span>
+    </h2>
+    <a href="#sponsors" class="link-arrow" style="margin-top:32px">Get in touch <span class="arrow">→</span></a>
   </div>
-  <div class="footer-bottom">
-    <span class="footer-copy">© 2026 WHRHS CS CLUB / ALL SYSTEMS NOMINAL</span>
-    <div class="footer-version"><div class="footer-version-dot"></div> v1.0 — DEPLOYED 2026</div>
+  <div class="footer-sitemap">
+    <p class="eyebrow">/ Sitemap</p>
+    <nav class="footer-nav">
+      <a href="#about">→ About</a>
+      <a href="#projects">→ Projects</a>
+      <a href="#events">→ Events</a>
+      <a href="#resources">→ Resources</a>
+      <a href="#sponsors">→ Sponsors</a>
+    </nav>
+  </div>
+  <div class="footer-contact">
+    <p class="eyebrow">/ Contact</p>
+    <ul class="footer-contact-list">
+      <li>Watchung Hills Regional HS</li>
+      <li>108 Stirling Rd, Warren NJ</li>
+      <li>cs.club@whrhs.org</li>
+      <li>github.com/whrhs-cs</li>
+    </ul>
   </div>
 </footer>
+<div class="footer-bottom">
+  <span>© 2026 WHRHS Computer Science Club</span>
+  <span>Built by members. For members.</span>
+</div>
 
+<script>
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) e.target.classList.add('in');
+    });
+  }, { threshold: 0.1 });
+
+  document.querySelectorAll('.reveal').forEach(el => {
+    observer.observe(el);
+    if (el.closest('.hero')) el.classList.add('in');
+  });
+
+  function updateCountdown() {
+    const target = new Date('2026-03-21T11:00:00');
+    const diff = target - new Date();
+    const el = document.getElementById('days');
+    if (!el) return;
+    el.textContent = diff <= 0 ? '0' : Math.floor(diff / 86400000);
+  }
+  updateCountdown();
+  setInterval(updateCountdown, 60000);
+
+  document.getElementById('menu-btn').addEventListener('click', () => {
+    document.getElementById('mobile-nav').classList.toggle('open');
+  });
+
+  document.querySelectorAll('.mobile-nav a').forEach(link => {
+    link.addEventListener('click', () => {
+      document.getElementById('mobile-nav').classList.remove('open');
+    });
+  });
+</script>
 </body>
 </html>
