@@ -11,47 +11,13 @@
 <link rel = "stylesheet" href = "styleFolder/style.css">
 <script src = "scriptFolder/index.js" defer></script>
 <script src = "scriptFolder/footer.js" defer></script>
+<script src = "scriptFolder/header.js" defer></script>
 
 </head>
 <body>
 
-<div class="topbar">
-  <span>WHRHS // Computer Science Club</span>
-  <div class="topbar-center">
-    <span class="dot-live"></span>
-    <span>HillsHacks 2026 — March 21</span>
-  </div>
-  <span>v.2026.01 / Warren, NJ</span>
-</div>
+<cs-header active-page = "index"></cs-header>
 
-<header>
-  <a href="index.html" class="nav-logo">
-    <span class="nav-logo-icon">W/</span>
-    <span>WHRHS<span class="muted"> · CS Club</span></span>
-  </a>
-  <nav class="nav-links">
-    <a href="index.html#about"><span class="num">01</span>About</a>
-    <a href="index.html#projects"><span class="num">02</span>Projects</a>
-    <a href="events.html"><span class="num">03</span>Events</a>
-    <a href="index.html#resources"><span class="num">04</span>Resources</a>
-    <a href="index.html#sponsors"><span class="num">05</span>Sponsors</a>
-  </nav>
-  <div class="nav-right">
-    <a href="#" class="btn-signin">Sign in →</a>
-  </div>
-  <button class="menu-btn" id="menu-btn" aria-label="Toggle navigation">
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 5h16M4 12h16M4 19h16"/></svg>
-  </button>
-</header>
-
-<nav class="mobile-nav" id="mobile-nav" aria-label="Mobile navigation">
-  <a href="index.html#about">01 About</a>
-  <a href="index.html#projects">02 Projects</a>
-  <a href="events.html">03 Events</a>
-  <a href="index.html#resources">04 Resources</a>
-  <a href="index.html#sponsors">05 Sponsors</a>
-  <a href="#">Sign in →</a>
-</nav>
 
 <!-- Hero -->
 <section class="hero" id="about">
@@ -71,7 +37,7 @@
         </p>
         <div class="hero-btns reveal reveal-d3">
           <a href="#projects" class="btn-primary">See projects <span class="arrow">→</span></a>
-          <a href="events.html" class="btn-outline">HillsHacks 2026 <span class="arrow">→</span></a>
+          <a href="#events" class="btn-outline">HillsHacks 2026 <span class="arrow">→</span></a>
         </div>
       </div>
       <div class="hero-stats reveal reveal-d2">
@@ -147,7 +113,7 @@
       <div class="sector-title">Web Dev</div>
       <div class="sector-desc">Live sites we built for other WHRHS clubs.</div>
     </a>
-    <a href="events.html" class="sector-card">
+    <a href="#events" class="sector-card">
       <div class="sector-card-num">
         <span>/03</span>
         <svg class="arrow-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7h10v10"/><path d="M7 17 17 7"/></svg>
@@ -180,7 +146,7 @@
       <p class="hillshacks-desc reveal reveal-d2">
         A one-day, student-run hackathon teaching 50+ elementary and middle schoolers Web Development, Hex Code pixel art, and Game Development. Saturday, 11am – 4pm.
       </p>
-      <a href="events.html" class="link-arrow reveal reveal-d3">Event details <span class="arrow">→</span></a>
+      <a href="#events" class="link-arrow reveal reveal-d3">Event details <span class="arrow">→</span></a>
     </div>
     <div class="hillshacks-visual reveal reveal-d2">
       <div class="countdown-outer">

@@ -219,8 +219,7 @@
   display: grid;
   grid-template-columns: 1fr;
   gap: 8px;
-  padding: 12px 24px;
-  border-bottom: 1px solid var(--hairline);
+  padding: 24px 24px;
 }
 @media (min-width: 768px) {
   .comp-table-header,
