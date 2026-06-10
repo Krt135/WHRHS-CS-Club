@@ -110,6 +110,10 @@
     transition: color 200ms, border-color 200ms;
   }
   .nav-links a:hover { color: var(--foreground); border-color: var(--border); }
+  .nav-links a.active {
+    color: var(--primary);
+    border-color: oklch(89% 0.22 122 / 40%);
+  }
   .nav-links a .num { color: oklch(89% 0.22 122 / 60%); margin-right: 8px; }
 
   .nav-right { display: none; }

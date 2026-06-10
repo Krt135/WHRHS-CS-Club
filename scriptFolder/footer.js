@@ -8,16 +8,16 @@ class SpecialFooter extends HTMLElement {
       Build with us.<br>
       <span class="dim">Or sponsor what we build.</span>
     </h2>
-    <a href="#sponsors" class="link-arrow" style="margin-top:32px">Get in touch <span class="arrow">→</span></a>
+    <a href="index.html#sponsors" class="link-arrow" style="margin-top:32px">Get in touch <span class="arrow">→</span></a>
   </div>
   <div class="footer-sitemap">
     <p class="eyebrow">/ Sitemap</p>
     <nav class="footer-nav">
-      <a href="#about">→ About</a>
-      <a href="#projects">→ Projects</a>
-      <a href="#events">→ Events</a>
-      <a href="#resources">→ Resources</a>
-      <a href="#sponsors">→ Sponsors</a>
+      <a href="index.html#about">→ About</a>
+      <a href="index.html#projects">→ Projects</a>
+      <a href="events.html">→ Events</a>
+      <a href="index.html#resources">→ Resources</a>
+      <a href="index.html#sponsors">→ Sponsors</a>
     </nav>
   </div>
   <div class="footer-contact">

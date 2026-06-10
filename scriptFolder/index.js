@@ -19,12 +19,17 @@ const observer = new IntersectionObserver((entries) => {
   updateCountdown();
   setInterval(updateCountdown, 60000);
 
-  document.getElementById('menu-btn').addEventListener('click', () => {
-    document.getElementById('mobile-nav').classList.toggle('open');
-  });
+  const menuBtn = document.getElementById('menu-btn');
+  const mobileNav = document.getElementById('mobile-nav');
 
-  document.querySelectorAll('.mobile-nav a').forEach(link => {
-    link.addEventListener('click', () => {
-      document.getElementById('mobile-nav').classList.remove('open');
+  if (menuBtn && mobileNav) {
+    menuBtn.addEventListener('click', () => {
+      mobileNav.classList.toggle('open');
     });
-  });
+
+    mobileNav.querySelectorAll('a').forEach(link => {
+      link.addEventListener('click', () => {
+        mobileNav.classList.remove('open');
+      });
+    });
+  }
