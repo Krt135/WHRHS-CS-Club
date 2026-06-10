@@ -8,3 +8,6 @@ To-Do List:
 3. Resources Page
 4. Sponsors Page
 5. Account creation and sign in (I will do personally since I have experience)
+
+If you're adding a page, make sure to use the cs-footer and cs-header tags instead of copy and pasting for the navigation and footer, 
+it'll save you time and make adjusting it in the future easier
