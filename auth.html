@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign In — WHRHS CS Club</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="styleFolder/style.css">
+    <link rel="stylesheet" href="styleFolder/auth.css">
+</head>
+<body class="auth-body">
+
+    <div class="auth-container">
+        
+        <div id="signInView" class="auth-card">
+            <div class="auth-logo">
+                <span style="color: var(--primary);">W/</span> WHRHS
+            </div>
+            <h2>Welcome back.</h2>
+            <p class="auth-subtitle">Sign in to the member portal.</p>
+
+            <button class="auth-google-btn" id="googleSignInBtn">
+                <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0OCA0OCIgd2lkdGg9IjE4IiBoZWlnaHQ9IjE4Ij48cGF0aCBmaWxsPSIjRUE0MzM1IiBkPSJNMjQgOS41YzMuNTQgMCA2LjcyIDEuMjIgOS4yMSAzLjYgbDYuODUtNi44NUMzNS45IDIuMzggMzAuNDcgMCAyNCAwIDE0LjYyIDAgNi41MSA1LjM4IDIuNTYgMTMuMjJsNy45OCA2LjE5QzEyLjQzIDEzLjcyIDE3LjcyIDkuNSAyNCA5LjV6Ii8+PHBhdGggZmlsbD0iIzQyODVGNCIgZD0iTTQ2LjYgMjQuNWMwLTEuNTUtLjE1LTMuMDQtLjQyLTQuNDVIMjR2OS4xaDEyLjhjLS41MyAyLjg1LTIuMTQgNS4yOC00LjU1IDYuOTFsNy45OCA2LjE5QzQ0Ljg0IDM0LjY0IDQ2LjYgMzAgNDYuNiAyNC41eiIvPjxwYXRoIGZpbGw9IiNGQkJDMDUiIGQ9Ik0xMC41MyAyOC41OWMtLjQ4LTEuNDUtLjc2LTMuMDMtLjc2LTQuNTlzLjI4LTMuMTQuNzYtNC41OUwyLjk3IDEzLjIyQzEuMTcgMTYuODQgMCAyMC45NyAwIDI0LjVzMS4xNyA3LjY2IDIuOTcgMTEuMjhMMTAuNTMgMjguNTl6Ii8+PHBhdGggZmlsbD0iIzM0QTg1MyIgZD0iTTI0IDQ4YzYuNDggMCAxMi4wMi0yLjEzIDE2LjA3LTUuODNsLTcuOTgtNi4xOWMtMi4zMyAxLjU6LTUuMjIgMi41Mi04LjA5IDIuNTItNy43OCAwLTE0LjQ2LTUuNDgtMTYuOC0xMi44NGwtNy45OCA2LjE5QzYuNTEgNDIuNjIgMTQuNjIgNDggMjQgNDh6Ii8+PC9zdmc+" alt="Google">
+                <span>Continue with Google</span>
+            </button>
+
+            <div class="auth-divider"><span>OR</span></div>
+
+            <form id="signInForm">
+                <div id="signInFeedback" class="auth-feedback" hidden></div>
+                <div class="input-group">
+                    <label>Email</label>
+                    <input type="email" id="signInEmail" placeholder="you@whrhs.org" required>
+                </div>
+                <div class="input-group">
+                    <label>Password</label>
+                    <input type="password" id="signInPassword" placeholder="••••••••" required>
+                </div>
+                <button type="submit" class="auth-submit-btn">Sign in <span class="arrow">→</span></button>
+            </form>
+
+            <div class="auth-footer">
+                <a href="#" class="auth-link" onclick="showForgotPassword(event)">Forgot password?</a>
+                <span>Need an account? <a href="#" class="auth-link bold" onclick="toggleAuthView(); return false;">Sign up</a></span>
+            </div>
+        </div>
+
+        <div id="signUpView" class="auth-card hidden">
+            <a href="#" class="back-link" onclick="showAuthView('signInView'); return false;">← Back to sign in</a>
+            <h2>Create account</h2>
+            <p class="auth-subtitle">Join the collective.</p>
+
+            <form id="signUpForm">
+                <div class="input-group">
+                    <label>Email</label>
+                    <input type="email" id="signUpEmail" placeholder="you@whrhs.org" required>
+                </div>
+                <div class="input-group">
+                    <label>Password</label>
+                    <input type="password" id="signUpPassword" placeholder="Min. 8 characters" required minlength="8">
+                </div>
+                <div class="input-group">
+                    <label>Confirm Password</label>
+                    <input type="password" id="signUpConfirm" placeholder="Re-enter password" required>
+                </div>
+                <button type="submit" class="auth-submit-btn">Create account <span class="arrow">→</span></button>
+            </form>
+        </div>
+
+        <div id="forgotPasswordView" class="auth-card hidden">
+            <a href="#" class="back-link" onclick="showAuthView('signInView'); return false;">← Back to sign in</a>
+            <h2>Reset password</h2>
+            <p class="auth-subtitle">We'll email you a secure reset link.</p>
+            <form id="forgotPasswordForm">
+                <div id="forgotPasswordFeedback" class="auth-feedback" hidden></div>
+                <div class="input-group">
+                    <label>Email</label>
+                    <input type="email" id="forgotPasswordEmail" placeholder="you@whrhs.org" required>
+                </div>
+                <button type="submit" class="auth-submit-btn">Send link <span class="arrow">→</span></button>
+            </form>
+        </div>
+
+    </div>
+
+    <script type="module" src="scriptFolder/auth.js"></script>
+</body>
+</html>

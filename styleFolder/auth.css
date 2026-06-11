@@ -1,0 +1,209 @@
+/* ── AUTHENTICATION LAYOUT ── */
+
+.auth-body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: 'Space Grotesk', sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  margin: 0;
+}
+
+.auth-container {
+  width: 100%;
+  max-width: 420px;
+  padding: 24px;
+}
+
+.auth-card {
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 40px 32px;
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* ── TYPOGRAPHY & LOGO ── */
+
+.auth-logo {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 32px;
+  letter-spacing: -0.05em;
+}
+
+.auth-card h2 {
+  font-size: 28px;
+  font-weight: 700;
+  margin: 0 0 8px 0;
+  letter-spacing: -0.02em;
+}
+
+.auth-subtitle {
+  color: var(--muted-fg);
+  font-size: 15px;
+  margin-top: 0;
+  margin-bottom: 32px;
+}
+
+/* ── FORMS & INPUTS ── */
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 20px;
+}
+
+.input-group label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--muted-fg);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 8px;
+}
+
+.input-group input {
+  background-color: var(--background);
+  border: 1px solid var(--border);
+  color: var(--foreground);
+  font-family: inherit;
+  font-size: 15px;
+  padding: 14px;
+  border-radius: var(--radius-sm);
+  transition: border-color 150ms;
+}
+
+.input-group input:focus {
+  outline: none;
+  border-color: var(--primary);
+}
+
+.input-group input::placeholder {
+  color: var(--muted-fg);
+  opacity: 0.5;
+}
+
+/* ── BUTTONS & LINKS ── */
+
+.auth-submit-btn {
+  width: 100%;
+  background-color: var(--primary);
+  color: var(--primary-fg);
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 14px;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 12px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  transition: opacity 150ms;
+}
+
+.auth-submit-btn:hover {
+  opacity: 0.9;
+}
+
+.auth-footer {
+  margin-top: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  text-align: center;
+  font-size: 14px;
+  color: var(--muted-fg);
+}
+
+.auth-link {
+  color: var(--muted-fg);
+  text-decoration: none;
+  transition: color 150ms;
+}
+
+.auth-link:hover, .auth-link.bold {
+  color: var(--foreground);
+}
+
+.back-link {
+  display: inline-block;
+  margin-bottom: 24px;
+  color: var(--muted-fg);
+  text-decoration: none;
+  font-size: 14px;
+  transition: color 150ms;
+}
+
+.back-link:hover {
+  color: var(--foreground);
+}
+
+/* ── GOOGLE BUTTON & DIVIDER ── */
+
+.auth-google-btn {
+  width: 100%;
+  background-color: var(--background); /* Inverted against card surface */
+  border: 1px solid var(--border);
+  color: var(--foreground);
+  border-radius: var(--radius-sm);
+  padding: 14px;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  transition: background-color 150ms, border-color 150ms;
+  margin-bottom: 24px;
+}
+
+.auth-google-btn:hover {
+  background-color: var(--border);
+  border-color: var(--muted-fg);
+}
+
+.auth-google-btn img {
+  width: 18px;
+  height: 18px;
+  display: block;
+}
+
+/* Minimalist Dark Divider Line */
+.auth-divider {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  margin: 24px 0;
+  color: var(--muted-fg);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  opacity: 0.7;
+}
+
+.auth-divider::before,
+.auth-divider::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px solid var(--hairline);
+}
+
+.auth-divider:not(:empty)::before {
+  margin-right: 16px;
+}
+
+.auth-divider:not(:empty)::after {
+  margin-left: 16px;
+}
