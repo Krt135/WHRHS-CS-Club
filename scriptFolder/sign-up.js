@@ -31,7 +31,7 @@ const db   = getDatabase(app);
 
 // Redirect already-logged-in users
 onAuthStateChanged(auth, user => {
-    if (user) window.location.href = "dashboard.html";
+    if (user) window.location.href = "index.html";
 });
 
 // Saves a user profile doc in Firestore under /users/{uid}
@@ -86,7 +86,7 @@ document.getElementById("signUpForm").addEventListener("submit", async e => {
         const cred = await createUserWithEmailAndPassword(auth, email, password);
         await updateProfile(cred.user, { displayName: name });
         await saveProfile(cred.user, name);
-        // onAuthStateChanged will redirect to dashboard.html
+        // onAuthStateChanged will redirect to index.html
     } catch (err) {
         showFeedback(friendlyError(err.code));
     }
