@@ -15,7 +15,7 @@ import {
 } from "firebase/database";
 
 const firebaseConfig = {
-  apiKey: import.meta.env.FIREBASE_API_KEY,
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY, 
   authDomain: "whrhs-cs-club.firebaseapp.com",
   databaseURL: "https://whrhs-cs-club-default-rtdb.firebaseio.com",
   projectId: "whrhs-cs-club",
