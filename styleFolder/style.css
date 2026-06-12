@@ -128,6 +128,23 @@
   }
   .btn-signin:hover { background: var(--primary); color: var(--primary-fg); }
 
+  .btn-profile {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 1px solid var(--primary);
+    background: var(--primary);
+    color: var(--primary-fg);
+    display: grid;
+    place-items: center;
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1;
+    transition: opacity 200ms;
+  }
+  .btn-profile:hover { opacity: 0.85; }
+
   .menu-btn {
     display: flex; padding: 8px;
     border: 1px solid var(--hairline);
