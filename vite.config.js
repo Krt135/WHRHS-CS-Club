@@ -6,7 +6,8 @@ export default defineConfig({
       input: {
         main: './index.html',
         events: './events.html',
-        auth: './auth.html' // Adjust path if auth.html is inside a folder
+        login: './login.html',
+        signup: './sign-up.html'
       }
     }
   }
