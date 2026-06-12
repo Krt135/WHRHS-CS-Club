@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your profile — WHRHS CS Club</title>
+    <style>
+        :root {
+            --bg: #0a0a0a;
+            --fg: #ffffff;
+            --primary: #c4f000;
+            --primary-fg: #000000;
+            --muted: #888888;
+            --border: #222222;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--fg);
+            font-family: system-ui, -apple-system, sans-serif;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        .font-mono { font-family: ui-monospace, SFMono-Regular, monospace; }
+        .font-display { font-family: system-ui, -apple-system, sans-serif; letter-spacing: -0.02em; }
+        .eyebrow { font-family: ui-monospace, monospace; font-size: 11px; text-transform: uppercase; letter-spacing: 0.2em; color: var(--muted); margin-bottom: 24px; }
+        
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+        
+        /* Header Section */
+        .profile-header { padding: 96px 0 64px 0; border-bottom: 1px solid var(--border); display: flex; gap: 24px; align-items: center; flex-wrap: wrap; }
+        .avatar { width: 112px; height: 112px; border: 1px solid var(--primary); color: var(--primary); font-size: 48px; display: grid; place-items: center; }
+        .user-titles h1 { font-size: 60px; font-weight: 400; margin: 0 0 12px 0; line-height: 1; }
+        .role-badge { border: 1px solid var(--primary); color: var(--primary); padding: 2px 6px; margin-left: 12px; }
+        
+        /* Main Grid */
+        .grid-layout { display: grid; grid-template-columns: 1fr; gap: 48px; padding: 64px 0; }
+        @media (min-width: 768px) { .grid-layout { grid-template-columns: 7fr 4fr; justify-content: space-between; } }
+        
+        /* Forms & Inputs */
+        .input-group { margin-bottom: 24px; }
+        .input-group label span { display: block; font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.2em; margin-bottom: 8px; }
+        input { width: 100%; max-width: 400px; background: transparent; border: none; border-bottom: 1px solid var(--border); color: var(--fg); padding: 8px 0; font-size: 16px; outline: none; transition: border-color 0.2s; }
+        input:focus { border-bottom-color: var(--primary); }
+        input:disabled { color: var(--muted); }
+        .help-text { display: block; font-size: 10px; color: var(--muted); margin-top: 8px; text-transform: uppercase; letter-spacing: 0.2em; }
+        
+        /* Buttons */
+        .btn { padding: 12px 20px; font-size: 12px; text-transform: uppercase; letter-spacing: 0.2em; cursor: pointer; border: 1px solid transparent; background: transparent; color: var(--fg); display: inline-flex; align-items: center; gap: 8px; text-decoration: none; }
+        .btn-primary { background-color: var(--primary); color: var(--primary-fg); border-color: var(--primary); }
+        .btn-outline { border-color: var(--border); }
+        .btn-outline:hover { border-color: var(--primary); color: var(--primary); }
+        .btn-admin { border-color: var(--primary); color: var(--primary); display: none; /* Hidden by default */ }
+        .btn-admin:hover { background-color: var(--primary); color: var(--primary-fg); }
+        
+        /* Account Info List */
+        dl { margin: 0; padding: 0; }
+        dt { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.2em; margin-bottom: 4px; }
+        dd { font-size: 12px; margin: 0 0 16px 0; color: var(--fg); word-break: break-all; }
+    </style>
+    <link rel ="stylesheet" href = "styleFolder/style.css">
+    <link rel="stylesheet" href = "styleFolder/index.css">
+    <script type="module" src="scriptFolder/header.js"></script>
+    <script type="module" src="scriptFolder/footer.js"></script>
+</head>
+<body>
+
+    <cs-header></cs-header>
+    <main class="container">
+        
+        <section class="profile-header">
+            <div style="width: 100%;"><p class="eyebrow">/ Account · 00</p></div>
+            <div class="avatar font-display" id="largeAvatar">?</div>
+            <div class="user-titles">
+                <h1 class="font-display" id="displayNameHeading">Loading...</h1>
+                <p class="font-mono eyebrow" style="margin: 0;">
+                    <span id="headerEmail">...</span>
+                    <span class="role-badge" id="headerRole">MEMBER</span>
+                </p>
+            </div>
+        </section>
+
+        <section class="grid-layout font-mono">
+            
+            <div class="edit-profile">
+                <p class="eyebrow">/ Edit profile</p>
+                
+                <div class="input-group">
+                    <label>
+                        <span>Display name</span>
+                        <input type="text" id="displayNameInput" placeholder="How you appear on the site">
+                    </label>
+                </div>
+
+                <div class="input-group">
+                    <label>
+                        <span>Email</span>
+                        <input type="email" id="emailInput" disabled>
+                        <span class="help-text">Contact an exec to change your email.</span>
+                    </label>
+                </div>
+
+                <div style="margin-top: 32px;">
+                    <button class="font-mono btn btn-primary" id="saveBtn">Save changes &rarr;</button>
+                </div>
+            </div>
+
+            <aside class="account-info">
+                <p class="eyebrow">/ Account</p>
+                <dl>
+                    <dt>Role</dt>
+                    <dd id="infoRole">&mdash;</dd>
+
+                    <dt>Member since</dt>
+                    <dd id="infoDate">&mdash;</dd>
+
+                    <dt>User ID</dt>
+                    <dd id="infoUid" style="font-size: 10px; color: var(--muted);">&mdash;</dd>
+                </dl>
+
+                <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 40px; align-items: flex-start;">
+                    <a href="admin.html" class="font-mono btn btn-admin" id="adminBtn">Admin &middot; Approve members &rarr;</a>
+                    
+                    <button class="font-mono btn btn-outline" id="signOutBtn">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                        Sign out
+                    </button>
+                </div>
+            </aside>
+
+        </section>
+    </main>
+    <cs-footer></cs-footer>
+
+    <script type="module" src="scriptFolder/account.js"></script>
+</body>
+</html>
