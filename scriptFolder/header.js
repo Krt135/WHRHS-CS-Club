@@ -28,7 +28,7 @@ class SpecialHeader extends HTMLElement {
                     <a href="index.html#sponsors" class="${isActive('sponsors')}"><span class="num">05</span>Sponsors</a>
                 </nav>
                 <div class="nav-right">
-                    <a href="auth.html" class="btn-signin">Sign in →</a>
+                    <a href="login.html" class="btn-signin">Sign in →</a>
                 </div>
                 <button class="menu-btn" id="menu-btn" aria-label="Toggle navigation">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 5h16M4 12h16M4 19h16"/></svg>
