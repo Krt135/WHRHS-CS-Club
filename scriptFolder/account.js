@@ -1,6 +1,7 @@
 import { initializeApp, getApps, getApp } from "firebase/app"; 
 import { getAuth, onAuthStateChanged, updateProfile, signOut } from "firebase/auth";
 import { getDatabase, ref, set, get } from "firebase/database";
+import { updateEmail } from "firebase/auth";
 
 // 1. Firebase Config
 const firebaseConfig = {
@@ -34,6 +35,7 @@ const infoUid = document.getElementById("infoUid");
 const saveBtn = document.getElementById("saveBtn");
 const adminBtn = document.getElementById("adminBtn");
 const signOutBtn = document.getElementById("signOutBtn");
+const emailEdit = document.getElementById("emailInput");
 
 // 3. Auth Listener & Data Fetcher
 onAuthStateChanged(auth, async (user) => {
@@ -72,10 +74,16 @@ onAuthStateChanged(auth, async (user) => {
                 infoDate.textContent = new Date(joined).toLocaleDateString();
             }
 
-            // --- ADMIN BUTTON LOGIC ---
-            // If they are an exec or admin, show the button!
-            if (role === "exec" || role === "admin") {
-                adminBtn.style.display = "inline-flex";
+            // --- EXEC / ADMIN PRIVILEGES ---
+        if (role === "exec" || role === "admin") {
+            adminBtn.style.display = "inline-flex";
+    
+    // Enable the input field so they can type inside it
+            emailInput.disabled = false; 
+    
+    // Optional: Hide or change the helper warning text if you want
+            const helpText = document.querySelector(".help-text");
+            if (helpText) helpText.textContent = "As an exec, you can update your official routing email.";
             }
         } else {
             // If they don't exist in the DB yet, create a default profile for them
@@ -98,24 +106,52 @@ saveBtn.addEventListener("click", async () => {
     if (!user) return;
 
     const newName = displayNameInput.value.trim();
+    const newEmail = emailInput.value.trim(); // Grab the email value
+    
     saveBtn.textContent = "Saving...";
+    saveBtn.disabled = true;
 
     try {
-        // Update Auth Profile
-        await updateProfile(user, { displayName: newName });
+        // 1. Update Display Name if it changed
+        if (newName !== user.displayName) {
+            await updateProfile(user, { displayName: newName });
+            await set(ref(db, `users/${user.uid}/displayName`), newName);
+        }
         
-        // Update Realtime Database
-        await set(ref(db, `users/${user.uid}/displayName`), newName);
+        // 2. Update Email if it changed (Only executes if the input is editable/changed)
+        if (newEmail && newEmail !== user.email) {
+            // Update the email credential inside Firebase Auth
+            await updateEmail(user, newEmail);
+            
+            // Sync it down to your Realtime Database tree structure
+            await set(ref(db, `users/${user.uid}/email`), newEmail);
+            
+            // Update top header email layout text
+            headerEmail.textContent = newEmail;
+        }
         
-        // Instantly update the visual UI
-        displayNameHeading.textContent = newName || user.email.split('@')[0];
-        largeAvatar.textContent = (newName || user.email || "?").charAt(0).toUpperCase();
+        // 3. Update top heading name layout
+        displayNameHeading.textContent = newName || newEmail.split('@')[0];
+        largeAvatar.textContent = (newName || newEmail || "?").charAt(0).toUpperCase();
         
         saveBtn.textContent = "Saved!";
-        setTimeout(() => saveBtn.textContent = "Save changes →", 2000);
+        setTimeout(() => {
+            saveBtn.textContent = "Save changes →";
+            saveBtn.disabled = false;
+        }, 2000);
+
     } catch (error) {
-        alert("Error saving: " + error.message);
+        console.error("Error updating profile:", error);
+        
+        // Handle security re-authentication requirements
+        if (error.code === "auth/requires-recent-login") {
+            alert("Security measure: Changing an email requires a fresh login. Please sign out, sign back in, and try again.");
+        } else {
+            alert("Error saving: " + error.message);
+        }
+        
         saveBtn.textContent = "Save changes →";
+        saveBtn.disabled = false;
     }
 });
 
