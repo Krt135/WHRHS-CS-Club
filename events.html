@@ -14,6 +14,7 @@
 <script type="module" src="scriptFolder/index.js" defer></script>
 <script type="module" src="scriptFolder/footer.js" defer></script>
 <script type="module" src = "scriptFolder/header.js" defer></script>
+<script type="module" src = "scriptFolder/events.js" defer></script>
 </head>
 <body>
 
@@ -124,7 +125,8 @@
 
   <!-- Competitive Programming -->
   <section>
-    <div class="comp-header">
+  <div class="comp-header" style="display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 16px;">
+    <div>
       <p class="eyebrow reveal">/ Competitive Programming</p>
       <div class="comp-header-copy">
         <h2 class="comp-heading reveal reveal-d1">Practice · Compete · Rank.</h2>
@@ -133,34 +135,67 @@
         </p>
       </div>
     </div>
-    <div class="comp-table">
-      <div class="comp-table-header">
-        <span class="comp-col-name">Competition</span>
-        <span class="comp-col-period">Period</span>
-        <span class="comp-col-result">Result</span>
-      </div>
-      <div class="comp-row reveal">
-        <span class="comp-col-name comp-name">USACO Bronze</span>
-        <span class="comp-col-period comp-period">Q4 2025</span>
-        <span class="comp-col-result comp-result">8 members promoted</span>
-      </div>
-      <div class="comp-row reveal reveal-d1">
-        <span class="comp-col-name comp-name">Codeforces Round 942</span>
-        <span class="comp-col-period comp-period">Jan 2027</span>
-        <span class="comp-col-result comp-result">Top WHRHS rank: 1,420</span>
-      </div>
-      <div class="comp-row reveal reveal-d2">
-        <span class="comp-col-name comp-name">PCCC HS Invitational</span>
-        <span class="comp-col-period comp-period">Nov 2025</span>
-        <span class="comp-col-result comp-result">5th place, novice div.</span>
-      </div>
-      <div class="comp-row reveal reveal-d3">
-        <span class="comp-col-name comp-name">Lockheed CodeQuest</span>
-        <span class="comp-col-period comp-period">Apr 2025</span>
-        <span class="comp-col-result comp-result">Regional finalists</span>
-      </div>
+    
+    <button id="addCompBtn" class="btn btn-primary font-mono reveal" style="display: none; height: fit-content;">+ Add Event</button>
+  </div>
+
+  <div class="comp-table">
+    <div class="comp-table-header">
+      <span class="comp-col-name">Competition</span>
+      <span class="comp-col-period">Period</span>
+      <span class="comp-col-result">Result</span>
     </div>
-  </section>
+    
+    <div id="compListContainer">
+       
+      </div>
+  </div>
+</section>
+
+<div id="deleteModal" class="modal-overlay" style="display: none;">
+  <div class="modal-content" style="background: #0a0a0a; border: 1px solid #333; padding: 32px; width: 100%; max-width: 400px;">
+    <h3 class="font-display" style="margin-bottom: 12px; color: #ff4444;">Delete Entry?</h3>
+    <p class="font-mono" style="font-size: 13px; color: var(--muted-fg); margin-bottom: 24px; line-height: 1.5;">
+      Are you sure you want to permanently remove this competition result from the site listing?
+    </p>
+    <div style="display: flex; gap: 12px;">
+      <button id="confirmDeleteBtn" class="btn font-mono" style="background: #ff4444; color: white;">Yes</button>
+      <button id="closeDeleteModalBtn" class="btn btn-outline font-mono">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div id="compModal" class="modal-overlay" style="display: none;">
+  <div class="modal-content" style="background: #0a0a0a; border: 1px solid #333; padding: 32px; width: 100%; max-width: 400px;">
+    <h3 class="font-display" style="margin-bottom: 24px;">Add Result</h3>
+    
+    <div class="input-group" style="margin-bottom: 16px;">
+      <label style="display: flex; flex-direction: column; width: 100%;">
+        <span>Competition Name</span>
+        <input type="text" id="compNameInput" placeholder="e.g. USACO Silver" style="background: transparent; border: none; border-bottom: 1px solid #333; color: white; padding: 8px 0; font-family: monospace; outline: none;">
+      </label>
+    </div>
+    
+    <div class="input-group" style="margin-bottom: 16px;">
+      <label style="display: flex; flex-direction: column; width: 100%;">
+        <span>Date / Period</span>
+        <input type="text" id="compDateInput" placeholder="e.g. Feb 2026" style="background: transparent; border: none; border-bottom: 1px solid #333; color: white; padding: 8px 0; font-family: monospace; outline: none;">
+      </label>
+    </div>
+    
+    <div class="input-group" style="margin-bottom: 24px;">
+      <label style="display: flex; flex-direction: column; width: 100%;">
+        <span>Result</span>
+        <input type="text" id="compResultInput" placeholder="e.g. 2 members promoted" style="background: transparent; border: none; border-bottom: 1px solid #333; color: white; padding: 8px 0; font-family: monospace; outline: none;">
+      </label>
+    </div>
+    
+    <div style="display: flex; gap: 12px;">
+      <button id="saveCompBtn" class="btn btn-primary font-mono">Save to list</button>
+      <button id="closeModalBtn" class="btn btn-outline font-mono">Cancel</button>
+    </div>
+  </div>
+</div>
 </main>
 
 <cs-footer></cs-footer>

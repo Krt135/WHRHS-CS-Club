@@ -188,22 +188,34 @@
   letter-spacing: -0.02em;
 }
 
+/* ==========================================================================
+   COMPETITIONS HEADER
+   ========================================================================== */
 .comp-header {
   display: grid;
   grid-template-columns: 1fr;
   gap: 32px;
   margin-bottom: 48px;
 }
+
 @media (min-width: 768px) {
-  .comp-header { grid-template-columns: repeat(12, 1fr); }
-  .comp-header .eyebrow { grid-column: span 3; }
-  .comp-header-copy { grid-column: span 7; }
+  .comp-header { 
+    grid-template-columns: repeat(12, 1fr); 
+  }
+  .comp-header .eyebrow { 
+    grid-column: span 3; 
+  }
+  .comp-header-copy { 
+    grid-column: span 7; 
+  }
 }
+
 .comp-heading {
   font-size: clamp(36px, 5vw, 60px);
   font-weight: 700;
   letter-spacing: -0.02em;
 }
+
 .comp-desc {
   margin-top: 24px;
   color: var(--muted-fg);
@@ -211,22 +223,11 @@
   line-height: 1.7;
 }
 
+/* ==========================================================================
+   UNIFIED COMPETITIONS TABLE SYSTEM
+   ========================================================================== */
 .comp-table {
   border: 1px solid var(--hairline);
-}
-.comp-table-header,
-.comp-row {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 8px;
-  padding: 24px 24px;
-}
-@media (min-width: 768px) {
-  .comp-table-header,
-  .comp-row { grid-template-columns: repeat(12, 1fr); gap: 0; }
-  .comp-col-name { grid-column: span 6; }
-  .comp-col-period { grid-column: span 3; }
-  .comp-col-result { grid-column: span 3; text-align: right; }
 }
 
 .comp-table-header {
@@ -235,24 +236,151 @@
   letter-spacing: 0.25em;
   text-transform: uppercase;
   color: var(--muted-fg);
+  padding-top: 14px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
+
 .comp-row {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  padding-top: 20px !important;   
+  padding-bottom: 20px !important;
   transition: background 200ms;
 }
-.comp-row:hover { background: var(--surface); }
-.comp-row:last-child { border-bottom: none; }
+
+.comp-row:hover { 
+  background: var(--surface); 
+}
+
+.comp-row:last-child { 
+  border-bottom: none; 
+}
+
+/* 📱 Mobile Layout (Under 768px): clean stack proportions */
+.comp-table-header,
+.comp-row {
+  display: grid !important;
+  grid-template-columns: 2fr 1fr 1fr !important;
+  align-items: center;
+  position: relative;
+  padding-left: 16px !important;
+  padding-right: 48px !important; /* Safely reserves space for the trash button */
+}
+
+/* 💻 Desktop Layout (768px and up): Snap precisely to your original 12-column grid tracks */
+@media (min-width: 768px) {
+  .comp-table-header,
+  .comp-row { 
+    grid-template-columns: repeat(12, 1fr) !important; 
+    gap: 0; 
+  }
+  .comp-col-name { 
+    grid-column: span 6; 
+  }
+  .comp-col-period { 
+    grid-column: span 3; 
+  }
+  .comp-col-result { 
+    grid-column: span 3; 
+  }
+}
+
+/* Typography Components */
 .comp-name {
   font-size: 18px;
   font-weight: 600;
   letter-spacing: -0.01em;
 }
+
 .comp-period {
   font-family: 'JetBrains Mono', ui-monospace, monospace;
   font-size: 14px;
   color: var(--muted-fg);
 }
+
 .comp-result {
   font-family: 'JetBrains Mono', ui-monospace, monospace;
   font-size: 14px;
   color: var(--primary);
+  text-align: right; /* Keeps results pinned elegantly to the right border */
+}
+
+/* Target the specific result text inside the header row */
+.comp-table-header .comp-col-result,
+.comp-table-header [class*="result"] {
+    text-align: right;
+    width: 100%; /* Ensures the element fills its entire grid track */
+}
+
+/* ==========================================================================
+   DASHBOARD MANAGEMENT (EXEC MODALS & TRASH TRIPPERS)
+   ========================================================================== */
+
+/* Absolute Positioned Trash Component */
+.delete-btn {
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  
+  background: transparent;
+  border: none;
+  color: #ff4444;
+  font-size: 14px;
+  cursor: pointer;
+  display: none; /* Safely hidden from general public/members */
+  opacity: 0.4;
+  padding: 4px;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  z-index: 5;
+}
+
+.delete-btn:hover {
+  opacity: 1;
+  transform: translateY(-50%) scale(1.15);
+}
+
+/* Class injected via script dynamically unlocking interface buttons */
+body.user-is-exec .delete-btn {
+  display: inline-flex;
+}
+
+/* Modal Overlay Engine */
+.modal-overlay {
+  position: fixed; 
+  inset: 0;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(4px);
+  display: flex; 
+  justify-content: center; 
+  align-items: center;
+  z-index: 9999;
+}
+
+.modal-content input:focus {
+  border-bottom-color: var(--primary);
+}
+
+/* Target the confirmation buttons inside your modal */
+.modal-content button,
+.modal-overlay button {
+    /* Option A: Force both buttons to have the same minimum width */
+    min-width: 90px; 
+    
+    /* Option B: Give them comfortable, equal horizontal padding */
+    padding: 8px 20px;
+    
+    /* Structural alignment cleanup */
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    border-radius: 4px; /* Optional: smooths out the edges to match your UI */
+    cursor: pointer;
+}
+
+/* If your "Yes" button has a specific class like .btn-danger or similar, 
+   make sure it overrides any default browser button squishing: */
+.modal-overlay button:first-of-type {
+    width: auto; /* Overrides any tight inline styles */
 }
