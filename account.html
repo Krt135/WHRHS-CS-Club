@@ -4,64 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Your profile — WHRHS CS Club</title>
-    <style>
-        :root {
-            --bg: #0a0a0a;
-            --fg: #ffffff;
-            --primary: #c4f000;
-            --primary-fg: #000000;
-            --muted: #888888;
-            --border: #222222;
-        }
-
-        body {
-            background-color: var(--bg);
-            color: var(--fg);
-            font-family: system-ui, -apple-system, sans-serif;
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        .font-mono { font-family: ui-monospace, SFMono-Regular, monospace; }
-        .font-display { font-family: system-ui, -apple-system, sans-serif; letter-spacing: -0.02em; }
-        .eyebrow { font-family: ui-monospace, monospace; font-size: 11px; text-transform: uppercase; letter-spacing: 0.2em; color: var(--muted); margin-bottom: 24px; }
-        
-        .container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
-        
-        /* Header Section */
-        .profile-header { padding: 96px 0 64px 0; border-bottom: 1px solid var(--border); display: flex; gap: 24px; align-items: center; flex-wrap: wrap; }
-        .avatar { width: 112px; height: 112px; border: 1px solid var(--primary); color: var(--primary); font-size: 48px; display: grid; place-items: center; }
-        .user-titles h1 { font-size: 60px; font-weight: 400; margin: 0 0 12px 0; line-height: 1; }
-        .role-badge { border: 1px solid var(--primary); color: var(--primary); padding: 2px 6px; margin-left: 12px; }
-        
-        /* Main Grid */
-        .grid-layout { display: grid; grid-template-columns: 1fr; gap: 48px; padding: 64px 0; }
-        @media (min-width: 768px) { .grid-layout { grid-template-columns: 7fr 4fr; justify-content: space-between; } }
-        
-        /* Forms & Inputs */
-        .input-group { margin-bottom: 24px; }
-        .input-group label span { display: block; font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.2em; margin-bottom: 8px; }
-        input { width: 100%; max-width: 400px; background: transparent; border: none; border-bottom: 1px solid var(--border); color: var(--fg); padding: 8px 0; font-size: 16px; outline: none; transition: border-color 0.2s; }
-        input:focus { border-bottom-color: var(--primary); }
-        input:disabled { color: var(--muted); }
-        .help-text { display: block; font-size: 10px; color: var(--muted); margin-top: 8px; text-transform: uppercase; letter-spacing: 0.2em; }
-        
-        /* Buttons */
-        .btn { padding: 12px 20px; font-size: 12px; text-transform: uppercase; letter-spacing: 0.2em; cursor: pointer; border: 1px solid transparent; background: transparent; color: var(--fg); display: inline-flex; align-items: center; gap: 8px; text-decoration: none; }
-        .btn-primary { background-color: var(--primary); color: var(--primary-fg); border-color: var(--primary); }
-        .btn-outline { border-color: var(--border); }
-        .btn-outline:hover { border-color: var(--primary); color: var(--primary); }
-        .btn-admin { border-color: var(--primary); color: var(--primary); display: none; /* Hidden by default */ }
-        .btn-admin:hover { background-color: var(--primary); color: var(--primary-fg); }
-        
-        /* Account Info List */
-        dl { margin: 0; padding: 0; }
-        dt { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.2em; margin-bottom: 4px; }
-        dd { font-size: 12px; margin: 0 0 16px 0; color: var(--fg); word-break: break-all; }
-    </style>
     <link rel ="stylesheet" href = "styleFolder/style.css">
     <link rel="stylesheet" href = "styleFolder/index.css">
+    <link rel="stylesheet" href = "styleFolder/account.css">
     <script type="module" src="scriptFolder/header.js"></script>
     <script type="module" src="scriptFolder/footer.js"></script>
 </head>

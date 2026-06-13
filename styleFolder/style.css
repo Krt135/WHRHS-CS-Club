@@ -8,6 +8,9 @@
     --border: oklch(30% 0.007 240);
     --hairline: oklch(100% 0 0 / 8%);
     --radius-sm: 2px;
+    --muted: #888888;
+    --bg: #0a0a0a;
+    --fg: #ffffff;
   }
 
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -234,3 +237,10 @@
   .reveal-d1 { transition-delay: 80ms; }
   .reveal-d2 { transition-delay: 160ms; }
   .reveal-d3 { transition-delay: 240ms; }
+
+  /* If a page doesn't run the home page scroll-reveal engine, 
+   ensure elements don't stay hidden forever */
+.reveal {
+    opacity: 1 !important;
+    transform: none !important;
+}
