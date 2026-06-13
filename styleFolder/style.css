@@ -237,10 +237,3 @@
   .reveal-d1 { transition-delay: 80ms; }
   .reveal-d2 { transition-delay: 160ms; }
   .reveal-d3 { transition-delay: 240ms; }
-
-  /* If a page doesn't run the home page scroll-reveal engine, 
-   ensure elements don't stay hidden forever */
-.reveal {
-    opacity: 1 !important;
-    transform: none !important;
-}

@@ -43,3 +43,37 @@ body {
         dl { margin: 0; padding: 0; }
         dt { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.2em; margin-bottom: 4px; }
         dd { font-size: 12px; margin: 0 0 16px 0; color: var(--fg); word-break: break-all; }
+
+        /* ── BIO TEXTAREA STYLING ── */
+.input-group textarea {
+    width: 100%;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--hairline);
+    color: #ffffff;
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 14px;
+    padding: 8px 0;
+    margin-top: 4px;
+    outline: none;
+    resize: vertical; /* Prevents users from breaking your layout horizontally */
+    min-height: 80px;
+    transition: border-color 0.2s ease;
+}
+
+/* Match focus states of standard text inputs */
+.input-group textarea:focus {
+    border-bottom-color: var(--primary);
+}
+
+/* Style the placeholder text to match your inputs */
+.input-group textarea::placeholder {
+    color: var(--muted);
+    opacity: 0.5;
+}
+
+.input-group label {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}

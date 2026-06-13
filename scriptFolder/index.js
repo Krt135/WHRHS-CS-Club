@@ -9,27 +9,36 @@ const observer = new IntersectionObserver((entries) => {
     if (el.closest('.hero')) el.classList.add('in');
   });
 
-  function updateCountdown() {
-    const target = new Date('2026-03-21T11:00:00');
-    const diff = target - new Date();
-    const el = document.getElementById('days');
-    if (!el) return;
-    el.textContent = diff <= 0 ? '0' : Math.floor(diff / 86400000);
-  }
-  updateCountdown();
-  setInterval(updateCountdown, 60000);
+  
+  //JS for Countdown in index.html
+  document.addEventListener("DOMContentLoaded", () => {
+    // 1. Grab the HTML element where the number lives
+    const daysElement = document.getElementById("days");
+    
+    // Only run if the element actually exists on this page
+    if (daysElement) {
+        // 2. Set your exact target date and time
+        const targetDate = new Date("March 21, 2027 11:00:00").getTime();
 
-  const menuBtn = document.getElementById('menu-btn');
-  const mobileNav = document.getElementById('mobile-nav');
+        function updateCountdown() {
+            const now = new Date().getTime();
+            const difference = targetDate - now;
 
-  if (menuBtn && mobileNav) {
-    menuBtn.addEventListener('click', () => {
-      mobileNav.classList.toggle('open');
-    });
+            if (difference > 0) {
+                // Calculate days remaining. Math.ceil ensures that even if there is 
+                // 0.5 days left, it says "1d" until the actual morning of the event.
+                const daysLeft = Math.ceil(difference / (1000 * 60 * 60 * 24));
+                daysElement.textContent = daysLeft;
+            } else {
+                // Event is happening now or has passed
+                daysElement.textContent = "0";
+            }
+        }
 
-    mobileNav.querySelectorAll('a').forEach(link => {
-      link.addEventListener('click', () => {
-        mobileNav.classList.remove('open');
-      });
-    });
-  }
+        // 3. Run it immediately when the page loads
+        updateCountdown();
+
+        // 4. Update it silently in the background (checks once an hour)
+        setInterval(updateCountdown, 1000 * 60 * 60);
+    }
+});

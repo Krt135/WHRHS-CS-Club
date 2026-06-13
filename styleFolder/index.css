@@ -240,15 +240,20 @@
     display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(3, 1fr);
   }
   .countdown-cells > div { border: 1px solid var(--hairline); }
-  .countdown-content {
+.countdown-content {
     position: absolute; inset: 0;
-    display: grid; place-items: center;
+    display: flex;             
+    flex-direction: column;   
+    justify-content: center;   
+    align-items: center;       
     text-align: center;
+    gap: 8px;                  
   }
-  .countdown-label {
+.countdown-label {
     font-family: 'JetBrains Mono', ui-monospace, monospace;
     font-size: 12px; letter-spacing: 0.3em;
-    color: var(--muted-fg); margin-bottom: 8px;
+    color: var(--muted-fg); 
+    margin-bottom: 0;          
     text-transform: uppercase;
   }
   .countdown-number {

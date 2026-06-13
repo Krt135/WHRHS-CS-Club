@@ -4,7 +4,7 @@ class SpecialFooter extends HTMLElement {
             <footer>
   <div class="footer-main">
     <p class="eyebrow">/ Footer · 00</p>
-    <h2 class="footer-headline reveal">
+    <h2 class="footer-headline">
       Build with us.<br>
       <span class="dim">Or sponsor what we build.</span>
     </h2>

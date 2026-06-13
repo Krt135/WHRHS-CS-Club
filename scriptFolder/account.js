@@ -37,6 +37,9 @@ const adminBtn = document.getElementById("adminBtn");
 const signOutBtn = document.getElementById("signOutBtn");
 const emailEdit = document.getElementById("emailInput");
 
+const bioInput = document.getElementById("bioInput");
+const phoneInput = document.getElementById("phoneInput");
+
 // 3. Auth Listener & Data Fetcher
 onAuthStateChanged(auth, async (user) => {
     if (!user) {
@@ -65,6 +68,11 @@ onAuthStateChanged(auth, async (user) => {
             const data = snapshot.val();
             const role = data.role || "member";
             const joined = data.createdAt || "—";
+
+            const bio = data.bio || "";
+            const phone = data.phone || "";
+            if (bioInput) bioInput.value = bio;
+            if (phoneInput) phoneInput.value = phone;
 
             // Update UI with DB data
             headerRole.textContent = role.toUpperCase();
@@ -106,7 +114,11 @@ saveBtn.addEventListener("click", async () => {
     if (!user) return;
 
     const newName = displayNameInput.value.trim();
-    const newEmail = emailInput.value.trim(); // Grab the email value
+    const newEmail = emailInput.value.trim();
+    
+    // --- NEW: Grab the bio and phone values ---
+    const newBio = bioInput.value.trim();
+    const newPhone = phoneInput.value.trim();
     
     saveBtn.textContent = "Saving...";
     saveBtn.disabled = true;
@@ -118,19 +130,18 @@ saveBtn.addEventListener("click", async () => {
             await set(ref(db, `users/${user.uid}/displayName`), newName);
         }
         
-        // 2. Update Email if it changed (Only executes if the input is editable/changed)
+        // 2. Update Email if it changed
         if (newEmail && newEmail !== user.email) {
-            // Update the email credential inside Firebase Auth
             await updateEmail(user, newEmail);
-            
-            // Sync it down to your Realtime Database tree structure
             await set(ref(db, `users/${user.uid}/email`), newEmail);
-            
-            // Update top header email layout text
             headerEmail.textContent = newEmail;
         }
+
+        // --- NEW: 3. Save Bio and Phone to the Database ---
+        await set(ref(db, `users/${user.uid}/bio`), newBio);
+        await set(ref(db, `users/${user.uid}/phone`), newPhone);
         
-        // 3. Update top heading name layout
+        // 4. Update top heading name layout
         displayNameHeading.textContent = newName || newEmail.split('@')[0];
         largeAvatar.textContent = (newName || newEmail || "?").charAt(0).toUpperCase();
         

@@ -1,22 +1,26 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Your profile — WHRHS CS Club</title>
-    <link rel ="stylesheet" href = "styleFolder/style.css">
-    <link rel="stylesheet" href = "styleFolder/index.css">
-    <link rel="stylesheet" href = "styleFolder/account.css">
+    <link rel="stylesheet" href="styleFolder/style.css">
+    <link rel="stylesheet" href="styleFolder/index.css">
+    <link rel="stylesheet" href="styleFolder/account.css">
     <script type="module" src="scriptFolder/header.js"></script>
     <script type="module" src="scriptFolder/footer.js"></script>
 </head>
+
 <body>
 
     <cs-header></cs-header>
     <main class="container">
-        
+
         <section class="profile-header">
-            <div style="width: 100%;"><p class="eyebrow">/ Account · 00</p></div>
+            <div style="width: 100%;">
+                <p class="eyebrow">/ Account · 00</p>
+            </div>
             <div class="avatar font-display" id="largeAvatar">?</div>
             <div class="user-titles">
                 <h1 class="font-display" id="displayNameHeading">Loading...</h1>
@@ -28,10 +32,10 @@
         </section>
 
         <section class="grid-layout font-mono">
-            
+
             <div class="edit-profile">
                 <p class="eyebrow">/ Edit profile</p>
-                
+
                 <div class="input-group">
                     <label>
                         <span>Display name</span>
@@ -44,6 +48,20 @@
                         <span>Email</span>
                         <input type="email" id="emailInput" disabled>
                         <span class="help-text">Contact an exec to change your email.</span>
+                    </label>
+                </div>
+
+                <div class="input-group">
+                    <label>
+                        <span>Bio</span>
+                        <textarea id="bioInput" rows="3" placeholder="A little bit about yourself..."></textarea>
+                    </label>
+                </div>
+
+                <div class="input-group">
+                    <label>
+                        <span>Phone Number</span>
+                        <input type="tel" id="phoneInput" placeholder="(123) 456-7890">
                     </label>
                 </div>
 
@@ -65,11 +83,18 @@
                     <dd id="infoUid" style="font-size: 10px; color: var(--muted);">&mdash;</dd>
                 </dl>
 
-                <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 40px; align-items: flex-start;">
-                    <a href="admin.html" class="font-mono btn btn-admin" id="adminBtn">Admin &middot; Approve members &rarr;</a>
-                    
+                <div
+                    style="display: flex; flex-direction: column; gap: 12px; margin-top: 40px; align-items: flex-start;">
+                    <a href="admin.html" class="font-mono btn btn-admin" id="adminBtn">Admin &middot; Approve members
+                        &rarr;</a>
+
                     <button class="font-mono btn btn-outline" id="signOutBtn">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                            <polyline points="16 17 21 12 16 7"></polyline>
+                            <line x1="21" y1="12" x2="9" y2="12"></line>
+                        </svg>
                         Sign out
                     </button>
                 </div>
@@ -81,4 +106,5 @@
 
     <script type="module" src="scriptFolder/account.js"></script>
 </body>
+
 </html>
