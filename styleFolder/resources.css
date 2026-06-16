@@ -494,3 +494,124 @@
 .reveal-d1 { transition-delay: 80ms; }
 .reveal-d2 { transition-delay: 160ms; }
 .reveal-d3 { transition-delay: 240ms; }
+
+/* Delete Action Styling */
+.res-action {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+}
+
+.btn-delete-resource {
+    background: transparent;
+    border: none;
+    color: var(--muted, #666666);
+    cursor: pointer;
+    padding: 6px;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+.btn-delete-resource:hover {
+    color: #ff3333; /* Highlights warning red on hover */
+    background-color: rgba(255, 51, 51, 0.1);
+}
+
+/* Ensure the delete button is totally hidden on tight mobile screens */
+@media (max-width: 600px) {
+    .res-action {
+        display: none;
+    }
+}
+
+/* By default, hide all executive control layout blocks */
+.exec-only {
+    display: none !important;
+}
+
+/* Only show them if the master HTML wrapper verifies an exec role is active */
+.is-exec-user .exec-only {
+    display: flex !important;
+}
+
+/* ==========================================================================
+   ESSAY DRAWER STYLING
+   ========================================================================== */
+.btn-read-essay {
+    background: transparent;
+    border: none;
+    color: var(--foreground);
+    text-align: left;
+    font-family: inherit;
+    font-size: inherit;
+    cursor: pointer;
+    text-decoration: underline;
+    text-underline-offset: 4px;
+    transition: color 0.2s ease;
+}
+
+.essay-inner-content {
+    /* Aligns the text flush with the title column (skips the index and icon) */
+    margin: 20px 0 20px 110px; 
+    max-width: 800px;
+    padding-top: 24px;
+    border-top: 1px dashed #333333;
+    color: #cccccc;
+    line-height: 1.7;
+    font-size: 15px;
+}
+
+.essay-heading {
+    color: #ffffff;
+    font-family: 'Space Grotesk', system-ui, sans-serif;
+    font-weight: 500;
+    font-size: 20px;
+    margin: 32px 0 16px 0;
+}
+
+.essay-paragraph {
+    margin-bottom: 16px;
+}
+
+.essay-example-box {
+    background: #111111;
+    border-left: 3px solid #a3ff00;
+    padding: 16px 20px;
+    margin: 24px 0;
+    border-radius: 0 4px 4px 0;
+    font-size: 14px;
+    color: #aaaaaa;
+}
+
+.essay-example-box strong {
+    color: #a3ff00;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+.lesson-modal {
+    max-width: 800px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+    padding: 40px;
+    background: #000; /* Match your dark theme */
+    border: 1px solid #333;
+}
+
+/* Ensure the modal overlay behaves like your existing ones */
+.modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.8);
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal-overlay.open {
+    display: flex;
+}

@@ -2,16 +2,14 @@ import { initializeApp } from "firebase/app";
 import {
     getAuth,
     onAuthStateChanged,
-    createUserWithEmailAndPassword,
-    updateProfile,
-    GoogleAuthProvider,
-    signInWithPopup
 } from "firebase/auth";
-import {
-    getDatabase,
-    ref,
-    set,
-    serverTimestamp
+import { 
+    getDatabase, 
+    ref, 
+    push, 
+    onValue,
+    remove,
+    serverTimestamp 
 } from "firebase/database";
 
 const firebaseConfig = {
@@ -28,6 +26,15 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getDatabase(app);
+
+// ==========================================================================
+// ESSAY TEXT PARSERS
+// ==========================================================================
+
+function esc(s) {
+    // Sanitizes text to prevent accidental HTML code injection
+    return String(s || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+}
 
 // ==========================================================================
 // 1. REVEAL SYSTEM TRIGGER ENGINE
@@ -49,6 +56,7 @@ document.addEventListener("DOMContentLoaded", () => {
 // ==========================================================================
 const lectureModal = document.getElementById("lectureModal");
 const linkModal = document.getElementById("linkModal");
+const lessonModal = document.getElementById("lessonModal"); // Overlay viewer block target
 
 const btnOpenLecture = document.getElementById("btn-open-lecture-modal");
 const btnOpenLink = document.getElementById("btn-open-link-modal");
@@ -77,6 +85,7 @@ closeButtons.forEach((btn) => {
         e.preventDefault();
         lectureModal.style.display = "none";
         linkModal.style.display = "none";
+        if (lessonModal) lessonModal.classList.remove("open");
     });
 });
 
@@ -84,6 +93,7 @@ closeButtons.forEach((btn) => {
 window.addEventListener("click", (e) => {
     if (e.target === lectureModal) lectureModal.style.display = "none";
     if (e.target === linkModal) linkModal.style.display = "none";
+    if (e.target === lessonModal) lessonModal.classList.remove("open");
 });
 
 // ==========================================================================
@@ -129,19 +139,6 @@ if (formatVideoRadio && formatTextRadio) {
 // ==========================================================================
 const filterButtons = document.querySelectorAll(".filter-btn");
 
-filterButtons.forEach((btn) => {
-    btn.addEventListener("click", () => {
-        // Remove active layout tracking from old focus
-        document.querySelector(".filter-btn.active")?.classList.remove("active");
-        // Append active styling status to target element
-        btn.classList.add("active");
-
-        const targetFilter = btn.getAttribute("data-filter");
-        console.log(`Filtering data elements view by: ${targetFilter}`);
-        // Filtering logic connected to Firebase rendering goes here next...
-    });
-});
-
 const formAddLecture = document.getElementById("form-add-lecture");
 const formAddLink = document.getElementById("form-add-link");
 const resourceListContainer = document.getElementById("resource-list");
@@ -152,28 +149,25 @@ let globalResources = []; // Stores the raw data so we can filter it instantly
 if (formAddLecture) {
     formAddLecture.addEventListener("submit", async (e) => {
         e.preventDefault();
-
+        
         const isVideo = document.getElementById("format-video").checked;
-
         const newLecture = {
             type: "lecture",
             title: document.getElementById("lec-title").value,
             tag: document.getElementById("lec-tag").value,
-            meta: document.getElementById("lec-meta").value, // e.g., "S. Liu · 24 min"
+            meta: document.getElementById("lec-meta").value,
             format: isVideo ? "video" : "text",
             content: isVideo ? document.getElementById("lec-url").value : document.getElementById("lec-text").value,
-            timestamp: Date.now()
+            createdAt: serverTimestamp()
         };
 
         try {
-            // Assuming 'db' is your initialized Realtime Database
-            // push(ref(db, 'resources'), newLecture);
-            console.log("Lecture saved!", newLecture);
-
-            // Close modal and reset form
+            await push(ref(db, 'resources'), newLecture);
+            console.log("Lecture saved!");
+            
             lectureModal.style.display = "none";
             formAddLecture.reset();
-            handleFormatToggle(); // Resets the dynamic input field
+            handleFormatToggle(); // Resets the input/textarea visibility perfectly
         } catch (error) {
             console.error("Error saving lecture:", error);
         }
@@ -184,20 +178,20 @@ if (formAddLecture) {
 if (formAddLink) {
     formAddLink.addEventListener("submit", async (e) => {
         e.preventDefault();
-
+        
         const newLink = {
             type: "link",
             title: document.getElementById("link-title").value,
             tag: document.getElementById("link-tag").value,
-            meta: document.getElementById("link-type").value, // e.g., "Reference"
+            meta: document.getElementById("link-type").value,
             url: document.getElementById("link-url").value,
-            timestamp: Date.now()
+            createdAt: serverTimestamp() // Smooth server synced time token
         };
 
         try {
-            // push(ref(db, 'resources'), newLink);
-            console.log("Link saved!", newLink);
-
+            await push(ref(db, 'resources'), newLink);
+            console.log("Link saved!");
+            
             linkModal.style.display = "none";
             formAddLink.reset();
         } catch (error) {
@@ -206,32 +200,47 @@ if (formAddLink) {
     });
 }
 
-// --- RENDERING STRATEGY ---
+// ==========================================================================
+// 5. RENDERING STRATEGY
+// ==========================================================================
 
 // Function to generate the HTML for a single row
 function createResourceHTML(item, index) {
-    // Determine icon based on type/format
-    let iconSvg = '';
-    if (item.type === "link") {
-        iconSvg = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>`;
-    } else if (item.format === "video") {
-        iconSvg = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>`;
-    } else {
-        iconSvg = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>`;
-    }
+  let iconSvg = '';
+  if (item.type === "link") {
+    iconSvg = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>`;
+  } else if (item.format === "video") {
+    iconSvg = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>`;
+  } else {
+    iconSvg = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>`;
+  }
 
-    // Calculate standard sequence delays for the reveal animation (.reveal-d1, d2, d3)
-    const delayClass = `reveal-d${(index % 3) + 1}`;
-    const indexDisplay = String(index + 1).padStart(2, '0');
+  const delayClass = `reveal-d${(index % 3) + 1}`; 
+  const indexDisplay = String(index + 1).padStart(2, '0');
+  
+  const isText = item.format === "text";
+  let titleHtml = '';
 
-    return `
-    <div class="resource-row reveal ${delayClass}">
+  // 🌟 FIX: Checked & refactored to cleanly support full page overlay triggers
+  if (isText) {
+    titleHtml = `<button class="res-title btn-read-essay" title="Read Essay">${item.title}</button>`;
+  } else {
+    titleHtml = `<a href="${item.content || item.url}" target="_blank" class="res-title">${item.title}</a>`;
+  }
+
+  return `
+    <div class="resource-row reveal ${delayClass}" data-id="${item.id}">
       <div class="res-index">${indexDisplay}</div>
       <div class="res-icon">${iconSvg}</div>
-      <a href="${item.content || item.url}" target="_blank" class="res-title">${item.title}</a>
+      ${titleHtml}
       <div class="res-tag">${item.tag}</div>
       <div class="res-meta">${item.meta}</div>
-      <div class="res-action"></div> </div>
+      <div class="res-action exec-only">
+        <button class="btn-delete-resource" title="Delete Resource">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+        </button>
+      </div>
+    </div>
   `;
 }
 
@@ -256,9 +265,123 @@ function renderList(dataArray) {
     }, 50);
 }
 
-// --- FILTERING LOGIC ---
+// ==========================================================================
+// 6. 🌟 FULL SCREEN OVERLAY ENGINE (FIXED LOGIC)
+// ==========================================================================
+function showLesson(firebaseKey) {
+  // 1. Parse and build the data inside the window layout first
+  renderLesson(firebaseKey); 
+  
+  // 2. Open the overlay view modal cleanly
+  const modal = document.getElementById("lessonModal");
+  if (modal) {
+      modal.classList.add("open");
+  }
+}
 
-// Updates the view when a filter button is clicked
+function renderLesson(firebaseKey) {
+  // FIX: Look inside the accurate data array tracked dynamically from Realtime Database
+  const l = globalResources.find(item => item.id === firebaseKey); 
+  if (!l) return;
+
+  function parseContent(raw) {
+    return (raw || "").split(/\n\n+/).map(para => {
+      para = para.trim();
+      // Handle === Headers ===
+      if (para.startsWith("===")) {
+        const h = para.replace(/^===\s*/, "").replace(/\s*===$/, "");
+        return `<h3 class="essay-heading">${esc(h)}</h3>`;
+      }
+      // Handle [EXAMPLE] Boxes [/EXAMPLE]
+      if (para.startsWith("[EXAMPLE]")) {
+        const inner = para.replace("[EXAMPLE]", "").replace("[/EXAMPLE]", "").trim();
+        return `<div class="essay-example-box"><strong>EXAMPLE</strong><br>${esc(inner)}</div>`;
+      }
+      // Standard paragraph
+      return `<p class="essay-paragraph">${esc(para)}</p>`;
+    }).join("");
+  }
+
+  const container = document.getElementById("lessonBody");
+  if (!container) return;
+  
+  container.innerHTML = `
+    <div class="lesson-content-wrapper">
+        <h1 class="essay-title">${esc(l.title)}</h1>
+        <div class="lesson-meta">Tag: ${esc(l.tag)} · Meta: ${esc(l.meta)}</div>
+        <div class="lesson-divider"></div>
+        <div class="lesson-text">
+            ${parseContent(l.content)}
+        </div>
+    </div>
+  `;
+}
+
+// ==========================================================================
+// 7. EVENT DELEGATION LISTENER
+// ==========================================================================
+resourceListContainer.addEventListener("click", async (e) => {
+    
+    // 1. FIX: Hand off execution to full-screen overlay routing layer
+    const readBtn = e.target.closest(".btn-read-essay");
+    if (readBtn) {
+        const row = readBtn.closest(".resource-row");
+        const resourceId = row.getAttribute("data-id");
+        
+        if (resourceId) {
+            showLesson(resourceId);
+        }
+        return; 
+    }
+
+    // 2. Check for Delete Button Click (Existing Logic)
+    const deleteBtn = e.target.closest(".btn-delete-resource");
+    if (!deleteBtn) return;
+
+    const row = deleteBtn.closest(".resource-row");
+    const resourceId = row.getAttribute("data-id");
+
+    if (!resourceId) return;
+
+    const confirmDelete = confirm("Are you sure you want to permanently remove this resource?");
+    if (!confirmDelete) return;
+
+    try {
+        await remove(ref(db, `resources/${resourceId}`));
+        console.log(`Resource ${resourceId} successfully deleted!`);
+    } catch (error) {
+        console.error("Error deleting resource from Firebase:", error);
+        alert("Failed to delete resource. Check your permissions.");
+    }
+});
+
+// ==========================================================================
+// EXEC / ADMIN ROLE VISIBILITY CONTROLLER
+// ==========================================================================
+onAuthStateChanged(auth, (user) => {
+    const execElements = document.querySelectorAll(".exec-only");
+
+    if (user) {
+        const userRoleRef = ref(db, `users/${user.uid}/role`);
+        
+        onValue(userRoleRef, (snapshot) => {
+            const role = snapshot.val();
+            
+            if (role === "exec" || role === "admin") {
+                execElements.forEach(el => el.style.display = "flex");
+                document.documentElement.classList.add("is-exec-user");
+            } else {
+                execElements.forEach(el => el.style.display = "none");
+                document.documentElement.classList.remove("is-exec-user");
+            }
+        });
+    } else {
+        execElements.forEach(el => el.style.display = "none");
+        document.documentElement.classList.remove("is-exec-user");
+    }
+});
+
+// --- FILTERING LOGIC ---
 function applyFilter(filterType) {
     if (filterType === "all") {
         renderList(globalResources);
@@ -268,24 +391,65 @@ function applyFilter(filterType) {
     }
 }
 
-// Override the filter button listener from the previous step
+// ==========================================================================
+// LIVE SEARCH ENGINE FILTER
+// ==========================================================================
+const searchInput = document.getElementById("resource-search");
+
+function performSearchAndFilter() {
+    const activeFilterBtn = document.querySelector(".filter-btn.active");
+    const currentCategory = activeFilterBtn ? activeFilterBtn.getAttribute("data-filter") : "all";
+    const query = searchInput.value.toLowerCase().trim();
+
+    const filteredResults = globalResources.filter(item => {
+        const matchesCategory = (currentCategory === "all" || item.type === currentCategory);
+        
+        const itemTitle = (item.title || "").toLowerCase();
+        const itemTag = (item.tag || "").toLowerCase();
+        const itemMeta = (item.meta || "").toLowerCase();
+        
+        const matchesSearch = itemTitle.includes(query) || 
+                              itemTag.includes(query) || 
+                              itemMeta.includes(query);
+
+        return matchesCategory && matchesSearch;
+    });
+
+    renderList(filteredResults);
+}
+
+if (searchInput) {
+    searchInput.addEventListener("input", performSearchAndFilter);
+}
+
 filterButtons.forEach((btn) => {
     btn.addEventListener("click", () => {
         document.querySelector(".filter-btn.active")?.classList.remove("active");
         btn.classList.add("active");
-
-        const targetFilter = btn.getAttribute("data-filter");
-        applyFilter(targetFilter);
+        performSearchAndFilter();
     });
 });
 
-// --- MOCK DATA LOAD (Replace with your Firebase 'onValue' listener) ---
-// This simulates fetching data from Firebase so you can test the layout immediately.
-setTimeout(() => {
-    globalResources = [
-        { type: "lecture", title: "Introduction to React Hooks", tag: "Frontend", meta: "S. Liu · 24 min", format: "video", url: "#" },
-        { type: "link", title: "Web3Schools: CSS Grid Guide", tag: "Design", meta: "Reference", url: "#" },
-        { type: "lecture", title: "Data Structures: Linked Lists", tag: "Backend", meta: "M. Chen · Text", format: "text", url: "#" }
-    ];
-    renderList(globalResources);
-}, 500); // 500ms delay to simulate network request
+// --- LIVE FIREBASE LISTENER ---
+const resourcesRef = ref(db, 'resources');
+
+onValue(resourcesRef, (snapshot) => {
+    const data = snapshot.val();
+    
+    if (data) {
+        globalResources = Object.keys(data).map(key => ({
+            id: key, 
+            ...data[key]
+        }));
+        
+        renderList(globalResources);
+    } else {
+        resourceListContainer.innerHTML = `
+            <div class="empty-state reveal in" style="text-align: center; padding: 60px 0; color: #444;">
+                <p style="font-family: monospace;">// No resources currently available.</p>
+                <p style="font-size: 12px; margin-top: 10px;">Check back later or add one above.</p>
+            </div>
+        `;
+        resultCountBadge.textContent = "0 RESULTS";
+    }
+});
