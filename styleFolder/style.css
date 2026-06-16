@@ -237,3 +237,17 @@
   .reveal-d1 { transition-delay: 80ms; }
   .reveal-d2 { transition-delay: 160ms; }
   .reveal-d3 { transition-delay: 240ms; }
+
+  /* Keeps the mobile account text and initial bubble aligned side-by-side */
+#mobile-auth-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px; /* Adds clean spacing between 'Account ·' and the circle */
+}
+
+/* Ensures the profile circle displays correctly as a span tag too */
+#mobile-auth-link .btn-profile {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}

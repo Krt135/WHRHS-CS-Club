@@ -16,7 +16,7 @@ class SpecialFooter extends HTMLElement {
       <a href="index.html#about">→ About</a>
       <a href="index.html#projects">→ Projects</a>
       <a href="events.html">→ Events</a>
-      <a href="index.html#resources">→ Resources</a>
+      <a href="resources.html">→ Resources</a>
       <a href="index.html#sponsors">→ Sponsors</a>
     </nav>
   </div>

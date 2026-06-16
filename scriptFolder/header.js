@@ -34,9 +34,10 @@ function updateAuthButtons(root, user) {
       navAuth.innerHTML = `<a href="account.html" class="btn-profile" aria-label="Your account">${initial}</a>`;
     }
 
+    /* 🌟 FIX: Injecting the inner bubble wrapper safely via innerHTML */
     if (mobileAuth) {
       mobileAuth.href = "account.html";
-      mobileAuth.textContent = `Account · ${initial}`;
+      mobileAuth.innerHTML = `Account · <span class="btn-profile">${initial}</span>`;
     }
   } else {
     if (navAuth) {
@@ -45,7 +46,7 @@ function updateAuthButtons(root, user) {
 
     if (mobileAuth) {
       mobileAuth.href = "login.html";
-      mobileAuth.textContent = "Sign in →";
+      mobileAuth.innerHTML = "Sign in →";
     }
   }
 }
@@ -74,7 +75,7 @@ class SpecialHeader extends HTMLElement {
                     <a href="index.html#about" class="${isActive("about")}"><span class="num">01</span>About</a>
                     <a href="index.html#projects" class="${isActive("projects")}"><span class="num">02</span>Projects</a>
                     <a href="events.html" class="${isActive("events")}"><span class="num">03</span>Events</a>
-                    <a href="index.html#resources" class="${isActive("resources")}"><span class="num">04</span>Resources</a>
+                    <a href="resources.html" class="${isActive("resources")}"><span class="num">04</span>Resources</a>
                     <a href="index.html#sponsors" class="${isActive("sponsors")}"><span class="num">05</span>Sponsors</a>
                 </nav>
                 <div class="nav-right" id="nav-auth">
@@ -89,11 +90,27 @@ class SpecialHeader extends HTMLElement {
                 <a href="index.html#about" class="${isActive("about")}">01 About</a>
                 <a href="index.html#projects" class="${isActive("projects")}">02 Projects</a>
                 <a href="events.html" class="${isActive("events")}">03 Events</a>
-                <a href="index.html#resources" class="${isActive("resources")}">04 Resources</a>
+                <a href="resources.html" class="${isActive("resources")}">04 Resources</a>
                 <a href="index.html#sponsors" class="${isActive("sponsors")}">05 Sponsors</a>
                 <a href="login.html" id="mobile-auth-link">Sign in →</a>
             </nav>
         `;
+
+    /* ==========================================================================
+       🌟 ADDED: MOBILE MENU INTERACTIVE TOGGLE
+       ========================================================================== */
+    const menuBtn = this.querySelector("#menu-btn");
+    const mobileNav = this.querySelector("#mobile-nav");
+
+    if (menuBtn && mobileNav) {
+      menuBtn.addEventListener("click", () => {
+        mobileNav.classList.toggle("open");
+        
+        // Optional: Updates accessibility states dynamically
+        const isExpanded = mobileNav.classList.contains("open");
+        menuBtn.setAttribute("aria-expanded", isExpanded);
+      });
+    }
 
     onAuthStateChanged(auth, (user) => {
       updateAuthButtons(this, user);

@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resources // WHRHS CS Club</title>
+    <link rel="stylesheet" href="styleFolder/style.css">
+    <link rel="stylesheet" href="styleFolder/resources.css">
+    <link rel="stylesheet" href="styleFolder/index.css">
+    <script type="module" src="scriptFolder/header.js"></script>
+    <script type="module" src="scriptFolder/footer.js"></script>
+    <script type="module" src="scriptFolder/resources.js"></script>
+</head>
+<body>
+    <cs-header active-page="resources"></cs-header>
+
+    <main>
+        <section class="page-hero">
+            <div class="hero-wrapper reveal">
+                <p class="section-label">/ 04 · RESOURCES</p>
+                <h1 class="hero-title">Learning <br><span class="highlight">hub.</span></h1>
+                <p class="hero-subtitle">Every lecture we've recorded and every link we trust — in one searchable library.<br>Members add to it after every meeting.</p>
+            </div>
+        </section>
+
+        <section class="toolbar-section reveal reveal-d1">
+            <div class="search-container">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                <input type="text" id="resource-search" placeholder="Search lectures and links...">
+                <span class="result-count" id="result-count">0 RESULTS</span>
+            </div>
+            
+            <div class="controls-container">
+                <div class="filter-group">
+                    <button class="filter-btn active" data-filter="all">ALL</button>
+                    <button class="filter-btn" data-filter="lecture">LECTURE</button>
+                    <button class="filter-btn" data-filter="link">LINK</button>
+                </div>
+                
+                <div class="action-group exec-only">
+                    <button id="btn-open-lecture-modal" class="action-btn outline">+ LECTURE</button>
+                    <button id="btn-open-link-modal" class="action-btn solid">+ LINK</button>
+                </div>
+            </div>
+        </section>
+
+        <section class="resource-list reveal reveal-d2" id="resource-list">
+            </section>
+    </main>
+
+    <div id="lectureModal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span class="modal-title">/ ADD LECTURE</span>
+                <button class="close-modal">&times;</button>
+            </div>
+            <form id="form-add-lecture">
+                <div class="input-group">
+                    <label>TITLE</label>
+                    <input type="text" id="lec-title" required>
+                </div>
+                
+                <div class="input-row">
+                    <div class="input-group">
+                        <label>TAG</label>
+                        <input type="text" id="lec-tag" placeholder="General" required>
+                    </div>
+                    <div class="input-group">
+                        <label>SPEAKER · DURATION</label>
+                        <input type="text" id="lec-meta" placeholder="S. Liu · 24 min" required>
+                    </div>
+                </div>
+
+                <div class="input-group toggle-group">
+                    <label>FORMAT</label>
+                    <div class="format-slider">
+                        <input type="radio" id="format-video" name="lec-format" value="video" checked>
+                        <label for="format-video">Video Link</label>
+
+                        <input type="radio" id="format-text" name="lec-format" value="text">
+                        <label for="format-text">Written Essay</label>
+                    </div>
+                </div>
+
+                <div class="input-group" id="dynamic-content-area">
+                    <label id="dynamic-content-label">SLIDES / VIDEO URL</label>
+                    <input type="url" id="lec-url">
+                    <textarea id="lec-text" rows="6" placeholder="Write your lesson text here..." style="display: none;"></textarea>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn-cancel">CANCEL</button>
+                    <button type="submit" class="btn-submit">ADD &rarr;</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="linkModal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span class="modal-title">/ ADD LINK</span>
+                <button class="close-modal">&times;</button>
+            </div>
+            <form id="form-add-link">
+                <div class="input-group">
+                    <label>TITLE</label>
+                    <input type="text" id="link-title" required>
+                </div>
+                
+                <div class="input-row">
+                    <div class="input-group">
+                        <label>TAG</label>
+                        <input type="text" id="link-tag" placeholder="General" required>
+                    </div>
+                    <div class="input-group">
+                        <label>TYPE</label>
+                        <input type="text" id="link-type" placeholder="Reference, Curriculum, etc." required>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label>URL</label>
+                    <input type="url" id="link-url" required>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn-cancel">CANCEL</button>
+                    <button type="submit" class="btn-submit">ADD &rarr;</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <cs-footer></cs-footer>
+</body>
+</html>
