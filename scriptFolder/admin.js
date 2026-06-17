@@ -16,7 +16,7 @@ onAuthStateChanged(auth, async (user) => {
     const snap = await get(ref(db, `users/${user.uid}`));
     const userData = snap.val();
 
-    if (!userData || userData.role !== 'exec') {
+    if (!userData || !['exec', 'admin'].includes(userData.role)) {
         alert("ACCESS DENIED: Exec Board authorization required.");
         window.location.href = "account.html";
     } else {
@@ -59,6 +59,9 @@ function loadData() {
 
             if (currentTab === 'approvals') renderApprovals(pending, content);
             else renderMembers(users.filter(u => u.status === 'approved'), content);
+        }, (error) => {
+            content.innerHTML = `<div class="empty-state">Could not load users. Check that Firebase rules allow exec/admin accounts to read the users list.</div>`;
+            console.error("Unable to load admin users list:", error);
         });
     } else if (currentTab === 'moderation') {
         unsubscribe = onValue(ref(db, 'deleted_posts'), (snapshot) => {
@@ -68,6 +71,9 @@ function loadData() {
             const posts = Object.entries(data).map(([id, val]) => ({ id, ...val }));
             posts.sort((a, b) => (b._deletedAt || 0) - (a._deletedAt || 0));
             renderModeration(posts, content);
+        }, (error) => {
+            content.innerHTML = `<div class="empty-state">Could not load deleted posts. Check the deleted_posts Firebase rules.</div>`;
+            console.error("Unable to load deleted posts:", error);
         });
     }
 }

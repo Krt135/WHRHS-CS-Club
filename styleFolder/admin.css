@@ -8,6 +8,7 @@
     max-width: 900px;
     margin: 60px auto;
     padding: 0 20px;
+    width: 100%;
 }
 
 .admin-header {
@@ -17,10 +18,12 @@
 }
 
 .admin-header h1 {
-    font-size: 2rem;
+    font-size: clamp(1.35rem, 6vw, 2rem);
     font-weight: normal;
     letter-spacing: 2px;
+    line-height: 1.15;
     margin-top: 10px;
+    overflow-wrap: anywhere;
 }
 
 .breadcrumb {
@@ -35,6 +38,7 @@
     gap: 15px;
     margin-bottom: 30px;
     border-bottom: 1px solid #222;
+    overflow-x: auto;
 }
 
 .tab-btn {
@@ -46,6 +50,7 @@
     font-family: inherit;
     font-size: 0.9rem;
     letter-spacing: 1px;
+    white-space: nowrap;
     transition: all 0.2s;
 }
 
@@ -112,6 +117,7 @@
 }
 
 .member-avatar {
+    flex: 0 0 40px;
     width: 40px;
     height: 40px;
     background: #222;
@@ -127,6 +133,7 @@
     font-size: 1.1rem;
     color: #fff;
     margin-bottom: 4px;
+    overflow-wrap: anywhere;
 }
 
 .member-details {
@@ -161,6 +168,7 @@
 /* Action Buttons */
 .admin-actions {
     display: flex;
+    flex-wrap: wrap;
     gap: 10px;
     flex-shrink: 0;
 }
@@ -172,6 +180,7 @@
     padding: 8px 16px;
     cursor: pointer;
     font-family: inherit;
+    min-height: 38px;
     transition: all 0.2s;
 }
 
@@ -254,9 +263,44 @@
 }
 
 @media (max-width: 720px) {
+    .admin-main {
+        margin: 32px auto;
+        padding: 0 14px;
+    }
+
+    .admin-header {
+        margin-bottom: 22px;
+    }
+
+    .breadcrumb {
+        font-size: 0.72rem;
+        overflow-wrap: anywhere;
+    }
+
+    .admin-tabs {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 0;
+        overflow: visible;
+    }
+
+    .tab-btn {
+        font-size: 0.72rem;
+        letter-spacing: 0.5px;
+        min-width: 0;
+        padding: 10px 6px;
+        text-align: center;
+    }
+
     .admin-list-item {
         align-items: flex-start;
         flex-direction: column;
+        padding: 16px;
+    }
+
+    .member-info {
+        align-items: flex-start;
+        width: 100%;
     }
 
     .admin-actions {
@@ -271,5 +315,32 @@
     .deleted-post {
         align-items: stretch;
         flex-direction: column;
+    }
+
+    .deleted-preview {
+        max-width: 100%;
+    }
+}
+
+@media (max-width: 420px) {
+    .admin-tabs {
+        grid-template-columns: 1fr;
+    }
+
+    .tab-btn {
+        border-bottom: 1px solid #222;
+        text-align: left;
+    }
+
+    .tab-btn.active {
+        border-bottom-color: #ccff00;
+    }
+
+    .admin-actions {
+        flex-direction: column;
+    }
+
+    .admin-actions button {
+        width: 100%;
     }
 }
