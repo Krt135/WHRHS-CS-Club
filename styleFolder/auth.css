@@ -90,6 +90,16 @@
   opacity: 0.5;
 }
 
+.auth-feedback {
+  border: 1px solid oklch(89% 0.22 122 / 40%);
+  background: oklch(89% 0.22 122 / 10%);
+  color: var(--foreground);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  margin-bottom: 20px;
+  font-size: 14px;
+}
+
 /* ── BUTTONS & LINKS ── */
 
 .auth-submit-btn {

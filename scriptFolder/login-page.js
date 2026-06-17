@@ -4,6 +4,19 @@ import { signUp, signIn, signInWithGoogle, initAuthRedirect } from "./auth.js";
 initUI();
 initAuthRedirect();
 
+function showFeedback(id, message) {
+  const feedback = document.getElementById(id);
+  if (!feedback) return;
+
+  feedback.textContent = message;
+  feedback.hidden = false;
+}
+
+function authMessage(err) {
+  if (err?.code === "membership/pending") return err.message;
+  return `${err.code}: ${err.message}`;
+}
+
 // ---------- LOGIN ----------
 document.getElementById("signInForm")?.addEventListener("submit", async (e) => {
   e.preventDefault();
@@ -19,7 +32,7 @@ document.getElementById("signInForm")?.addEventListener("submit", async (e) => {
   try {
     await signIn(email, password);
   } catch (err) {
-    alert(err.code + ": " + err.message);
+    showFeedback("signInFeedback", authMessage(err));
   }
 });
 
@@ -44,16 +57,18 @@ document.getElementById("signUpForm")?.addEventListener("submit", async (e) => {
 
   try {
     await signUp(email, password, name);
+    window.showAuthView("signInView");
+    showFeedback("signInFeedback", "Your request to join has been submitted. You will be able to log in after an exec approves it.");
   } catch (err) {
-    alert(err.code + ": " + err.message);
+    showFeedback("signUpFeedback", authMessage(err));
   }
 });
 
 // ---------- GOOGLE ----------
-document.getElementById("googleSignUpBtn")?.addEventListener("click", async () => {
+document.getElementById("googleSignInBtn")?.addEventListener("click", async () => {
   try {
     await signInWithGoogle();
   } catch (err) {
-    alert(err.code);
+    showFeedback("signInFeedback", authMessage(err));
   }
 });

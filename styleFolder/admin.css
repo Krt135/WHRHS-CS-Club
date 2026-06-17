@@ -59,6 +59,37 @@
 }
 
 /* List Items */
+.member-search {
+    width: min(100%, 420px);
+    background: #111;
+    border: 1px solid #333;
+    color: #f0f0f0;
+    padding: 12px 14px;
+    margin-bottom: 28px;
+    font-family: inherit;
+    font-size: 0.95rem;
+}
+
+.member-search:focus {
+    outline: none;
+    border-color: #ccff00;
+}
+
+.member-groups {
+    display: grid;
+    gap: 30px;
+}
+
+.member-section-title {
+    border-bottom: 1px solid #333;
+    color: #aaa;
+    font-size: 0.9rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    margin: 0 0 14px;
+    padding-bottom: 10px;
+}
+
 .admin-list-item {
     background: #111;
     border: 1px solid #222;
@@ -69,10 +100,15 @@
     align-items: center;
 }
 
+.member-row {
+    gap: 18px;
+}
+
 .member-info {
     display: flex;
     align-items: center;
     gap: 15px;
+    min-width: 0;
 }
 
 .member-avatar {
@@ -93,15 +129,40 @@
     margin-bottom: 4px;
 }
 
+.member-details {
+    min-width: 0;
+}
+
 .member-email {
     color: #888;
     font-size: 0.85rem;
+    overflow-wrap: anywhere;
+}
+
+.member-bio {
+    color: #bbb;
+    font-size: 0.85rem;
+    line-height: 1.4;
+    margin-top: 6px;
+    max-width: 560px;
+}
+
+.role-pill {
+    border: 1px solid #444;
+    color: #ccff00;
+    display: inline-block;
+    font-size: 0.7rem;
+    letter-spacing: 1px;
+    margin-left: 8px;
+    padding: 2px 6px;
+    vertical-align: middle;
 }
 
 /* Action Buttons */
 .admin-actions {
     display: flex;
     gap: 10px;
+    flex-shrink: 0;
 }
 
 .admin-actions button {
@@ -123,13 +184,92 @@
     color: #000 !important;
 }
 
+.btn-neutral:hover {
+    background: #ddd;
+    border-color: #ddd;
+    color: #000;
+}
+
 .btn-deny:hover {
     background: #ff3333;
     border-color: #ff3333;
     color: #fff;
 }
 
+.moderation-summary {
+    align-items: center;
+    background: #111;
+    border: 1px solid #222;
+    color: #aaa;
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 28px;
+    padding: 16px;
+}
+
+.deleted-post {
+    border-bottom: 1px solid #333;
+    display: flex;
+    justify-content: space-between;
+    gap: 24px;
+    padding: 18px 0;
+}
+
+.deleted-post-main {
+    min-width: 0;
+}
+
+.source-pill {
+    border: 1px solid #444;
+    color: #ccff00;
+    display: inline-block;
+    font-size: 0.75rem;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+    padding: 2px 8px;
+    text-transform: uppercase;
+}
+
+.deleted-preview {
+    background: #111;
+    border-left: 3px solid #333;
+    color: #bbb;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    margin-top: 12px;
+    max-width: 680px;
+    overflow-wrap: anywhere;
+    padding: 12px 14px;
+}
+
 .empty-state {
     color: #666;
     font-style: italic;
+}
+
+.empty-state.small {
+    border: 1px solid #222;
+    padding: 16px;
+}
+
+@media (max-width: 720px) {
+    .admin-list-item {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .admin-actions {
+        width: 100%;
+    }
+
+    .admin-actions button {
+        flex: 1;
+    }
+
+    .moderation-summary,
+    .deleted-post {
+        align-items: stretch;
+        flex-direction: column;
+    }
 }

@@ -9,6 +9,7 @@ import {
     push, 
     onValue,
     remove,
+    set,
     serverTimestamp 
 } from "firebase/database";
 
@@ -343,12 +344,28 @@ resourceListContainer.addEventListener("click", async (e) => {
 
     if (!resourceId) return;
 
-    const confirmDelete = confirm("Are you sure you want to permanently remove this resource?");
+    const confirmDelete = confirm("Move this resource to the moderation tab?");
     if (!confirmDelete) return;
 
     try {
+        const item = globalResources.find(resource => resource.id === resourceId);
+        if (!item) throw new Error("That resource could not be found.");
+
+        const { id, ...restoredData } = item;
+        const deletedRef = push(ref(db, "deleted_posts"));
+
+        await set(deletedRef, {
+            ...restoredData,
+            _deletedFrom: "resources",
+            _originalId: resourceId,
+            _sourceLabel: "Resources",
+            _deletedAt: Date.now(),
+            _deletedBy: auth.currentUser?.email || "Unknown exec",
+            _deletedById: auth.currentUser?.uid || null
+        });
+
         await remove(ref(db, `resources/${resourceId}`));
-        console.log(`Resource ${resourceId} successfully deleted!`);
+        console.log(`Resource ${resourceId} moved to moderation.`);
     } catch (error) {
         console.error("Error deleting resource from Firebase:", error);
         alert("Failed to delete resource. Check your permissions.");

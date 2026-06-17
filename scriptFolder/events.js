@@ -34,6 +34,7 @@ const confirmDeleteBtn = document.getElementById("confirmDeleteBtn");
 const closeDeleteModalBtn = document.getElementById("closeDeleteModalBtn");
 
 let itemToDeleteId = null; // Temporary holding variable for the target entry
+let competitionRecords = [];
 
 // 3. Security Check
 onAuthStateChanged(auth, async (user) => {
@@ -96,6 +97,7 @@ onValue(ref(db, 'competitions'), (snapshot) => {
         });
         
         records.sort((a, b) => b.timestamp - a.timestamp);
+        competitionRecords = records;
 
         records.forEach(comp => {
             combinedHtml += `
@@ -108,6 +110,7 @@ onValue(ref(db, 'competitions'), (snapshot) => {
             `;
         });
     } else {
+        competitionRecords = [];
         combinedHtml = `<p class="font-mono" style="color: var(--muted-fg); padding: 16px 0;">No competition logs on record.</p>`;
     }
     
@@ -132,7 +135,25 @@ confirmDeleteBtn.addEventListener("click", async () => {
     confirmDeleteBtn.disabled = true;
 
     try {
-        // Purge the specific item record key from the cloud database node
+        const record = competitionRecords.find(item => item.id === itemToDeleteId);
+        const snap = record ? null : await get(ref(db, `competitions/${itemToDeleteId}`));
+        const item = record || snap?.val();
+
+        if (!item) throw new Error("That competition entry could not be found.");
+
+        const { id, ...restoredData } = item;
+        const deletedRef = push(ref(db, "deleted_posts"));
+
+        await set(deletedRef, {
+            ...restoredData,
+            _deletedFrom: "competitions",
+            _originalId: itemToDeleteId,
+            _sourceLabel: "Events",
+            _deletedAt: Date.now(),
+            _deletedBy: auth.currentUser?.email || "Unknown exec",
+            _deletedById: auth.currentUser?.uid || null
+        });
+
         await remove(ref(db, `competitions/${itemToDeleteId}`));
         deleteModal.style.display = "none";
     } catch (error) {
