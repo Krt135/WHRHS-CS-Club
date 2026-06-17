@@ -1,30 +1,58 @@
-const AUTH_VIEWS = ['signInView', 'signUpView', 'forgotPasswordView'];
+import {
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  updateProfile,
+  GoogleAuthProvider,
+  signInWithPopup,
+  onAuthStateChanged
+} from "firebase/auth";
 
-// Expose to window so HTML onclick handlers can see them
-window.showAuthView = function(activeId) {
-    AUTH_VIEWS.forEach((id) => {
-        document.getElementById(id)?.classList.toggle('hidden', id !== activeId);
-    });
+import { ref, set } from "firebase/database";
+import { auth, db } from "./firebase";
+
+// ---------- PROFILE SAVE ----------
+async function saveProfile(user, displayName) {
+  await set(ref(db, "users/" + user.uid), {
+    uid: user.uid,
+    displayName,
+    email: user.email,
+    photoURL: user.photoURL || "",
+    createdAt: Date.now(),
+    role: "member"
+  });
 }
 
-window.toggleAuthView = function() {
-    const signInCard = document.getElementById('signInView');
-    if (!signInCard) return;
-    const signInHidden = signInCard.classList.contains('hidden');
-    window.showAuthView(signInHidden ? 'signInView' : 'signUpView');
+// ---------- SIGN UP ----------
+export async function signUp(email, password, name) {
+  const cred = await createUserWithEmailAndPassword(auth, email, password);
+
+  await updateProfile(cred.user, { displayName: name });
+  await saveProfile(cred.user, name);
+
+  return cred.user;
 }
 
-window.showForgotPassword = function(e) {
-    if (e) e.preventDefault();
-    const signInEmail = document.getElementById('signInEmail')?.value.trim();
-    const forgotInput = document.getElementById('forgotPasswordEmail');
-    if (signInEmail && forgotInput) forgotInput.value = signInEmail;
-    
-    const feedback = document.getElementById('forgotPasswordFeedback');
-    if (feedback) {
-        feedback.hidden = true;
-        feedback.textContent = '';
-        feedback.className = 'auth-feedback';
+// ---------- LOGIN ----------
+export async function signIn(email, password) {
+  const cred = await signInWithEmailAndPassword(auth, email, password);
+  return cred.user;
+}
+
+// ---------- GOOGLE ----------
+export async function signInWithGoogle() {
+  const provider = new GoogleAuthProvider();
+  const cred = await signInWithPopup(auth, provider);
+
+  await saveProfile(cred.user, cred.user.displayName || "User");
+
+  return cred.user;
+}
+
+// ---------- AUTH STATE ----------
+export function initAuthRedirect() {
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      window.location.href = "account.html";
     }
-    window.showAuthView('forgotPasswordView');
+  });
 }
