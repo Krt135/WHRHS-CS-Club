@@ -8,7 +8,8 @@ export default defineConfig({
         events: './events.html',
         login: './login.html',
         account: './account.html',
-        resources: './resources.html'
+        resources: './resources.html',
+        admin: './admin.html'
       }
     }
   }

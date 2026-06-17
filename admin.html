@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exec Board Panel | WHRHS CS Club</title>
+    <link rel="stylesheet" href="styleFolder/style.css">
+    <link rel="stylesheet" href="styleFolder/index.css">
+    <link rel="stylesheet" href="styleFolder/admin.css">
+    <script type="module" src="scriptFolder/header.js"></script>
+    <script type="module" src="scriptFolder/footer.js"></script>
+</head>
+
+<cs-header></cs-header>
+
+<body class="admin-body">
+
+    
+
+    <main class="admin-main">
+        <header class="admin-header">
+            <div class="breadcrumb">/ EXEC BOARD · 00</div>
+            <h1>SYSTEM ADMINISTRATION</h1>
+        </header>
+
+        <div class="admin-tabs">
+            <button class="tab-btn active" data-tab="approvals">
+                APPROVALS (<span id="count-pending">0</span>)
+            </button>
+            <button class="tab-btn" data-tab="members">MEMBERS</button>
+            <button class="tab-btn" data-tab="moderation">MODERATION</button>
+        </div>
+
+        <div id="tab-content" class="tab-pane">
+            <div class="empty-state">Authenticating Exec Credentials...</div>
+        </div>
+    </main>
+
+
+    <script type="module" src="scriptFolder/admin.js"></script>
+</body>
+
+</html>

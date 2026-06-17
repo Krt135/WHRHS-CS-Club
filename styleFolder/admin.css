@@ -1,0 +1,135 @@
+.admin-body {
+    background-color: #0a0a0a;
+    color: #f0f0f0;
+    font-family: monospace, sans-serif;
+}
+
+.admin-main {
+    max-width: 900px;
+    margin: 60px auto;
+    padding: 0 20px;
+}
+
+.admin-header {
+    border-bottom: 1px solid #333;
+    padding-bottom: 20px;
+    margin-bottom: 30px;
+}
+
+.admin-header h1 {
+    font-size: 2rem;
+    font-weight: normal;
+    letter-spacing: 2px;
+    margin-top: 10px;
+}
+
+.breadcrumb {
+    color: #888;
+    font-size: 0.85rem;
+    letter-spacing: 1px;
+}
+
+/* Tabs */
+.admin-tabs {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 30px;
+    border-bottom: 1px solid #222;
+}
+
+.tab-btn {
+    background: transparent;
+    border: none;
+    color: #888;
+    padding: 10px 20px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.9rem;
+    letter-spacing: 1px;
+    transition: all 0.2s;
+}
+
+.tab-btn:hover {
+    color: #fff;
+}
+
+.tab-btn.active {
+    color: #ccff00; /* Neon Accent */
+    border-bottom: 2px solid #ccff00;
+}
+
+/* List Items */
+.admin-list-item {
+    background: #111;
+    border: 1px solid #222;
+    padding: 20px;
+    margin-bottom: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.member-info {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.member-avatar {
+    width: 40px;
+    height: 40px;
+    background: #222;
+    color: #ccff00;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    border: 1px solid #ccff00;
+}
+
+.member-name {
+    font-size: 1.1rem;
+    color: #fff;
+    margin-bottom: 4px;
+}
+
+.member-email {
+    color: #888;
+    font-size: 0.85rem;
+}
+
+/* Action Buttons */
+.admin-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.admin-actions button {
+    background: transparent;
+    border: 1px solid #444;
+    color: #ccc;
+    padding: 8px 16px;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.2s;
+}
+
+.btn-approve {
+    border-color: #ccff00 !important;
+    color: #ccff00 !important;
+}
+.btn-approve:hover {
+    background: #ccff00 !important;
+    color: #000 !important;
+}
+
+.btn-deny:hover {
+    background: #ff3333;
+    border-color: #ff3333;
+    color: #fff;
+}
+
+.empty-state {
+    color: #666;
+    font-style: italic;
+}

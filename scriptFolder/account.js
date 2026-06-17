@@ -1,7 +1,6 @@
 import { initializeApp, getApps, getApp } from "firebase/app"; 
-import { getAuth, onAuthStateChanged, updateProfile, signOut } from "firebase/auth";
-import { getDatabase, ref, set, get } from "firebase/database";
-import { updateEmail } from "firebase/auth";
+import { getAuth, onAuthStateChanged, updateProfile, signOut, updateEmail } from "firebase/auth";
+import { getDatabase, ref, set, get, update } from "firebase/database"; // 🌟 Added update here
 
 // 1. Firebase Config
 const firebaseConfig = {
@@ -14,7 +13,6 @@ const firebaseConfig = {
   appId: "1:110216471172:web:53ed19da91c397420258d1"
 };
 
-// 🌟 SAFE INITIALIZATION: If an app instance already exists, reuse it. Otherwise, create it.
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
 const auth = getAuth(app);
 const db = getDatabase(app);
@@ -35,7 +33,6 @@ const infoUid = document.getElementById("infoUid");
 const saveBtn = document.getElementById("saveBtn");
 const adminBtn = document.getElementById("adminBtn");
 const signOutBtn = document.getElementById("signOutBtn");
-const emailEdit = document.getElementById("emailInput");
 
 const bioInput = document.getElementById("bioInput");
 const phoneInput = document.getElementById("phoneInput");
@@ -43,7 +40,7 @@ const phoneInput = document.getElementById("phoneInput");
 // 3. Auth Listener & Data Fetcher
 onAuthStateChanged(auth, async (user) => {
     if (!user) {
-        window.location.href = "login.html"; // Kick out if not logged in
+        window.location.href = "login.html"; 
         return;
     }
 
@@ -59,18 +56,25 @@ onAuthStateChanged(auth, async (user) => {
     emailInput.value = email;
     infoUid.textContent = user.uid;
 
-    // Fetch Extra Data (Roles & Join Date) from Realtime Database
     try {
         const userRef = ref(db, `users/${user.uid}`);
         const snapshot = await get(userRef);
         
         if (snapshot.exists()) {
             const data = snapshot.val();
+            
+            // 🌟 FIX 3: Kick out pending users back to homepage
+            if (data.status === "pending") {
+                alert("Your membership application is currently pending review by the Exec Board.");
+                window.location.href = "index.html";
+                return;
+            }
+
             const role = data.role || "member";
             const joined = data.createdAt || "—";
-
             const bio = data.bio || "";
             const phone = data.phone || "";
+            
             if (bioInput) bioInput.value = bio;
             if (phoneInput) phoneInput.value = phone;
 
@@ -83,30 +87,41 @@ onAuthStateChanged(auth, async (user) => {
             }
 
             // --- EXEC / ADMIN PRIVILEGES ---
-        if (role === "exec" || role === "admin") {
-            adminBtn.style.display = "inline-flex";
-    
-    // Enable the input field so they can type inside it
-            emailInput.disabled = false; 
-    
-    // Optional: Hide or change the helper warning text if you want
-            const helpText = document.querySelector(".help-text");
-            if (helpText) helpText.textContent = "As an exec, you can update your official routing email.";
+            if (role === "exec" || role === "admin") {
+                if (adminBtn) adminBtn.style.display = "inline-flex";
+                if (emailInput) emailInput.disabled = false; 
+        
+                const helpText = document.querySelector(".help-text");
+                if (helpText) helpText.textContent = "As an exec, you can update your official routing email.";
             }
         } else {
-            // If they don't exist in the DB yet, create a default profile for them
+            // 🌟 FIX 1: Use safe defaults ONLY if user has no record at all in database
             const joinDate = new Date().toISOString();
             await set(userRef, {
+                uid: user.uid,
+                displayName: name,
                 email: user.email,
                 role: "member",
-                createdAt: joinDate
+                status: "approved", // Existing old users default to approved
+                createdAt: joinDate,
+                gamesUploaded: [],
+                eventsRegistered: []
             });
             infoDate.textContent = new Date(joinDate).toLocaleDateString();
+            headerRole.textContent = "MEMBER";
+            infoRole.textContent = "member";
         }
     } catch (error) {
         console.error("Error fetching database:", error);
     }
 });
+
+// 🌟 FIX 2: Link the Admin Button up to navigate to admin.html
+if (adminBtn) {
+    adminBtn.addEventListener("click", () => {
+        window.location.href = "admin.html";
+    });
+}
 
 // 4. Handle "Save Changes" Button
 saveBtn.addEventListener("click", async () => {
@@ -115,8 +130,6 @@ saveBtn.addEventListener("click", async () => {
 
     const newName = displayNameInput.value.trim();
     const newEmail = emailInput.value.trim();
-    
-    // --- NEW: Grab the bio and phone values ---
     const newBio = bioInput.value.trim();
     const newPhone = phoneInput.value.trim();
     
@@ -124,24 +137,26 @@ saveBtn.addEventListener("click", async () => {
     saveBtn.disabled = true;
 
     try {
-        // 1. Update Display Name if it changed
+        // Update Firebase Auth structural profile if display name changed
         if (newName !== user.displayName) {
             await updateProfile(user, { displayName: newName });
-            await set(ref(db, `users/${user.uid}/displayName`), newName);
         }
         
-        // 2. Update Email if it changed
+        // Update Auth core account email routing if changed
         if (newEmail && newEmail !== user.email) {
             await updateEmail(user, newEmail);
-            await set(ref(db, `users/${user.uid}/email`), newEmail);
             headerEmail.textContent = newEmail;
         }
 
-        // --- NEW: 3. Save Bio and Phone to the Database ---
-        await set(ref(db, `users/${user.uid}/bio`), newBio);
-        await set(ref(db, `users/${user.uid}/phone`), newPhone);
+        // 🌟 Use update() to save data node properties selectively without destroying others
+        await update(ref(db, `users/${user.uid}`), {
+            displayName: newName,
+            email: newEmail,
+            bio: newBio,
+            phone: newPhone
+        });
         
-        // 4. Update top heading name layout
+        // Update layout presentation headers
         displayNameHeading.textContent = newName || newEmail.split('@')[0];
         largeAvatar.textContent = (newName || newEmail || "?").charAt(0).toUpperCase();
         
@@ -153,14 +168,11 @@ saveBtn.addEventListener("click", async () => {
 
     } catch (error) {
         console.error("Error updating profile:", error);
-        
-        // Handle security re-authentication requirements
         if (error.code === "auth/requires-recent-login") {
-            alert("Security measure: Changing an email requires a fresh login. Please sign out, sign back in, and try again.");
+            alert("Security measure: Changing credentials requires a fresh login session. Please log out, sign back in, and retry.");
         } else {
-            alert("Error saving: " + error.message);
+            alert("Error saving properties: " + error.message);
         }
-        
         saveBtn.textContent = "Save changes →";
         saveBtn.disabled = false;
     }
@@ -170,7 +182,7 @@ saveBtn.addEventListener("click", async () => {
 signOutBtn.addEventListener("click", async () => {
     try {
         await signOut(auth);
-        window.location.href = "index.html"; // Go home after logout
+        window.location.href = "index.html";
     } catch (error) {
         alert("Error signing out.");
     }

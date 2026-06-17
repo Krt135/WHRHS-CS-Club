@@ -12,14 +12,16 @@ import { auth, db } from "./firebase";
 
 // ---------- PROFILE SAVE ----------
 async function saveProfile(user, displayName) {
-  await set(ref(db, "users/" + user.uid), {
-    uid: user.uid,
-    displayName,
-    email: user.email,
-    photoURL: user.photoURL || "",
-    createdAt: Date.now(),
-    role: "member"
-  });
+    await set(ref(db, "users/" + user.uid), {
+        uid: user.uid,
+        displayName: displayName ?? user.displayName ?? "",
+        email: user.email,
+        role: "member", 
+        status: "pending", 
+        photoURL: user.photoURL ?? "",
+        gamesUploaded: [],
+        eventsRegistered: []
+    });
 }
 
 // ---------- SIGN UP ----------

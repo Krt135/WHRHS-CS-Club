@@ -1,3 +1,25 @@
+import { auth, db } from "./firebase.js";
+import { onAuthStateChanged, signOut } from "firebase/auth";
+import { ref, get } from "firebase/database";
+
+onAuthStateChanged(auth, async (user) => {
+    if (user) {
+        // Fetch user records from the mainframe database
+        const userSnap = await get(ref(db, `users/${user.uid}`));
+        const userData = userSnap.val();
+
+        if (userData && userData.status === "pending") {
+            // 🚨 INTERCEPT: Alert them and disconnect their session instantly
+            alert("Account Pending: An Executive Board member must approve your access before you can log in.");
+            await signOut(auth);
+            window.location.href = "index.html"; 
+            return;
+        }
+        
+        // Otherwise, proceed to load your normal logged-in user experience...
+    }
+});
+
 const observer = new IntersectionObserver((entries) => {
     entries.forEach(e => {
       if (e.isIntersecting) e.target.classList.add('in');
