@@ -30,9 +30,9 @@ const auth = getAuth(app);
 const db   = getDatabase(app);
 
 // Redirect already-logged-in users
-onAuthStateChanged(auth, user => {
-    if (user) window.location.href = "index.html";
-});
+//onAuthStateChanged(auth, user => {
+  //  if (user) window.location.href = "index.html";
+//});
 
 // Saves a user profile doc in Firestore under /users/{uid}
 async function saveProfile(user, displayName) {
