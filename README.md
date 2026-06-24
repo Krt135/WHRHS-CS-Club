@@ -5,7 +5,7 @@ To-Do List:
 
 1. Projects Page
 2. Events Page -- Done
-3. Resources Page
+3. Resources Page -- Done
 4. Sponsors Page
 5. Account creation and sign in (I will do personally since I have experience)
 
