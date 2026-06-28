@@ -1,0 +1,346 @@
+/* ── projects.css ── */
+
+/* Global resets for this page (optional) */
+.projects-main {
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
+/* Shared classes from example */
+.eyebrow {
+    font-family: 'Courier New', monospace;
+    font-size: 0.75rem;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: #888;
+    margin-bottom: 1rem;
+}
+
+.highlight {
+    color: #0077ff; /* or your primary color */
+}
+
+.text-foreground {
+    color: #111;
+}
+
+/* Hero */
+.projects-hero {
+    padding: 6rem 2rem 4rem;
+    border-bottom: 1px solid #e5e5e5;
+}
+
+.projects-hero .hero-title {
+    font-size: clamp(3rem, 10vw, 6rem);
+    font-weight: 600;
+    line-height: 0.9;
+    letter-spacing: -0.03em;
+    margin: 0.5rem 0;
+}
+
+.projects-hero .hero-subtitle {
+    max-width: 600px;
+    margin-top: 1.5rem;
+    color: #555;
+    font-size: 1.1rem;
+    line-height: 1.6;
+}
+
+/* Sector sections */
+.sector-section {
+    padding: 4rem 2rem;
+    border-bottom: 1px solid #e5e5e5;
+}
+
+.sector-header {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 2rem;
+    margin-bottom: 2.5rem;
+}
+
+.sector-header-left .sector-title {
+    font-size: clamp(2.5rem, 5vw, 4rem);
+    font-weight: 500;
+    letter-spacing: -0.02em;
+    margin: 0.5rem 0;
+}
+
+.tech-tags {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 1rem;
+    font-family: monospace;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+}
+
+.tech-tags span {
+    border: 1px solid #ccc;
+    padding: 0.4rem 0.8rem;
+    border-radius: 2px;
+    background: #f9f9f9;
+}
+
+.sector-header-right {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+
+.btn-outline {
+    border: 1px solid #ccc;
+    background: transparent;
+    padding: 0.6rem 1.2rem;
+    font-family: monospace;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-outline:hover {
+    border-color: #0077ff;
+    color: #0077ff;
+}
+
+.btn-primary {
+    background: #0077ff;
+    color: white;
+    border: 1px solid #0077ff;
+    padding: 0.6rem 1.2rem;
+    font-family: monospace;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-primary:hover {
+    background: #005fcc;
+    border-color: #005fcc;
+}
+
+/* Game grid */
+.game-grid {
+    border: 1px solid #e5e5e5;
+    padding: 3rem;
+    text-align: center;
+    color: #888;
+    font-family: monospace;
+    font-size: 0.9rem;
+}
+
+.empty-state {
+    margin: 0;
+}
+
+/* Web Dev Grid */
+.web-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-top: 2rem;
+}
+
+.project-card {
+    display: block;
+    border: 1px solid #e5e5e5;
+    text-decoration: none;
+    color: inherit;
+    transition: border-color 0.2s;
+}
+
+.project-card:hover {
+    border-color: #0077ff;
+}
+
+.card-preview {
+    aspect-ratio: 4 / 3;
+    border-bottom: 1px solid #e5e5e5;
+    background: #fafafa;
+    position: relative;
+    overflow: hidden;
+}
+
+.window-dots {
+    position: absolute;
+    top: 0.75rem;
+    left: 0.75rem;
+    display: flex;
+    gap: 0.4rem;
+}
+
+.window-dots span {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: block;
+}
+
+.window-dots span:nth-child(1) { background: #ff5f56; }
+.window-dots span:nth-child(2) { background: #ffbd2e; }
+.window-dots span:nth-child(3) { background: #27c93f; }
+
+.preview-placeholder {
+    position: absolute;
+    inset: 2.5rem 0.75rem 0.75rem;
+    border: 1px solid #e5e5e5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: white;
+}
+
+.preview-placeholder svg {
+    color: #0077ff;
+    opacity: 0.4;
+    transition: opacity 0.2s;
+}
+
+.project-card:hover .preview-placeholder svg {
+    opacity: 1;
+}
+
+.card-footer {
+    padding: 1.25rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.card-footer h3 {
+    font-size: 1.2rem;
+    font-weight: 500;
+    margin: 0;
+}
+
+.card-footer p {
+    font-size: 0.75rem;
+    color: #888;
+    margin: 0.2rem 0 0;
+}
+
+.card-open {
+    font-family: monospace;
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: #0077ff;
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+.project-card:hover .card-open {
+    opacity: 1;
+}
+
+/* Sector with simple header */
+.sector-header-simple {
+    margin-bottom: 2rem;
+}
+
+.sector-header-simple .sector-title {
+    font-size: clamp(2.5rem, 5vw, 4rem);
+    font-weight: 500;
+    letter-spacing: -0.02em;
+    margin: 0.5rem 0 0.5rem;
+}
+
+.sector-desc {
+    max-width: 600px;
+    color: #555;
+    margin: 0.5rem 0 0;
+}
+
+/* Repo list */
+.repo-list {
+    border: 1px solid #e5e5e5;
+}
+
+.repo-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid #e5e5e5;
+    text-decoration: none;
+    color: inherit;
+    transition: background 0.15s;
+}
+
+.repo-item:last-child {
+    border-bottom: none;
+}
+
+.repo-item:hover {
+    background: #f5f5f5;
+}
+
+.repo-item > div {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.repo-item svg {
+    color: #555;
+    transition: color 0.2s;
+}
+
+.repo-item:hover svg {
+    color: #0077ff;
+}
+
+.repo-item h4 {
+    font-family: monospace;
+    font-size: 1rem;
+    margin: 0;
+    font-weight: 500;
+}
+
+.repo-item p {
+    font-size: 0.85rem;
+    color: #888;
+    margin: 0.1rem 0 0;
+}
+
+.repo-link {
+    font-family: monospace;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: #888;
+    transition: color 0.2s;
+}
+
+.repo-item:hover .repo-link {
+    color: #0077ff;
+}
+
+/* Responsive tweaks */
+@media (max-width: 640px) {
+    .sector-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .sector-header-right {
+        justify-content: flex-start;
+    }
+    .web-grid {
+        grid-template-columns: 1fr;
+    }
+    .repo-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+}
