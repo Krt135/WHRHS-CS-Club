@@ -73,7 +73,7 @@ class SpecialHeader extends HTMLElement {
                 </a>
                 <nav class="nav-links">
                     <a href="index.html#about" class="${isActive("about")}"><span class="num">01</span>About</a>
-                    <a href="index.html#projects" class="${isActive("projects")}"><span class="num">02</span>Projects</a>
+                    <a href="projects.html" class="${isActive("projects")}"><span class="num">02</span>Projects</a>
                     <a href="events.html" class="${isActive("events")}"><span class="num">03</span>Events</a>
                     <a href="resources.html" class="${isActive("resources")}"><span class="num">04</span>Resources</a>
                     <a href="index.html#sponsors" class="${isActive("sponsors")}"><span class="num">05</span>Sponsors</a>
@@ -88,7 +88,7 @@ class SpecialHeader extends HTMLElement {
 
             <nav class="mobile-nav" id="mobile-nav" aria-label="Mobile navigation">
                 <a href="index.html#about" class="${isActive("about")}">01 About</a>
-                <a href="index.html#projects" class="${isActive("projects")}">02 Projects</a>
+                <a href="projects.html" class="${isActive("projects")}">02 Projects</a>
                 <a href="events.html" class="${isActive("events")}">03 Events</a>
                 <a href="resources.html" class="${isActive("resources")}">04 Resources</a>
                 <a href="index.html#sponsors" class="${isActive("sponsors")}">05 Sponsors</a>

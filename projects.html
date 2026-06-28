@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Projects // WHRHS CS Club</title>
+    <!-- Your existing CSS -->
+    <link rel="stylesheet" href="styleFolder/style.css" />
+    <!-- <link rel="stylesheet" href="styleFolder/projects.css" /> --> <!-- We'll create this -->
+    <!-- Keep your Firebase scripts if needed -->
+    <script type="module" src="scriptFolder/header.js"></script>
+    <script type="module" src="scriptFolder/footer.js"></script>
+    <!-- Optional: any projects-specific JS -->
+    <script type="module" src="scriptFolder/projects.js"></script>
+</head>
+<body>
+    <!-- Header component, active page = "projects" -->
+    <cs-header active-page="projects"></cs-header>
+
+    <main class="projects-main">
+        <!-- === HERO SECTION === -->
+        <section class="projects-hero">
+            <div class="hero-wrapper reveal">
+                <p class="eyebrow">/ 02 · Projects</p>
+                <h1 class="hero-title">
+                    What we<br />
+                    <span class="highlight">ship.</span>
+                </h1>
+                <p class="hero-subtitle">
+                    Two arms: <span class="text-foreground">Game Dev</span> and
+                    <span class="text-foreground">Web Dev</span>.
+                    Members publish under their own name, exec board ships group work,
+                    and everything ends up on GitHub.
+                </p>
+            </div>
+        </section>
+
+        <!-- === GAME DEV SECTOR === -->
+        <section class="sector-section">
+            <div class="sector-header">
+                <div class="sector-header-left">
+                    <p class="eyebrow">/ Sector 01 · Game Dev</p>
+                    <h2 class="sector-title">Made with —</h2>
+                    <div class="tech-tags">
+                        <span>Unity</span>
+                        <span>Pygame</span>
+                        <span>JS Canvas</span>
+                    </div>
+                </div>
+                <div class="sector-header-right">
+                    <button class="btn-outline">People’s Games</button>
+                    <button class="btn-outline">Group Games</button>
+                    <button class="btn-primary">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12"/><path d="m17 8-5-5-5 5"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/></svg>
+                        Upload your game
+                    </button>
+                </div>
+            </div>
+            <div class="game-grid">
+                <div class="empty-state">No games yet. Sign in to become a member and submit yours.</div>
+            </div>
+        </section>
+
+        <!-- === WEB DEV SECTOR === -->
+        <section class="sector-section">
+            <div class="sector-header-simple">
+                <p class="eyebrow">/ Sector 02 · Web Dev</p>
+                <h2 class="sector-title">Live showcase.</h2>
+                <p class="sector-desc">Real, in‑production websites we built for other WHRHS clubs. Click any card to open and interact with the live site.</p>
+            </div>
+            <div class="web-grid">
+                <!-- Card 1 -->
+                <a href="https://example.com" target="_blank" rel="noopener noreferrer" class="project-card">
+                    <div class="card-preview">
+                        <div class="window-dots">
+                            <span></span><span></span><span></span>
+                        </div>
+                        <div class="preview-placeholder">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <div>
+                            <h3>WHRHS Debate Team</h3>
+                            <p>Tournament schedule + roster</p>
+                        </div>
+                        <span class="card-open">Open →</span>
+                    </div>
+                </a>
+                <!-- Card 2 -->
+                <a href="https://example.com" target="_blank" rel="noopener noreferrer" class="project-card">
+                    <div class="card-preview">
+                        <div class="window-dots">
+                            <span></span><span></span><span></span>
+                        </div>
+                        <div class="preview-placeholder">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <div>
+                            <h3>Robotics Club</h3>
+                            <p>Sponsor packet + match log</p>
+                        </div>
+                        <span class="card-open">Open →</span>
+                    </div>
+                </a>
+                <!-- Card 3 -->
+                <a href="https://example.com" target="_blank" rel="noopener noreferrer" class="project-card">
+                    <div class="card-preview">
+                        <div class="window-dots">
+                            <span></span><span></span><span></span>
+                        </div>
+                        <div class="preview-placeholder">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <div>
+                            <h3>Art Club Gallery</h3>
+                            <p>Curated student portfolio</p>
+                        </div>
+                        <span class="card-open">Open →</span>
+                    </div>
+                </a>
+            </div>
+        </section>
+
+        <!-- === OPEN SOURCE SECTOR === -->
+        <section class="sector-section">
+            <div class="sector-header-simple">
+                <p class="eyebrow">/ Sector 03 · Open Source</p>
+                <h2 class="sector-title">Repos in the open.</h2>
+            </div>
+            <div class="repo-list">
+                <a href="https://github.com/whrhs-cs/site" target="_blank" class="repo-item">
+                    <div>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/><path d="M9 18c-4.51 2-5-2-7-2"/></svg>
+                        <div>
+                            <h4>whrhs‑cs/site</h4>
+                            <p>This website. TanStack Start + Tailwind.</p>
+                        </div>
+                    </div>
+                    <span class="repo-link">View repo →</span>
+                </a>
+                <a href="https://github.com/whrhs-cs/hillshacks" target="_blank" class="repo-item">
+                    <div>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/><path d="M9 18c-4.51 2-5-2-7-2"/></svg>
+                        <div>
+                            <h4>whrhs‑cs/hillshacks</h4>
+                            <p>Hackathon registration &amp; schedule app.</p>
+                        </div>
+                    </div>
+                    <span class="repo-link">View repo →</span>
+                </a>
+                <a href="https://github.com/whrhs-cs/lecture-notes" target="_blank" class="repo-item">
+                    <div>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/><path d="M9 18c-4.51 2-5-2-7-2"/></svg>
+                        <div>
+                            <h4>whrhs‑cs/lecture‑notes</h4>
+                            <p>Markdown archive of every club lecture.</p>
+                        </div>
+                    </div>
+                    <span class="repo-link">View repo →</span>
+                </a>
+                <a href="https://github.com/whrhs-cs/competitive" target="_blank" class="repo-item">
+                    <div>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/><path d="M9 18c-4.51 2-5-2-7-2"/></svg>
+                        <div>
+                            <h4>whrhs‑cs/competitive</h4>
+                            <p>Practice problems + member solutions.</p>
+                        </div>
+                    </div>
+                    <span class="repo-link">View repo →</span>
+                </a>
+            </div>
+        </section>
+    </main>
+
+    <cs-footer></cs-footer>
+
+    <!-- Keep your existing scripts for Firebase, etc. if needed -->
+    <script type="module" src="scriptFolder/projects.js"></script>
+    <script>
+    (function() {
+        // Run immediately, no need to wait for DOMContentLoaded
+        const reveals = document.querySelectorAll('.reveal');
+        
+        if (reveals.length === 0) {
+            console.log('No .reveal elements found');
+            return;
+        }
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('in');
+                }
+            });
+        }, { 
+            threshold: 0.15,
+            rootMargin: '0px 0px -50px 0px'
+        });
+
+        reveals.forEach(el => observer.observe(el));
+    })();
+</script>
+</body>
+</html>
