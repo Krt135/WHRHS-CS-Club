@@ -14,7 +14,7 @@ class SpecialFooter extends HTMLElement {
     <p class="eyebrow">/ Sitemap</p>
     <nav class="footer-nav">
       <a href="index.html#about">→ About</a>
-      <a href="index.html#projects">→ Projects</a>
+      <a href="projects.html">→ Projects</a>
       <a href="events.html">→ Events</a>
       <a href="resources.html">→ Resources</a>
       <a href="index.html#sponsors">→ Sponsors</a>
