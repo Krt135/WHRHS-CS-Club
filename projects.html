@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="styleFolder/style.css" />
     <link rel="stylesheet" href="styleFolder/index.css" />
     <link rel="stylesheet" href="styleFolder/projects.css"/>
+    
     <script type="module" src="scriptFolder/header.js"></script>
     <script type="module" src="scriptFolder/footer.js"></script>
     <script type="module" src="scriptFolder/projects.js"></script>
@@ -15,7 +16,6 @@
     <cs-header active-page="projects"></cs-header>
 
     <main class="projects-main">
-        <!-- === HERO SECTION === -->
         <section class="projects-hero">
             <div class="hero-wrapper reveal">
                 <p class="eyebrow">/ 02 · Projects</p>
@@ -32,33 +32,32 @@
             </div>
         </section>
 
-        <!-- === GAME DEV SECTOR === -->
         <section class="sector-section">
             <div class="sector-header">
                 <div class="sector-header-left">
                     <p class="eyebrow">/ Sector 01 · Game Dev</p>
                     <h2 class="sector-title">Made with —</h2>
-                    <div class="tech-tags">
-                        <span>Unity</span>
-                        <span>Pygame</span>
-                        <span>JS Canvas</span>
+                    <div class="tech-tags" id="engineFilters">
+                        <span id="tag-Unity" style="cursor:pointer;">Unity</span>
+                        <span id="tag-Pygame" style="cursor:pointer;">Pygame</span>
+                        <span id="tag-JSCanvas" style="cursor:pointer;">JS Canvas</span>
                     </div>
                 </div>
                 <div class="sector-header-right">
-                    <button class="btn-outline">People’s Games</button>
-                    <button class="btn-outline">Group Games</button>
-                    <button class="btn-primary">
+                    <button id="filter-people" class="btn-outline" style="border-color: var(--primary); color: var(--primary);">People’s Games</button>
+                    <button id="filter-group" class="btn-outline">Group Games</button>
+                    
+                    <button class="btn-primary" onclick="toggleUploadModal(true)">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12"/><path d="m17 8-5-5-5 5"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/></svg>
                         Upload your game
                     </button>
                 </div>
             </div>
-            <div class="game-grid">
+            <div id="gameGridContainer" class="game-grid">
                 <div class="empty-state">No games yet. Sign in to become a member and submit yours.</div>
             </div>
         </section>
 
-        <!-- === WEB DEV SECTOR === -->
         <section class="sector-section">
             <div class="sector-header-simple">
                 <p class="eyebrow">/ Sector 02 · Web Dev</p>
@@ -66,7 +65,6 @@
                 <p class="sector-desc">Real, in‑production websites we built for other WHRHS clubs. Click any card to open and interact with the live site.</p>
             </div>
             <div class="web-grid">
-                <!-- Card 1 -->
                 <a href="https://example.com" target="_blank" rel="noopener noreferrer" class="project-card">
                     <div class="card-preview">
                         <div class="window-dots">
@@ -84,7 +82,6 @@
                         <span class="card-open">Open →</span>
                     </div>
                 </a>
-                <!-- Card 2 -->
                 <a href="https://example.com" target="_blank" rel="noopener noreferrer" class="project-card">
                     <div class="card-preview">
                         <div class="window-dots">
@@ -102,7 +99,6 @@
                         <span class="card-open">Open →</span>
                     </div>
                 </a>
-                <!-- Card 3 -->
                 <a href="https://example.com" target="_blank" rel="noopener noreferrer" class="project-card">
                     <div class="card-preview">
                         <div class="window-dots">
@@ -123,7 +119,6 @@
             </div>
         </section>
 
-        <!-- === OPEN SOURCE SECTOR === -->
         <section class="sector-section">
             <div class="sector-header-simple">
                 <p class="eyebrow">/ Sector 03 · Open Source</p>
@@ -176,31 +171,80 @@
 
     <cs-footer></cs-footer>
 
-    <!-- Keep your existing scripts for Firebase, etc. if needed -->
-    <script type="module" src="scriptFolder/projects.js"></script>
+    <div id="uploadModal" style="display: none; position: fixed; inset: 0; background: rgba(10,10,10,0.95); z-index: 9999; align-items: center; justify-content: center; padding: 2rem; font-family: monospace;">
+        <div style="background: var(--surface); border: 1px solid var(--border); padding: 2.5rem; width: 100%; max-width: 550px; border-radius: var(--radius-sm); box-shadow: 0 0 30px rgba(0,0,0,0.5); max-height: 90vh; overflow-y: auto;">
+            <h3 style="color: var(--primary); margin-top: 0; font-size: 1.5rem; letter-spacing: -0.02em;">DEPLOY NEW PROJECT</h3>
+            
+            <label style="display: block; margin-bottom: 0.5rem; font-size: 0.75rem; color: var(--muted-fg); letter-spacing: 0.1em;">PROJECT TITLE</label>
+            <input type="text" id="projTitle" placeholder="e.g., Space Invaders Pro" style="width: 100%; background: var(--background); border: 1px solid var(--border); color: var(--foreground); padding: 0.75rem; font-family: inherit; margin-bottom: 1.5rem; border-radius: var(--radius-sm);" />
+
+            <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem;">
+                <div style="flex: 1;">
+                    <label style="display: block; margin-bottom: 0.5rem; font-size: 0.75rem; color: var(--muted-fg); letter-spacing: 0.1em;">CATEGORY</label>
+                    <select id="projCategory" style="width: 100%; background: var(--background); border: 1px solid var(--border); color: var(--foreground); padding: 0.75rem; font-family: inherit; border-radius: var(--radius-sm);">
+                        <option value="people">People's Game (Individual)</option>
+                        <option value="group">Group Game (Execs Only)</option>
+                    </select>
+                </div>
+                <div style="flex: 1;">
+                    <label style="display: block; margin-bottom: 0.5rem; font-size: 0.75rem; color: var(--muted-fg); letter-spacing: 0.1em;">ENGINE / TAG</label>
+                    <select id="projEngine" style="width: 100%; background: var(--background); border: 1px solid var(--border); color: var(--foreground); padding: 0.75rem; font-family: inherit; border-radius: var(--radius-sm);">
+                        <option value="Unity">Unity WebGL</option>
+                        <option value="Pygame">Pygame (WASM)</option>
+                        <option value="JSCanvas">JS Canvas</option>
+                        <option value="Other">Other / Web</option>
+                    </select>
+                </div>
+            </div>
+
+            <label style="display: block; margin-bottom: 0.5rem; font-size: 0.75rem; color: var(--muted-fg); letter-spacing: 0.1em;">DEPLOYMENT FORMAT</label>
+            <select id="projType" style="width: 100%; background: var(--background); border: 1px solid var(--border); color: var(--foreground); padding: 0.75rem; font-family: inherit; margin-bottom: 1.5rem; border-radius: var(--radius-sm);">
+                <option value="game">Game Folder Zip (Upload to Supabase)</option>
+                <option value="web">External Live Link (GitHub Pages, etc.)</option>
+            </select>
+
+            <div id="gameUploadGroup">
+                <label style="display: block; margin-bottom: 0.5rem; font-size: 0.75rem; color: var(--muted-fg); letter-spacing: 0.1em;">CHOOSE COMPRESSED ZIP (Must have index.html at root)</label>
+                <input type="file" id="projZipFile" accept=".zip" style="color: var(--muted-fg); font-family: inherit; font-size: 0.85rem;" />
+            </div>
+
+            <div id="webUploadGroup" style="display: none;">
+                <label style="display: block; margin-bottom: 0.5rem; font-size: 0.75rem; color: var(--muted-fg); letter-spacing: 0.1em;">EXTERNAL HOSTING ROUTING URL</label>
+                <input type="url" id="projExternalUrl" placeholder="https://username.github.io/game" style="width: 100%; background: var(--background); border: 1px solid var(--border); color: var(--foreground); padding: 0.75rem; font-family: inherit; border-radius: var(--radius-sm);" />
+            </div>
+
+            <div id="uploadStatus" style="margin-top: 1.5rem; font-size: 0.8rem; color: var(--primary); min-height: 1.2rem;"></div>
+
+            <div style="margin-top: 2.5rem; display: flex; gap: 1rem; justify-content: flex-end;">
+                <button class="btn-outline" onclick="toggleUploadModal(false)">Cancel</button>
+                <button id="submitUploadBtn" class="btn-primary">Deploy Core ➔</button>
+            </div>
+        </div>
+    </div>
     <script>
-    (function() {
-        // Run immediately, no need to wait for DOMContentLoaded
-        const reveals = document.querySelectorAll('.reveal');
-        
-        if (reveals.length === 0) {
-            console.log('No .reveal elements found');
-            return;
-        }
+        // Layout helper window visibility toggle switches
+        window.toggleUploadModal = function(show) {
+            const modal = document.getElementById("uploadModal");
+            if (modal) modal.style.display = show ? "flex" : "none";
+        };
 
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.classList.add('in');
-                }
+        (function() {
+            const reveals = document.querySelectorAll('.reveal');
+            if (reveals.length === 0) return;
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('in');
+                    }
+                });
+            }, { 
+                threshold: 0.15,
+                rootMargin: '0px 0px -50px 0px'
             });
-        }, { 
-            threshold: 0.15,
-            rootMargin: '0px 0px -50px 0px'
-        });
 
-        reveals.forEach(el => observer.observe(el));
-    })();
-</script>
+            reveals.forEach(el => observer.observe(el));
+        })();
+    </script>
 </body>
 </html>
