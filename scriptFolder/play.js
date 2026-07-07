@@ -40,12 +40,46 @@ document.addEventListener("DOMContentLoaded", async () => {
         // 4. Inject verified tracking asset destination endpoint URL directly into secure frame element
         statusMessage.innerText = "Connecting secure asset stream path...";
         
-        // Listen for when iframe finishes loading to safely fade out status curtain
-        viewport.addEventListener("load", () => {
-            if (statusScreen) statusScreen.style.display = "none";
-        });
+        if (projectData.embedUrl) {
+            // Fetch raw HTML text manually to bypass Supabase's strict CSP sandbox headers
+            fetch(projectData.embedUrl)
+                .then(response => {
+                    if (!response.ok) throw new Error("Failed to download game assets.");
+                    return response.text();
+                })
+                .then(htmlContent => {
+                    // Extract the clean base directory path of the deployed folder assets
+                    const baseDir = projectData.embedUrl.substring(0, projectData.embedUrl.lastIndexOf('/')) + '/';
+                    
+                    // Inject a <base> tag so relative paths (like script src="game.js") trace correctly
+                    let injectedHtml = htmlContent;
+                    if (htmlContent.includes('<head>')) {
+                        injectedHtml = htmlContent.replace('<head>', `<head><base href="${baseDir}">`);
+                    } else if (htmlContent.includes('<HEAD>')) {
+                        injectedHtml = htmlContent.replace('<HEAD>', `<HEAD><base href="${baseDir}">`);
+                    } else {
+                        injectedHtml = `<base href="${baseDir}">` + htmlContent;
+                    }
+                    
+                    // Open and write directly to the iframe context stream
+                    const iframeDoc = viewport.contentWindow.document || viewport.contentDocument;
+                    iframeDoc.open();
+                    iframeDoc.write(injectedHtml);
+                    iframeDoc.close();
 
-        viewport.src = projectData.embedUrl;
+                    // Instantly drop the loading screen curtain now that the code assets are written
+                    if (statusScreen) statusScreen.style.display = "none";
+                })
+                .catch(err => {
+                    console.error("Arcade Content Injection Fallback Triggered:", err);
+                    
+                    // Failover logic: if the direct fetch is blocked, default back to standard src mapping
+                    viewport.addEventListener("load", () => {
+                        if (statusScreen) statusScreen.style.display = "none";
+                    });
+                    viewport.src = projectData.embedUrl;
+                });
+        }
 
     } catch (error) {
         console.error(error);

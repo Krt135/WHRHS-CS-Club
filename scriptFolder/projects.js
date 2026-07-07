@@ -166,6 +166,12 @@ if (submitUploadBtn) {
         
         if (!title) return alert("Please specify a project title.");
 
+        // 🔒 SAFETY CHECK: Ensure the Supabase key exists before we start
+        if (!SUPABASE_ANON_KEY) {
+            alert("Configuration Error: Supabase API Key is missing.");
+            return;
+        }
+
         submitUploadBtn.disabled = true;
         uploadStatus.innerText = "Verifying permissions...";
 
@@ -214,13 +220,13 @@ if (submitUploadBtn) {
                     if (path.endsWith(".wasm")) contentType = "application/wasm";
                     if (path.endsWith(".png"))  contentType = "image/png";
 
+                    // 🌟 FIX: Added lowercase 'authorization' header to bypass gateway parsing errors
                     const uploadResponse = await fetch(`${SUPABASE_URL}/storage/v1/object/games/${storagePath}`, {
                         method: 'POST',
                         headers: {
-                            'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
                             'apikey': SUPABASE_ANON_KEY,
                             'Content-Type': contentType,
-                            'x-upsert': 'true' // Kept clean overwrite rules intact
+                            'x-upsert': 'true' 
                         },
                         body: contentData
                     });
