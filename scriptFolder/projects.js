@@ -1,21 +1,19 @@
 import { auth, db } from "./firebase.js";
-import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
-import { getDatabase, ref as dbRef, push, set, get, onValue } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
+import { onAuthStateChanged } from "firebase/auth";
+import { ref as dbRef, onValue, update, remove, get, set, push } from "firebase/database";
 
 import * as fflate from "https://cdn.jsdelivr.net/npm/fflate@0.8.2/+esm";
 
-// 🌟 SUPABASE CREDENTIALS
 const SUPABASE_URL = "https://yokredtutoeepddttvxi.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_EEb77E3TuyXU9ELGDvWxeQ_FdIL3vPQ";
 
 let currentUser = null;
+let currentUserRole = 'member'; // Default to member until fetched
 let allGames = [];
 
-// Filtering State
-let activeEngine = null; // Can be 'Unity', 'Pygame', 'JSCanvas', or null
-let activeCategory = 'people'; // 'people' or 'group'
+let activeEngine = null; 
+let activeCategory = 'people'; 
 
-// DOM Elements
 const gameGridContainer = document.getElementById("gameGridContainer");
 const filterPeopleBtn = document.getElementById("filter-people");
 const filterGroupBtn = document.getElementById("filter-group");
@@ -26,13 +24,22 @@ const engineTags = {
 };
 
 // ─── 1. AUTHENTICATION & DATA FETCHING ────────────────────────────
-onAuthStateChanged(auth, (user) => {
+onAuthStateChanged(auth, async (user) => {
     if (user) {
         currentUser = user;
+        // 🌟 Fetch the user's role so we know if they get global delete powers
+        const snap = await get(dbRef(db, `users/${user.uid}`));
+        if (snap.exists()) {
+            currentUserRole = snap.val().role || 'member';
+        }
+    } else {
+        currentUser = null;
+        currentUserRole = 'member';
     }
+    // Re-render games once auth state loads to show/hide delete buttons
+    renderGames();
 });
 
-// ⚡ FIXED: Restored clean top-level onValue listener pointing to 'games'
 const projectsRef = dbRef(db, 'games');
 onValue(projectsRef, (snapshot) => {
     allGames = [];
@@ -40,7 +47,6 @@ onValue(projectsRef, (snapshot) => {
         snapshot.forEach(childSnap => {
             allGames.push(childSnap.val());
         });
-        // Sort newest first
         allGames.sort((a, b) => b.timestamp - a.timestamp);
     }
     renderGames();
@@ -58,7 +64,6 @@ function updateFilterUI() {
         filterGroupBtn.style.color = activeCategory === 'group' ? 'var(--primary)' : 'var(--muted-fg)';
     }
 
-    // Update Engine Tags
     Object.keys(engineTags).forEach(engine => {
         if (!engineTags[engine]) return;
         if (activeEngine === engine) {
@@ -73,11 +78,9 @@ function updateFilterUI() {
     });
 }
 
-// Category Listeners
 if (filterPeopleBtn) filterPeopleBtn.addEventListener("click", () => { activeCategory = 'people'; renderGames(); });
 if (filterGroupBtn) filterGroupBtn.addEventListener("click", () => { activeCategory = 'group'; renderGames(); });
 
-// Engine Tag Listeners (Toggleable)
 Object.keys(engineTags).forEach(engine => {
     if (engineTags[engine]) {
         engineTags[engine].addEventListener("click", () => {
@@ -88,16 +91,11 @@ Object.keys(engineTags).forEach(engine => {
 });
 
 function renderGames() {
-    console.log("--- RENDER RUNNING ---");
-    console.log("Raw allGames data:", allGames);
-    console.log("Current active filters:", { activeCategory, activeEngine });
-
     updateFilterUI();
     if (!gameGridContainer) return;
     
     gameGridContainer.innerHTML = "";
 
-    // Apply active filters
     const filteredGames = allGames.filter(game => {
         const matchesCategory = game.category === activeCategory;
         const matchesEngine = activeEngine ? game.engine === activeEngine : true;
@@ -109,10 +107,16 @@ function renderGames() {
         return;
     }
 
-    // Render Grid (Building the HTML cards dynamically)
     let gridHTML = `<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 1.5rem; text-align: left;">`;
     
     filteredGames.forEach(game => {
+        // 🌟 CONDITIONAL DELETE BUTTON LOGIC
+        // If the user is logged in AND (they uploaded it OR they are admin/exec)
+        let deleteBtnHTML = "";
+        if (currentUser && (currentUser.uid === game.authorUid || ['exec', 'admin'].includes(currentUserRole))) {
+            deleteBtnHTML = `<button onclick="event.preventDefault(); window.deleteGame('${game.id}')" style="background: transparent; color: #ef4444; border: 1px solid #ef4444; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 0.8rem; margin-right: auto; transition: 0.2s;">DELETE</button>`;
+        }
+
         gridHTML += `
             <a href="play.html?id=${game.id}" class="project-card">
                 <div class="card-preview">
@@ -126,7 +130,10 @@ function renderGames() {
                         <h3 style="font-size: 1.1rem;">${game.title}</h3>
                         <p>By: ${game.authorName}</p>
                     </div>
-                    <span class="card-open" style="align-self: flex-end;">Play →</span>
+                    <div style="display: flex; width: 100%; justify-content: flex-end; align-items: center; margin-top: 4px;">
+                        ${deleteBtnHTML}
+                        <span class="card-open" style="align-self: flex-end;">Play →</span>
+                    </div>
                 </div>
             </a>
         `;
@@ -136,7 +143,43 @@ function renderGames() {
     gameGridContainer.innerHTML = gridHTML;
 }
 
-// ─── 3. MODAL & UPLOAD PIPELINE ───────────────────────────────────
+// ─── 3. DELETE TO MODERATION PIPELINE ─────────────────────────────
+
+window.deleteGame = async (gameId) => {
+    if (!confirm("Are you sure you want to delete this game?")) return;
+    if (!confirm("This game will be removed from the arcade and moved to the moderation queue. Proceed?")) return;
+
+    try {
+        const gameSnap = await get(dbRef(db, `games/${gameId}`));
+        if (!gameSnap.exists()) return alert("Game no longer exists.");
+        
+        const gameData = gameSnap.val();
+
+        const moderationPayload = {
+            ...gameData, 
+            _deletedFrom: 'games',
+            _originalId: gameId, 
+            _sourceLabel: 'Arcade Project',
+            _deletedAt: Date.now(),
+            _deletedBy: currentUser.displayName || currentUser.email.split('@')[0],
+            _deletedById: currentUser.uid
+        };
+
+        const updates = {};
+        updates[`games/${gameId}`] = null;
+        updates[`deleted_posts/${gameId}`] = moderationPayload;
+
+        // Use dbRef(db) to target the root node atomically
+        await update(dbRef(db), updates);
+        console.log("Game successfully moved to Moderation.");
+
+    } catch (error) {
+        console.error("Soft Delete Failed:", error);
+        alert("Failed to move game to moderation: " + error.message);
+    }
+};
+
+// ─── 4. MODAL & UPLOAD PIPELINE ───────────────────────────────────
 const projType = document.getElementById("projType");
 const gameUploadGroup = document.getElementById("gameUploadGroup");
 const webUploadGroup = document.getElementById("webUploadGroup");
@@ -166,7 +209,6 @@ if (submitUploadBtn) {
         
         if (!title) return alert("Please specify a project title.");
 
-        // 🔒 SAFETY CHECK: Ensure the Supabase key exists before we start
         if (!SUPABASE_ANON_KEY) {
             alert("Configuration Error: Supabase API Key is missing.");
             return;
@@ -176,12 +218,8 @@ if (submitUploadBtn) {
         uploadStatus.innerText = "Verifying permissions...";
 
         try {
-            // 🔒 SECURITY CHECK: Explicit wait snapshot using get() correctly
             if (category === "group") {
-                const userSnap = await get(dbRef(db, `users/${currentUser.uid}`));
-                const userRole = userSnap.exists() ? userSnap.val().role : null;
-    
-                if (userRole !== 'exec' && userRole !== 'admin') {
+                if (currentUserRole !== 'exec' && currentUserRole !== 'admin') {
                     throw new Error("Access Denied: Only Executive Board members can upload Group Games.");
                 }
             }
@@ -220,7 +258,6 @@ if (submitUploadBtn) {
                     if (path.endsWith(".wasm")) contentType = "application/wasm";
                     if (path.endsWith(".png"))  contentType = "image/png";
 
-                    // 🌟 FIX: Added lowercase 'authorization' header to bypass gateway parsing errors
                     const uploadResponse = await fetch(`${SUPABASE_URL}/storage/v1/object/games/${storagePath}`, {
                         method: 'POST',
                         headers: {
