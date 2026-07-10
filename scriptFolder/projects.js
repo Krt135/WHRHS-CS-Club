@@ -111,7 +111,6 @@ function renderGames() {
     
     filteredGames.forEach(game => {
         // 🌟 CONDITIONAL DELETE BUTTON LOGIC
-        // If the user is logged in AND (they uploaded it OR they are admin/exec)
         let deleteBtnHTML = "";
         if (currentUser && (currentUser.uid === game.authorUid || ['exec', 'admin'].includes(currentUserRole))) {
             deleteBtnHTML = `<button onclick="event.preventDefault(); window.deleteGame('${game.id}')" style="background: transparent; color: #ef4444; border: 1px solid #ef4444; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 0.8rem; margin-right: auto; transition: 0.2s;">DELETE</button>`;
@@ -121,7 +120,7 @@ function renderGames() {
             <div class="project-card" style="position: relative;">
                 <div class="project-author-icon" 
                      title="View ${game.authorName}'s Profile"
-                     onclick="event.preventDefault(); event.stopPropagation(); window.location.href='account.html?user=${game.authorId || game.uid || ''}';"
+                     onclick="event.preventDefault(); event.stopPropagation(); window.location.href='account.html?user=${game.authorUid || ''}';"
                      style="
                         position: absolute;
                         top: 4px;       /*Pushes bubble vertically*/
@@ -140,7 +139,7 @@ function renderGames() {
                         cursor: pointer;
                         z-index: 10;
                         box-shadow: 0 2px 8px rgba(0,0,0,0.5);
-                        border: 2px solid #111; /* Optional: Adds a crisp dark border separating it from the background card */
+                        border: 2px solid #111;
                         transition: transform 0.2s ease;
                      "
                      onmouseover="this.style.transform='scale(1.1)'"

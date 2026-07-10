@@ -141,6 +141,7 @@ onAuthStateChanged(auth, async (user) => {
             // 1. Instantly hide sensitive actions and layout panels
             if (saveBtn) saveBtn.style.display = "none";
             if (adminBtn) adminBtn.style.display = "none";
+            if (signOutBtn) signOutBtn.style.display = "none";
             
             // 2. Lockdown form controls so visitors cannot rewrite the values
             displayNameInput.disabled = true;
