@@ -157,6 +157,7 @@ if (formAddLecture) {
             title: document.getElementById("lec-title").value,
             tag: document.getElementById("lec-tag").value,
             meta: document.getElementById("lec-meta").value,
+            authorUid: auth.currentUser ? auth.currentUser.uid : "", // 🌟 ADDED: Links resource row to profile cards
             format: isVideo ? "video" : "text",
             content: isVideo ? document.getElementById("lec-url").value : document.getElementById("lec-text").value,
             createdAt: serverTimestamp()
@@ -186,6 +187,7 @@ if (formAddLink) {
             tag: document.getElementById("link-tag").value,
             meta: document.getElementById("link-type").value,
             url: document.getElementById("link-url").value,
+            authorUid: auth.currentUser ? auth.currentUser.uid : "", // 🌟 ADDED: Links web resource rows to profile cards
             createdAt: serverTimestamp() // Smooth server synced time token
         };
 
@@ -222,11 +224,42 @@ function createResourceHTML(item, index) {
   const isText = item.format === "text";
   let titleHtml = '';
 
-  // 🌟 FIX: Checked & refactored to cleanly support full page overlay triggers
   if (isText) {
-    titleHtml = `<button class="res-title btn-read-essay" title="Read Essay">${item.title}</button>`;
+    titleHtml = `<button class="res-title btn-read-essay" title="Read Essay">${esc(item.title)}</button>`;
   } else {
-    titleHtml = `<a href="${item.content || item.url}" target="_blank" class="res-title">${item.title}</a>`;
+    titleHtml = `<a href="${item.content || item.url}" target="_blank" class="res-title">${esc(item.title)}</a>`;
+  }
+
+  // 🌟 BUILD DYNAMIC INTERACTIVE AVATAR BUBBLE
+  const avatarLetter = (item.meta || '??').substring(0, 2).toUpperCase();
+  let bubbleHtml = "";
+  if (item.authorUid) {
+      bubbleHtml = `
+        <div class="resource-author-bubble" 
+             title="View ${esc(item.meta)}'s Profile"
+             onclick="event.preventDefault(); event.stopPropagation(); window.location.href='account.html?user=${item.authorUid}';"
+             style="
+                width: 24px;
+                height: 24px;
+                border-radius: 50%;
+                background-color: var(--primary);
+                color: var(--background);
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                font-family: monospace;
+                font-weight: bold;
+                font-size: 0.7rem;
+                cursor: pointer;
+                margin-right: 8px;
+                border: 1px solid var(--border);
+                transition: transform 0.2s ease;
+             "
+             onmouseover="this.style.transform='scale(1.15)'"
+             onmouseout="this.style.transform='scale(1)'">
+            ${avatarLetter}
+        </div>
+      `;
   }
 
   return `
@@ -234,8 +267,11 @@ function createResourceHTML(item, index) {
       <div class="res-index">${indexDisplay}</div>
       <div class="res-icon">${iconSvg}</div>
       ${titleHtml}
-      <div class="res-tag">${item.tag}</div>
-      <div class="res-meta">${item.meta}</div>
+      <div class="res-tag">${esc(item.tag)}</div>
+      <div class="res-meta" style="display: flex; align-items: center;">
+         ${bubbleHtml}
+         <span>${esc(item.meta)}</span>
+      </div>
       <div class="res-action exec-only">
         <button class="btn-delete-resource" title="Delete Resource">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
@@ -289,7 +325,7 @@ function renderLesson(firebaseKey) {
     return (raw || "").split(/\n\n+/).map(para => {
       para = para.trim();
       // Handle === Headers ===
-      if (para.startsWith("===")) {
+      if (para.startsWith("=== ")) {
         const h = para.replace(/^===\s*/, "").replace(/\s*===$/, "");
         return `<h3 class="essay-heading">${esc(h)}</h3>`;
       }
@@ -323,7 +359,7 @@ function renderLesson(firebaseKey) {
 // ==========================================================================
 resourceListContainer.addEventListener("click", async (e) => {
     
-    // 1. FIX: Hand off execution to full-screen overlay routing layer
+    // 1. Hand off execution to full-screen overlay routing layer
     const readBtn = e.target.closest(".btn-read-essay");
     if (readBtn) {
         const row = readBtn.closest(".resource-row");
