@@ -241,7 +241,12 @@ window.restorePost = async (id) => {
     const post = snap.val();
     if (!post._deletedFrom || !post._originalId) return alert("Missing restore data.");
     
-    const { id: originalStoredId, _deletedFrom, _originalId, _sourceLabel, _deletedAt, _deletedBy, _deletedById, ...data } = post;
+    // 1. Removed 'id' from the extraction list so we don't delete it
+    const { _deletedFrom, _originalId, _sourceLabel, _deletedAt, _deletedBy, _deletedById, ...data } = post;
+    
+    // 2. Explicitly re-attach the ID just to be 100% safe
+    data.id = _originalId;
+
     await set(ref(db, `${_deletedFrom}/${_originalId}`), data);
     await remove(ref(db, `deleted_posts/${id}`));
 };

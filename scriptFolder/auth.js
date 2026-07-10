@@ -55,14 +55,23 @@ async function requireApprovedMembership(user) {
 }
 
 // ---------- SIGN UP ----------
+// Global flag to prevent registration auto-redirect interference
+let isRegistering = false;
+
 export async function signUp(email, password, name) {
-  const cred = await createUserWithEmailAndPassword(auth, email, password);
+  try {
+    isRegistering = true; // Block auth redirection temporarily
+    
+    const cred = await createUserWithEmailAndPassword(auth, email, password);
 
-  await updateProfile(cred.user, { displayName: name });
-  await saveProfile(cred.user, name);
-  await signOut(auth);
+    await updateProfile(cred.user, { displayName: name });
+    await saveProfile(cred.user, name);
+    await signOut(auth);
 
-  return cred.user;
+    return cred.user;
+  } finally {
+    isRegistering = false; // Always lift block when done
+  }
 }
 
 // ---------- LOGIN ----------
@@ -86,6 +95,9 @@ export async function signInWithGoogle() {
 // ---------- AUTH STATE ----------
 export function initAuthRedirect() {
   onAuthStateChanged(auth, async (user) => {
+    // 🌟 If we are actively processing a fresh registration, skip the auto-routing checks!
+    if (isRegistering) return;
+
     if (user) {
       try {
         await requireApprovedMembership(user);

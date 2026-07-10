@@ -118,24 +118,55 @@ function renderGames() {
         }
 
         gridHTML += `
-            <a href="play.html?id=${game.id}" class="project-card">
-                <div class="card-preview">
-                    <div class="window-dots"><span></span><span></span><span></span></div>
-                    <div class="preview-placeholder">
-                        <span style="font-family: monospace; font-size: 1.5rem; font-weight: bold; color: #e5e5e5;">${game.engine || 'WEB'}</span>
-                    </div>
+            <div class="project-card" style="position: relative;">
+                <div class="project-author-icon" 
+                     title="View ${game.authorName}'s Profile"
+                     onclick="event.preventDefault(); event.stopPropagation(); window.location.href='account.html?user=${game.authorId || game.uid || ''}';"
+                     style="
+                        position: absolute;
+                        top: 4px;       /*Pushes bubble vertically*/
+                        right: 8px;     /*Pushes bubble horizontally*/
+                        width: 32px;
+                        height: 32px;
+                        border-radius: 50%;
+                        background-color: #ccff00;
+                        color: #111;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        font-family: monospace;
+                        font-weight: bold;
+                        font-size: 0.85rem;
+                        cursor: pointer;
+                        z-index: 10;
+                        box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+                        border: 2px solid #111; /* Optional: Adds a crisp dark border separating it from the background card */
+                        transition: transform 0.2s ease;
+                     "
+                     onmouseover="this.style.transform='scale(1.1)'"
+                     onmouseout="this.style.transform='scale(1)'">
+                    ${(game.authorName || '??').substring(0, 2).toUpperCase()}
                 </div>
-                <div class="card-footer" style="flex-direction: column; align-items: flex-start; gap: 0.5rem;">
-                    <div>
-                        <h3 style="font-size: 1.1rem;">${game.title}</h3>
-                        <p>By: ${game.authorName}</p>
+
+                <a href="play.html?id=${game.id}" style="text-decoration: none; color: inherit; display: block; height: 100%;">
+                    <div class="card-preview">
+                        <div class="window-dots"><span></span><span></span><span></span></div>
+                        <div class="preview-placeholder">
+                            <span style="font-family: monospace; font-size: 1.5rem; font-weight: bold; color: #e5e5e5;">${game.engine || 'WEB'}</span>
+                        </div>
                     </div>
-                    <div style="display: flex; width: 100%; justify-content: flex-end; align-items: center; margin-top: 4px;">
-                        ${deleteBtnHTML}
-                        <span class="card-open" style="align-self: flex-end;">Play →</span>
+                    <div class="card-footer" style="flex-direction: column; align-items: flex-start; gap: 0.5rem;">
+                        <div>
+                            <h3 style="font-size: 1.1rem;">${game.title}</h3>
+                            <p>By: ${game.authorName}</p>
+                        </div>
+                        <div style="display: flex; width: 100%; justify-content: flex-end; align-items: center; margin-top: 4px;">
+                            ${deleteBtnHTML}
+                            <span class="card-open" style="align-self: flex-end;">Play →</span>
+                        </div>
                     </div>
-                </div>
-            </a>
+                </a>
+            </div>
         `;
     });
     

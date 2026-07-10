@@ -174,10 +174,34 @@
     transition: border-color 0.2s;
     border-radius: var(--radius-sm);
     background: transparent;
+    position: relative;
 }
 
 .project-card:hover {
     border-color: var(--primary);
+}
+
+.project-author-icon {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background-color: #ccff00;
+    color: #111;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 14px;
+    z-index: 10;
+    transition: transform 0.2s ease;
+}
+
+.project-author-icon:hover {
+    transform: scale(1.1);
 }
 
 .card-preview {

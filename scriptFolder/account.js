@@ -1,6 +1,6 @@
 import { initializeApp, getApps, getApp } from "firebase/app"; 
 import { getAuth, onAuthStateChanged, updateProfile, signOut, updateEmail } from "firebase/auth";
-import { getDatabase, ref, set, get, update } from "firebase/database"; // 🌟 Added update here
+import { getDatabase, ref, set, get, update } from "firebase/database"; 
 
 // 1. Firebase Config
 const firebaseConfig = {
@@ -44,86 +44,163 @@ onAuthStateChanged(auth, async (user) => {
         return;
     }
 
-    // Populate basic Auth data
-    const name = user.displayName || "";
-    const email = user.email || "";
-    
-    displayNameHeading.textContent = name || email.split('@')[0];
-    headerEmail.textContent = email;
-    largeAvatar.textContent = (name || email || "?").charAt(0).toUpperCase();
-    
-    displayNameInput.value = name;
-    emailInput.value = email;
-    infoUid.textContent = user.uid;
-
     try {
-        const userRef = ref(db, `users/${user.uid}`);
-        const snapshot = await get(userRef);
+        // 🔒 SECURITY CHECK: Always look up the currently logged-in browser session user first
+        const currentUserRef = ref(db, `users/${user.uid}`);
+        const currentUserSnapshot = await get(currentUserRef);
         
-        if (snapshot.exists()) {
-            const data = snapshot.val();
+        let loggedInUserRole = "member";
+        if (currentUserSnapshot.exists()) {
+            const currentUserData = currentUserSnapshot.val();
             
-            // 🌟 FIX 3: Kick out pending users back to homepage
-            if (data.status === "pending") {
+            // Kick out pending users immediately
+            if (currentUserData.status === "pending") {
                 alert("Your membership application is currently pending review by the Exec Board.");
                 window.location.href = "index.html";
                 return;
             }
+            loggedInUserRole = currentUserData.role || "member";
+        }
 
-            const role = data.role || "member";
-            const joined = data.createdAt || "—";
-            const bio = data.bio || "";
-            const phone = data.phone || "";
-            
-            if (bioInput) bioInput.value = bio;
-            if (phoneInput) phoneInput.value = phone;
+        // 🌐 URL ROUTING CHECK: Are we looking at ourselves or a shared link?
+        const urlParams = new URLSearchParams(window.location.search);
+        const targetUid = urlParams.get('user');
+        const isOwnProfile = !targetUid || targetUid === user.uid;
 
-            // Update UI with DB data
-            headerRole.textContent = role.toUpperCase();
-            infoRole.textContent = role;
+        if (isOwnProfile) {
+            // ==========================================
+            // 📝 MODE A: EDIT MODE (OWN PROFILE)
+            // ==========================================
+            if (saveBtn) saveBtn.style.display = "inline-flex";
+            displayNameInput.disabled = false;
+            emailInput.disabled = true; // Kept default disabled unless authorized as Exec below
+            if (bioInput) bioInput.disabled = false;
+            if (phoneInput) phoneInput.disabled = false;
+
+            const name = user.displayName || "";
+            const email = user.email || "";
             
-            if (joined !== "—") {
-                infoDate.textContent = new Date(joined).toLocaleDateString();
+            displayNameHeading.textContent = name || email.split('@')[0];
+            headerEmail.textContent = email;
+            largeAvatar.textContent = (name || email || "?").charAt(0).toUpperCase();
+            
+            displayNameInput.value = name;
+            emailInput.value = email;
+            infoUid.textContent = user.uid;
+
+            if (currentUserSnapshot.exists()) {
+                const data = currentUserSnapshot.val();
+                const role = data.role || "member";
+                const joined = data.createdAt || "—";
+                const bio = data.bio || "";
+                const phone = data.phone || "";
+                
+                if (bioInput) bioInput.value = bio;
+                if (phoneInput) phoneInput.value = phone;
+
+                headerRole.textContent = role.toUpperCase();
+                infoRole.textContent = role;
+                
+                if (joined !== "—") {
+                    infoDate.textContent = new Date(joined).toLocaleDateString();
+                }
+
+                // Show Admin panel privileges ONLY if you are an authorized Exec viewing your OWN profile
+                if (role === "exec" || role === "admin") {
+                    if (adminBtn) adminBtn.style.display = "inline-flex";
+                    if (emailInput) emailInput.disabled = false; 
+            
+                    const helpText = document.querySelector(".help-text");
+                    if (helpText) helpText.textContent = "As an exec, you can update your official routing email.";
+                } else {
+                    if (adminBtn) adminBtn.style.display = "none";
+                }
+            } else {
+                // Initialize safe defaults for completely fresh database records
+                const joinDate = new Date().toISOString();
+                await set(currentUserRef, {
+                    uid: user.uid,
+                    displayName: name,
+                    email: user.email,
+                    role: "member",
+                    status: "pending", 
+                    createdAt: joinDate,
+                    gamesUploaded: [],
+                    eventsRegistered: []
+                });
+                infoDate.textContent = new Date(joinDate).toLocaleDateString();
+                headerRole.textContent = "MEMBER";
+                infoRole.textContent = "member";
+                if (adminBtn) adminBtn.style.display = "none";
             }
 
-            // --- EXEC / ADMIN PRIVILEGES ---
-            if (role === "exec" || role === "admin") {
-                if (adminBtn) adminBtn.style.display = "inline-flex";
-                if (emailInput) emailInput.disabled = false; 
-        
-                const helpText = document.querySelector(".help-text");
-                if (helpText) helpText.textContent = "As an exec, you can update your official routing email.";
-            }
         } else {
-            // 🌟 FIX 1: Use safe defaults ONLY if user has no record at all in database
-            const joinDate = new Date().toISOString();
-            await set(userRef, {
-                uid: user.uid,
-                displayName: name,
-                email: user.email,
-                role: "member",
-                status: "approved", // Existing old users default to approved
-                createdAt: joinDate,
-                gamesUploaded: [],
-                eventsRegistered: []
-            });
-            infoDate.textContent = new Date(joinDate).toLocaleDateString();
-            headerRole.textContent = "MEMBER";
-            infoRole.textContent = "member";
+            // ==========================================
+            // 🔒 MODE B: VIEW-ONLY MODE (VISITOR PROFILE)
+            // ==========================================
+            // 1. Instantly hide sensitive actions and layout panels
+            if (saveBtn) saveBtn.style.display = "none";
+            if (adminBtn) adminBtn.style.display = "none";
+            
+            // 2. Lockdown form controls so visitors cannot rewrite the values
+            displayNameInput.disabled = true;
+            emailInput.disabled = true;
+            if (bioInput) bioInput.disabled = true;
+            if (phoneInput) phoneInput.disabled = true;
+
+            // 3. Clear/Override context instruction labels
+            const helpText = document.querySelector(".help-text");
+            if (helpText) helpText.textContent = "You are viewing another club member's profile.";
+
+            // 4. Pull down the target user's records from the database
+            const targetUserRef = ref(db, `users/${targetUid}`);
+            const targetSnapshot = await get(targetUserRef);
+
+            if (targetSnapshot.exists()) {
+                const targetData = targetSnapshot.val();
+                
+                const targetName = targetData.displayName || "";
+                const targetEmail = targetData.email || "";
+                const targetRole = targetData.role || "member";
+                const targetJoined = targetData.createdAt || "—";
+                const targetBio = targetData.metaBio || targetData.bio || "";
+                const targetPhone = targetData.phone || "";
+
+                // 5. Swap out screen components to reflect the target user's details
+                displayNameHeading.textContent = targetName || targetEmail.split('@')[0];
+                headerEmail.textContent = targetEmail;
+                largeAvatar.textContent = (targetName || targetEmail || "?").charAt(0).toUpperCase();
+                
+                displayNameInput.value = targetName;
+                emailInput.value = targetEmail;
+                if (bioInput) bioInput.value = targetBio;
+                if (phoneInput) phoneInput.value = targetPhone;
+                infoUid.textContent = targetUid;
+
+                headerRole.textContent = targetRole.toUpperCase();
+                infoRole.textContent = targetRole;
+                
+                if (targetJoined !== "—") {
+                    infoDate.textContent = new Date(targetJoined).toLocaleDateString();
+                }
+            } else {
+                alert("The selected club profile could not be found.");
+                window.location.href = "projects.html";
+            }
         }
     } catch (error) {
-        console.error("Error fetching database:", error);
+        console.error("Error loading account node hierarchy:", error);
     }
 });
 
-// 🌟 FIX 2: Link the Admin Button up to navigate to admin.html
+// 4. Link the Admin Button up to navigate to admin.html
 if (adminBtn) {
     adminBtn.addEventListener("click", () => {
         window.location.href = "admin.html";
     });
 }
 
-// 4. Handle "Save Changes" Button
+// 5. Handle "Save Changes" Button
 saveBtn.addEventListener("click", async () => {
     const user = auth.currentUser;
     if (!user) return;
@@ -137,18 +214,15 @@ saveBtn.addEventListener("click", async () => {
     saveBtn.disabled = true;
 
     try {
-        // Update Firebase Auth structural profile if display name changed
         if (newName !== user.displayName) {
             await updateProfile(user, { displayName: newName });
         }
         
-        // Update Auth core account email routing if changed
         if (newEmail && newEmail !== user.email) {
             await updateEmail(user, newEmail);
             headerEmail.textContent = newEmail;
         }
 
-        // 🌟 Use update() to save data node properties selectively without destroying others
         await update(ref(db, `users/${user.uid}`), {
             displayName: newName,
             email: newEmail,
@@ -156,7 +230,6 @@ saveBtn.addEventListener("click", async () => {
             phone: newPhone
         });
         
-        // Update layout presentation headers
         displayNameHeading.textContent = newName || newEmail.split('@')[0];
         largeAvatar.textContent = (newName || newEmail || "?").charAt(0).toUpperCase();
         
@@ -178,7 +251,7 @@ saveBtn.addEventListener("click", async () => {
     }
 });
 
-// 5. Handle "Sign Out"
+// 6. Handle "Sign Out"
 signOutBtn.addEventListener("click", async () => {
     try {
         await signOut(auth);
