@@ -76,7 +76,7 @@ class SpecialHeader extends HTMLElement {
                     <a href="projects.html" class="${isActive("projects")}"><span class="num">02</span>Projects</a>
                     <a href="events.html" class="${isActive("events")}"><span class="num">03</span>Events</a>
                     <a href="resources.html" class="${isActive("resources")}"><span class="num">04</span>Resources</a>
-                    <a href="index.html#sponsors" class="${isActive("sponsors")}"><span class="num">05</span>Sponsors</a>
+                    <a href="sponsors.html" class="${isActive("sponsors")}"><span class="num">05</span>Sponsors</a>
                 </nav>
                 <div class="nav-right" id="nav-auth">
                     <a href="login.html" class="btn-signin">Sign in →</a>
@@ -91,7 +91,7 @@ class SpecialHeader extends HTMLElement {
                 <a href="projects.html" class="${isActive("projects")}">02 Projects</a>
                 <a href="events.html" class="${isActive("events")}">03 Events</a>
                 <a href="resources.html" class="${isActive("resources")}">04 Resources</a>
-                <a href="index.html#sponsors" class="${isActive("sponsors")}">05 Sponsors</a>
+                <a href="sponsors.html" class="${isActive("sponsors")}">05 Sponsors</a>
                 <a href="login.html" id="mobile-auth-link">Sign in →</a>
             </nav>
         `;

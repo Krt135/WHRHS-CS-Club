@@ -10,6 +10,7 @@ export default defineConfig({
         login: './login.html',
         account: './account.html',
         resources: './resources.html',
+        sponsors: './sponsors.html',
         admin: './admin.html',
         play: './play.html'
       }

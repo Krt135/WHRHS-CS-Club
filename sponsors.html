@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Sponsor HillsHacks and help teach 50+ kids to code.">
+  <title>Sponsors — WHRHS CS Club</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styleFolder/style.css">
+  <link rel="stylesheet" href="styleFolder/sponsors.css">
+  <script type="module" src="scriptFolder/header.js" defer></script>
+  <script type="module" src="scriptFolder/footer.js" defer></script>
+  <script type="module" src="scriptFolder/index.js" defer></script>
+  <script type="module" src="scriptFolder/sponsors.js" defer></script>
+</head>
+<body>
+  <cs-header active-page="sponsors"></cs-header>
+
+  <main>
+    <section class="sponsor-hero">
+      <p class="eyebrow">/ 05 · Sponsors</p>
+      <h1>Help us<br><span>teach <em>50+ kids</em> to<br>code.</span></h1>
+      <div class="hero-details">
+        <div class="fundraising-progress">
+          <p class="eyebrow">/ Fundraising progress</p>
+          <p class="fundraising-total"><strong>$605</strong> <span>/ $1,500</span></p>
+          <div class="progress-bar" role="progressbar" aria-label="Fundraising progress" aria-valuemin="0" aria-valuemax="1500" aria-valuenow="605"><span></span></div>
+          <p class="progress-label">40% to goal · as of 02/02/2026</p>
+        </div>
+        <p class="hero-copy">HillsHacks is funded entirely by local businesses and community sponsors. Your contribution pays directly for equipment, lunch, free t-shirts, and prizes — a monitor, gift cards, and more — for elementary and middle school attendees.</p>
+      </div>
+    </section>
+
+    <section class="tiers-section" id="tiers">
+      <div class="section-heading">
+        <p class="eyebrow">/ Sponsorship tiers</p>
+        <h2>Pick a tier.<br>Get represented.</h2>
+      </div>
+      <div class="tiers-grid">
+        <article class="tier-card">
+          <p class="eyebrow">Tier · 01</p>
+          <h3>Silver</h3>
+          <p class="tier-price">$10 <span>one-time</span></p>
+          <ul><li>Logo on Sponsorship Board</li><li>Shout out at closing ceremony</li></ul>
+          <button type="button" data-tier="Silver — $10">Sponsor as Silver <span>→</span></button>
+        </article>
+        <article class="tier-card featured">
+          <span class="most-chosen">Most chosen</span>
+          <p class="eyebrow">Tier · 02</p>
+          <h3>Gold</h3>
+          <p class="tier-price">$50 <span>one-time</span></p>
+          <ul><li>Logo on Sponsorship Board</li><li>Logo on back of HillsHacks T-shirt</li><li>Shout out at closing ceremony</li></ul>
+          <button type="button" data-tier="Gold — $50">Sponsor as Gold <span>→</span></button>
+        </article>
+        <article class="tier-card platinum">
+          <p class="eyebrow">Tier · 03</p>
+          <h3>Platinum</h3>
+          <p class="tier-price">$100 <span>one-time</span></p>
+          <ul><li>Logo on Sponsorship Board</li><li>Logo on back of HillsHacks T-shirt</li><li>Special shout out at closing ceremony</li><li>Formal speech of thanks from members</li></ul>
+          <button type="button" data-tier="Platinum — $100">Sponsor as Platinum <span>→</span></button>
+        </article>
+      </div>
+    </section>
+
+    <section class="budget-section">
+      <div class="section-heading budget-heading"><p class="eyebrow">/ Where it goes</p><h2>Every dollar is line-itemed.</h2></div>
+      <div class="budget-grid">
+        <div class="budget-column"><p class="eyebrow">/ Operating</p><dl><div><dt>Food + drinks</dt><dd>$450</dd></div><div><dt>Equipment</dt><dd>$300</dd></div><div><dt>Free t-shirts</dt><dd>$250</dd></div></dl></div>
+        <div class="budget-column"><p class="eyebrow">/ Prizes</p><dl><div><dt>Monitor</dt><dd>$300</dd></div><div><dt>Gift cards</dt><dd>$200</dd></div></dl></div>
+      </div>
+    </section>
+
+    <section class="contact-section" id="contact">
+      <div class="contact-copy"><p class="eyebrow">/ Contact us</p><h2>Let’s<br><em>talk.</em></h2><p>Sponsors, partners, or curious students — leave a note and a club officer will respond within 48 hours.</p><address>cs.club@whrhs.org<br>Watchung Hills Regional HS<br>108 Stirling Rd · Warren, NJ</address></div>
+      <form class="sponsor-form" id="sponsor-form">
+        <label>Name<input name="name" required></label><label>Organization<input name="organization"></label>
+        <label>Email<input type="email" name="email" required></label><label>Tier interest<select name="tier" id="tier-interest"><option>Just inquiring</option><option>Silver — $10</option><option>Gold — $50</option><option>Platinum — $100</option><option>Custom</option></select></label>
+        <label class="message-field">Message<textarea name="message" required></textarea></label>
+        <button class="send-button" type="submit">Send message <span>→</span></button>
+        <p class="form-status" id="form-status" aria-live="polite"></p>
+      </form>
+    </section>
+  </main>
+
+  <cs-footer></cs-footer>
+</body>
+</html>
