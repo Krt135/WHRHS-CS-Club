@@ -26,11 +26,17 @@
       <div class="hero-details">
         <div class="fundraising-progress">
           <p class="eyebrow">/ Fundraising progress</p>
-          <p class="fundraising-total"><strong>$605</strong> <span>/ $1,500</span></p>
-          <div class="progress-bar" role="progressbar" aria-label="Fundraising progress" aria-valuemin="0" aria-valuemax="1500" aria-valuenow="605"><span></span></div>
+          <p class="fundraising-total"><strong id="fundraising-amount">$605</strong> <span>/ $1,500</span></p>
+          <div class="progress-bar" id="progress-bar" role="progressbar" aria-label="Fundraising progress" aria-valuemin="0" aria-valuemax="1500" aria-valuenow="605"><span></span></div>
           <p class="progress-label">40% to goal · as of 02/02/2026</p>
         </div>
         <p class="hero-copy">HillsHacks is funded entirely by local businesses and community sponsors. Your contribution pays directly for equipment, lunch, free t-shirts, and prizes — a monitor, gift cards, and more — for elementary and middle school attendees.</p>
+      </div>
+      <div class="exec-progress-control" id="exec-progress-control" hidden>
+        <label for="fundraising-slider">Exec control · <output id="fundraising-slider-output">$605</output></label>
+        <input id="fundraising-slider" type="range" min="0" max="1500" step="5" value="605">
+        <button type="button" id="save-fundraising-progress">Save progress</button>
+        <p id="fundraising-save-status" aria-live="polite"></p>
       </div>
     </section>
 
