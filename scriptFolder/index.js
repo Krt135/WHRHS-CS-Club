@@ -1,6 +1,15 @@
 import { auth, db } from "./firebase.js";
 import { onAuthStateChanged, signOut } from "firebase/auth";
-import { ref, get } from "firebase/database";
+import { ref, get, onValue } from "firebase/database";
+
+const homepageFundraisingAmount = document.getElementById("homepage-fundraising-amount");
+
+if (homepageFundraisingAmount) {
+    onValue(ref(db, "siteSettings/fundraisingProgress"), (snapshot) => {
+        const amount = Math.max(0, Math.min(1500, Number(snapshot.val()) || 605));
+        homepageFundraisingAmount.textContent = `$${amount.toLocaleString()}`;
+    });
+}
 
 onAuthStateChanged(auth, async (user) => {
     if (user) {
