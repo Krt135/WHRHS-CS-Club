@@ -76,9 +76,36 @@ document.addEventListener('DOMContentLoaded', () => {
   form.addEventListener('submit', (event) => {
     event.preventDefault();
     const data = new FormData(form);
-    const subject = `HillsHacks sponsorship: ${data.get('tier')}`;
-    const body = `Name: ${data.get('name')}\nOrganization: ${data.get('organization') || 'N/A'}\nEmail: ${data.get('email')}\nTier interest: ${data.get('tier')}\n\nMessage:\n${data.get('message')}`;
-    status.textContent = 'Opening your email app…';
-    window.location.href = `mailto:cs.club@whrhs.org?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+
+    // 1. Extract values from the form data
+    const name = data.get('name').trim();
+    const orgName = data.get('organization').trim() || 'Individual/No Org';
+    const clientEmail = data.get('email').trim();
+    const tier = data.get('tier');
+    const message = data.get('message').trim();
+
+    // 2. Format the subject and body exactly as requested
+    const subject = `${orgName}: ${tier}`;
+    const bodyContent = `${message}\n\nSincerely,\n${name}\n\n(Contact Email Provided: ${clientEmail})`;
+
+    // 3. Set the destination email (using the one from your HTML)
+    const targetEmail = 'cs.whrhs.club@gmail.com';
+
+    // 4. Construct the Gmail deep-link URL
+    const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1` +
+      `&to=${encodeURIComponent(targetEmail)}` +
+      `&su=${encodeURIComponent(subject)}` +
+      `&body=${encodeURIComponent(bodyContent)}`;
+
+    // 5. Update the UI and open Gmail in a new tab
+    status.textContent = 'Opening Gmail in a new tab…';
+    window.open(gmailUrl, '_blank');
+
+    // Optional: Reset the form and clear the status text after 3 seconds
+    setTimeout(() => {
+      status.textContent = '';
+      form.reset();
+    }, 3000);
   });
+  
 });
