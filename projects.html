@@ -171,24 +171,24 @@
 
     <cs-footer></cs-footer>
 
-    <div id="uploadModal" style="display: none; position: fixed; inset: 0; background: rgba(10,10,10,0.95); z-index: 9999; align-items: center; justify-content: center; padding: 2rem; font-family: monospace;">
-        <div style="background: var(--surface); border: 1px solid var(--border); padding: 2.5rem; width: 100%; max-width: 550px; border-radius: var(--radius-sm); box-shadow: 0 0 30px rgba(0,0,0,0.5); max-height: 90vh; overflow-y: auto;">
-            <h3 style="color: var(--primary); margin-top: 0; font-size: 1.5rem; letter-spacing: -0.02em;">DEPLOY NEW PROJECT</h3>
+    <div id="uploadModal" class="upload-modal-overlay">
+        <div class="upload-modal-card">
+            <h3 class="upload-modal-title">DEPLOY NEW PROJECT</h3>
             
-            <label style="display: block; margin-bottom: 0.5rem; font-size: 0.75rem; color: var(--muted-fg); letter-spacing: 0.1em;">PROJECT TITLE</label>
-            <input type="text" id="projTitle" placeholder="e.g., Space Invaders Pro" style="width: 100%; background: var(--background); border: 1px solid var(--border); color: var(--foreground); padding: 0.75rem; font-family: inherit; margin-bottom: 1.5rem; border-radius: var(--radius-sm);" />
+            <label class="upload-modal-label">PROJECT TITLE</label>
+            <input type="text" id="projTitle" class="upload-modal-input" placeholder="e.g., Space Invaders Pro" />
 
-            <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem;">
-                <div style="flex: 1;">
-                    <label style="display: block; margin-bottom: 0.5rem; font-size: 0.75rem; color: var(--muted-fg); letter-spacing: 0.1em;">CATEGORY</label>
-                    <select id="projCategory" style="width: 100%; background: var(--background); border: 1px solid var(--border); color: var(--foreground); padding: 0.75rem; font-family: inherit; border-radius: var(--radius-sm);">
+            <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
+                <div style="flex: 1; min-width: 200px;">
+                    <label class="upload-modal-label">CATEGORY</label>
+                    <select id="projCategory" class="upload-modal-input" style="margin-bottom: 0;">
                         <option value="people">People's Game (Individual)</option>
                         <option value="group">Group Game (Execs Only)</option>
                     </select>
                 </div>
-                <div style="flex: 1;">
-                    <label style="display: block; margin-bottom: 0.5rem; font-size: 0.75rem; color: var(--muted-fg); letter-spacing: 0.1em;">ENGINE / TAG</label>
-                    <select id="projEngine" style="width: 100%; background: var(--background); border: 1px solid var(--border); color: var(--foreground); padding: 0.75rem; font-family: inherit; border-radius: var(--radius-sm);">
+                <div style="flex: 1; min-width: 200px;">
+                    <label class="upload-modal-label">ENGINE / TAG</label>
+                    <select id="projEngine" class="upload-modal-input" style="margin-bottom: 0;">
                         <option value="Unity">Unity WebGL</option>
                         <option value="Pygame">Pygame (WASM)</option>
                         <option value="JSCanvas">JS Canvas</option>
@@ -197,30 +197,31 @@
                 </div>
             </div>
 
-            <label style="display: block; margin-bottom: 0.5rem; font-size: 0.75rem; color: var(--muted-fg); letter-spacing: 0.1em;">DEPLOYMENT FORMAT</label>
-            <select id="projType" style="width: 100%; background: var(--background); border: 1px solid var(--border); color: var(--foreground); padding: 0.75rem; font-family: inherit; margin-bottom: 1.5rem; border-radius: var(--radius-sm);">
+            <label class="upload-modal-label">DEPLOYMENT FORMAT</label>
+            <select id="projType" class="upload-modal-input">
                 <option value="game">Game Folder Zip (Upload to Supabase)</option>
                 <option value="web">External Live Link (GitHub Pages, etc.)</option>
             </select>
 
             <div id="gameUploadGroup">
-                <label style="display: block; margin-bottom: 0.5rem; font-size: 0.75rem; color: var(--muted-fg); letter-spacing: 0.1em;">CHOOSE COMPRESSED ZIP (Must have index.html at root)</label>
-                <input type="file" id="projZipFile" accept=".zip" style="color: var(--muted-fg); font-family: inherit; font-size: 0.85rem;" />
+                <label class="upload-modal-label" style="text-transform: none;">CHOOSE COMPRESSED ZIP (Must have index.html at root)</label>
+                <input type="file" id="projZipFile" accept=".zip" style="color: var(--muted-fg); font-family: inherit; font-size: 0.85rem; margin-bottom: 1rem;" />
             </div>
 
             <div id="webUploadGroup" style="display: none;">
-                <label style="display: block; margin-bottom: 0.5rem; font-size: 0.75rem; color: var(--muted-fg); letter-spacing: 0.1em;">EXTERNAL HOSTING ROUTING URL</label>
-                <input type="url" id="projExternalUrl" placeholder="https://username.github.io/game" style="width: 100%; background: var(--background); border: 1px solid var(--border); color: var(--foreground); padding: 0.75rem; font-family: inherit; border-radius: var(--radius-sm);" />
+                <label class="upload-modal-label">EXTERNAL HOSTING ROUTING URL</label>
+                <input type="url" id="projExternalUrl" class="upload-modal-input" placeholder="https://username.github.io/game" />
             </div>
 
-            <div id="uploadStatus" style="margin-top: 1.5rem; font-size: 0.8rem; color: var(--primary); min-height: 1.2rem;"></div>
+            <div id="uploadStatus" style="margin-top: 1rem; font-size: 0.8rem; color: var(--primary); min-height: 1.2rem;"></div>
 
-            <div style="margin-top: 2.5rem; display: flex; gap: 1rem; justify-content: flex-end;">
+            <div style="margin-top: 2rem; display: flex; gap: 1rem; justify-content: flex-end; flex-wrap: wrap;">
                 <button class="btn-outline" onclick="toggleUploadModal(false)">Cancel</button>
                 <button id="submitUploadBtn" class="btn-primary">Deploy Core ➔</button>
             </div>
         </div>
     </div>
+
     <script>
         // Layout helper window visibility toggle switches
         window.toggleUploadModal = function(show) {

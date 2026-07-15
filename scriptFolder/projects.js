@@ -107,7 +107,8 @@ function renderGames() {
         return;
     }
 
-    let gridHTML = `<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 1.5rem; text-align: left;">`;
+    // 🌟 The min() function prevents horizontal overflow on screens narrower than 250px (like early iPhones)
+    let gridHTML = `<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 250px), 1fr)); gap: 1.5rem; text-align: left;">`;
     
     filteredGames.forEach(game => {
         // 🌟 CONDITIONAL DELETE BUTTON LOGIC
