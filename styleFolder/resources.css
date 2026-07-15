@@ -615,3 +615,11 @@
 .modal-overlay.open {
     display: flex;
 }
+
+.resource-author-bubble {
+    /* ... existing inline styles you might have ... */
+    flex-shrink: 0; /* 🌟 PREVENTS the bubble from squishing into an oval on mobile! */
+    width: 24px;
+    height: 24px;
+    /* (Ensure these match the width/height you defined in the JS template) */
+}

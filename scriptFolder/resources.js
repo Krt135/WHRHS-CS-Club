@@ -305,6 +305,9 @@ function renderList(dataArray) {
 // ==========================================================================
 // 6. 🌟 FULL SCREEN OVERLAY ENGINE (FIXED LOGIC)
 // ==========================================================================
+// ==========================================================================
+// 6. 🌟 FULL SCREEN OVERLAY ENGINE (FIXED LOGIC)
+// ==========================================================================
 function showLesson(firebaseKey) {
   // 1. Parse and build the data inside the window layout first
   renderLesson(firebaseKey); 
@@ -315,6 +318,14 @@ function showLesson(firebaseKey) {
       modal.classList.add("open");
   }
 }
+
+// 🌟 FIX: Bind the close function to the global window object so HTML can see it
+window.closeModal = function(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+        modal.classList.remove("open");
+    }
+};
 
 function renderLesson(firebaseKey) {
   // FIX: Look inside the accurate data array tracked dynamically from Realtime Database
