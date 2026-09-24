@@ -1,0 +1,11 @@
+{
+  "database": {
+    "rules": "database.rules.json"
+  },
+  "hosting": {
+    "public": "dist",
+    "predeploy": ["npm run build"],
+    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+    "cleanUrls": true
+  }
+}

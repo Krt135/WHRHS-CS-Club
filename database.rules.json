@@ -1,0 +1,41 @@
+{
+  "rules": {
+    "users": {
+      ".read": "auth !== null && (root.child('users').child(auth.uid).child('role').val() === 'exec' || root.child('users').child(auth.uid).child('role').val() === 'admin')",
+      "$uid": {
+        ".read": "auth !== null",
+        ".write": "auth !== null && ((root.child('users').child(auth.uid).child('role').val() === 'exec' || root.child('users').child(auth.uid).child('role').val() === 'admin') || (auth.uid === $uid && newData.child('uid').val() === $uid && ((!data.exists() && newData.child('role').val() === 'member' && newData.child('status').val() === 'pending') || (data.exists() && newData.child('role').val() === data.child('role').val() && newData.child('status').val() === data.child('status').val()))))"
+      }
+    },
+    "games": {
+      ".read": "true",
+      ".write": "auth !== null"
+    },
+    "projects": {
+      ".read": "true",
+      ".write": "auth !== null && (newData.child('category').val() !== 'group' || root.child('users').child(auth.uid).child('role').val() === 'exec' || root.child('users').child(auth.uid).child('role').val() === 'admin')"
+    },
+    "competitions": {
+      ".read": "true",
+      ".write": "auth !== null && (root.child('users').child(auth.uid).child('role').val() === 'exec' || root.child('users').child(auth.uid).child('role').val() === 'admin')"
+    },
+    "resources": {
+      ".read": "true",
+      ".write": "auth !== null && (root.child('users').child(auth.uid).child('role').val() === 'exec' || root.child('users').child(auth.uid).child('role').val() === 'admin')"
+    },
+    "deleted_posts": {
+      ".read": "auth !== null && (root.child('users').child(auth.uid).child('role').val() === 'exec' || root.child('users').child(auth.uid).child('role').val() === 'admin')",
+      ".write": "auth !== null && (root.child('users').child(auth.uid).child('role').val() === 'exec' || root.child('users').child(auth.uid).child('role').val() === 'admin')"
+    },
+    "siteSettings": {
+      "fundraisingProgress": {
+        ".read": true,
+        ".write": "auth !== null && (root.child('users').child(auth.uid).child('role').val() === 'exec' || root.child('users').child(auth.uid).child('role').val() === 'admin')"
+      }
+    },
+    "mentions": {
+      ".write": "auth != null",
+      ".read": false
+    }
+  }
+}
