@@ -1,11 +1,9 @@
-import { auth, db } from "./firebase.js";
+import { auth, db, storage } from "./firebase.js";
 import { onAuthStateChanged } from "firebase/auth";
 import { ref as dbRef, onValue, update, remove, get, set, push } from "firebase/database";
+import { ref, uploadBytes } from "firebase/storage";
 
 import * as fflate from "https://cdn.jsdelivr.net/npm/fflate@0.8.2/+esm";
-
-const SUPABASE_URL = "https://yokredtutoeepddttvxi.supabase.co";
-const SUPABASE_ANON_KEY = "sb_publishable_EEb77E3TuyXU9ELGDvWxeQ_FdIL3vPQ";
 
 let currentUser = null;
 let currentUserRole = 'member'; // Default to member until fetched
@@ -240,11 +238,6 @@ if (submitUploadBtn) {
         
         if (!title) return alert("Please specify a project title.");
 
-        if (!SUPABASE_ANON_KEY) {
-            alert("Configuration Error: Supabase API Key is missing.");
-            return;
-        }
-
         submitUploadBtn.disabled = true;
         uploadStatus.innerText = "Verifying permissions...";
 
@@ -279,8 +272,8 @@ if (submitUploadBtn) {
                         continue;
                     }
 
-                    uploadStatus.innerText = `Uploading file (${uploadProgressCount}/${totalFiles}) to Supabase...`;
-                    const storagePath = `${currentUser.uid}/${projectKey}/${path}`;
+                    uploadStatus.innerText = `Uploading file (${uploadProgressCount}/${totalFiles}) to Firebase Storage...`;
+                    const storagePath = `games/${currentUser.uid}/${projectKey}/${path}`;
                     
                     let contentType = "application/octet-stream";
                     if (path.endsWith(".html")) contentType = "text/html; charset=utf-8";
@@ -289,23 +282,14 @@ if (submitUploadBtn) {
                     if (path.endsWith(".wasm")) contentType = "application/wasm";
                     if (path.endsWith(".png"))  contentType = "image/png";
 
-                    const uploadResponse = await fetch(`${SUPABASE_URL}/storage/v1/object/games/${storagePath}`, {
-                        method: 'POST',
-                        headers: {
-                            'apikey': SUPABASE_ANON_KEY,
-                            'Content-Type': contentType,
-                            'x-upsert': 'true' 
-                        },
-                        body: contentData
-                    });
-
-                    if (!uploadResponse.ok) {
-                        const errText = await uploadResponse.text();
-                        throw new Error(`Supabase Error: ${errText}`);
+                    try {
+                        await uploadBytes(ref(storage, storagePath), contentData, { contentType });
+                    } catch (err) {
+                        throw new Error(`Firebase Storage Error: ${err.message}`);
                     }
 
                     if (path === "index.html") {
-                        finalEmbedUrl = `${SUPABASE_URL}/storage/v1/object/public/games/${storagePath}`;
+                        finalEmbedUrl = `https://storage.googleapis.com/whrhs-cs-club.firebasestorage.app/${storagePath}`;
                     }
                     uploadProgressCount++;
                 }

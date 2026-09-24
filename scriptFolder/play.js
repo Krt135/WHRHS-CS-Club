@@ -41,7 +41,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         statusMessage.innerText = "Connecting secure asset stream path...";
         
         if (projectData.embedUrl) {
-            // Fetch raw HTML text manually to bypass Supabase's strict CSP sandbox headers
+            // Fetch raw HTML text manually so a <base> tag can be injected for relative asset paths
             fetch(projectData.embedUrl)
                 .then(response => {
                     if (!response.ok) throw new Error("Failed to download game assets.");
