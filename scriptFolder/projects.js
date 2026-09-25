@@ -255,15 +255,26 @@ if (submitUploadBtn) {
                     uploadStatus.innerText = `Uploading file (${uploadProgressCount}/${totalFiles}) to Firebase Storage...`;
                     const storagePath = `games/${currentUser.uid}/${projectKey}/${path}`;
                     
+                    // Unity WebGL compressed builds ship files like "game.framework.js.br".
+                    // Storing Content-Encoding on the object makes Cloud Storage send that header,
+                    // so the browser decompresses natively; the Content-Type must describe the
+                    // *decompressed* payload (e.g. JS or wasm), not the .br/.gz wrapper.
+                    let contentEncoding;
+                    let typePath = path;
+                    if (path.endsWith(".br")) { contentEncoding = "br";   typePath = path.slice(0, -3); }
+                    if (path.endsWith(".gz")) { contentEncoding = "gzip"; typePath = path.slice(0, -3); }
+
                     let contentType = "application/octet-stream";
-                    if (path.endsWith(".html")) contentType = "text/html; charset=utf-8";
-                    if (path.endsWith(".js"))   contentType = "application/javascript; charset=utf-8";
-                    if (path.endsWith(".css"))  contentType = "text/css; charset=utf-8";
-                    if (path.endsWith(".wasm")) contentType = "application/wasm";
-                    if (path.endsWith(".png"))  contentType = "image/png";
+                    if (typePath.endsWith(".html")) contentType = "text/html; charset=utf-8";
+                    if (typePath.endsWith(".js"))   contentType = "application/javascript; charset=utf-8";
+                    if (typePath.endsWith(".css"))  contentType = "text/css; charset=utf-8";
+                    if (typePath.endsWith(".wasm")) contentType = "application/wasm";
+                    if (typePath.endsWith(".png"))  contentType = "image/png";
+
+                    const metadata = contentEncoding ? { contentType, contentEncoding } : { contentType };
 
                     try {
-                        await uploadBytes(ref(storage, storagePath), contentData, { contentType });
+                        await uploadBytes(ref(storage, storagePath), contentData, metadata);
                     } catch (err) {
                         throw new Error(`Firebase Storage Error: ${err.message}`);
                     }
