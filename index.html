@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="terminal">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,193 +7,359 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-<link rel = "stylesheet" href = "styleFolder/index.css">
-<link rel = "stylesheet" href = "styleFolder/style.css">
+<link rel="stylesheet" href="styleFolder/style.css">
+<link rel="stylesheet" href="styleFolder/brand.css">
 <script type="module" src="scriptFolder/header.js" defer></script>
 <script type="module" src="scriptFolder/footer.js" defer></script>
 <script type="module" src="scriptFolder/index.js" defer></script>
+<script>
+  if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    document.documentElement.classList.add('anim-pending');
+    setTimeout(() => document.documentElement.classList.remove('anim-pending'), 3000);
+  }
+</script>
+<style>
+  /* ── 1. Hero ── */
+  .hm-hero .ab-hero-title { max-width: 12ch; }
+  .hm-cursor {
+    display: inline-block;
+    width: 0.5em; height: 0.12em;
+    margin-left: 0.08em;
+    background: var(--ab-ink);
+    vertical-align: baseline;
+    animation: hm-blink 1.1s steps(1) infinite;
+  }
+  @keyframes hm-blink { 50% { opacity: 0; } }
 
+  /* ── 2. Ticker + stats (black) ── */
+  .hm-stats { background: var(--ab-black); color: #fff; }
+  .hm-ticker {
+    overflow: hidden;
+    margin: 0 calc(var(--ab-gutter) * -1) clamp(40px, 6vw, 64px);
+    padding: 14px 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  }
+  .marquee-track { display: flex; width: max-content; animation: hm-marquee 36s linear infinite; }
+  .marquee-group { display: flex; align-items: center; flex-shrink: 0; }
+  .marquee-item {
+    padding: 0 22px;
+    font-family: var(--ab-mono); font-size: 13px; font-weight: 700;
+    letter-spacing: 0.2em; text-transform: uppercase; color: #d0d7de;
+    white-space: nowrap;
+  }
+  .marquee-sep { color: var(--ab-accent); font-family: var(--ab-mono); font-weight: 700; }
+  @keyframes hm-marquee { to { transform: translateX(-50%); } }
+  .hm-ticker:hover .marquee-track { animation-play-state: paused; }
+
+  .hm-stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1px; background: rgba(255, 255, 255, 0.08); }
+  .hm-stat { background: var(--ab-black); padding: 28px 20px; }
+  .hm-stat-num {
+    font-size: clamp(2.4rem, 5vw, 3.8rem); font-weight: 700;
+    letter-spacing: -0.04em; line-height: 1; color: var(--ab-highlight);
+  }
+  .hm-stat-label {
+    margin-top: 10px; font-family: var(--ab-mono); font-size: 11px;
+    letter-spacing: 0.2em; text-transform: uppercase; color: #8b949e;
+  }
+
+  /* ── 3. Sectors (paper) ── */
+  .hm-sectors { background: var(--ab-paper); color: var(--ab-ink); }
+  .hm-sectors .ab-eyebrow { color: var(--ab-accent-deep); }
+  .sector-grid { display: grid; gap: 16px; margin-top: clamp(40px, 6vw, 64px); }
+  .sector-card {
+    position: relative;
+    display: flex; flex-direction: column; gap: 14px;
+    padding: 28px 24px 30px;
+    background: #fff;
+    border-top: 4px solid transparent;
+    transition: translate 0.25s ease, border-color 0.25s ease;
+  }
+  .sector-card:hover, .sector-card:focus-visible { translate: 0 -4px; border-top-color: var(--ab-accent); outline: none; }
+  .sector-card:focus-visible { box-shadow: 0 0 0 3px var(--ab-highlight); }
+  .sector-card-top { display: flex; justify-content: space-between; align-items: center; }
+  .sector-num { font-family: var(--ab-mono); font-size: 12px; font-weight: 700; color: var(--ab-accent-deep); }
+  .sector-arrow { width: 20px; height: 20px; color: #8b949e; transition: transform 0.25s ease, color 0.25s ease; }
+  .sector-card:hover .sector-arrow { transform: translate(3px, -3px); color: var(--ab-ink); }
+  .sector-icon {
+    width: 52px; height: 44px;
+    display: grid; place-items: center;
+    background: var(--ab-black); color: var(--ab-accent);
+    clip-path: polygon(20% 0, 100% 0, 80% 100%, 0 100%);
+  }
+  .sector-icon svg { width: 22px; height: 22px; }
+  .sector-title { font-size: 1.5rem; font-weight: 700; letter-spacing: -0.02em; text-transform: uppercase; line-height: 1.05; }
+  .sector-desc { color: #57606a; }
+
+  /* ── 4. HillsHacks (surface) ── */
+  .hm-event { background: var(--ab-surface); color: #fff; }
+  .hm-event .ab-eyebrow { color: var(--ab-highlight); }
+  .hm-event-grid { display: grid; gap: clamp(40px, 6vw, 72px); align-items: center; }
+  .hm-event-title {
+    font-size: clamp(3rem, 9vw, 7rem); font-weight: 700;
+    line-height: 0.9; letter-spacing: -0.045em; text-transform: uppercase;
+  }
+  .hm-event-title .ab-mark { background: var(--ab-accent); color: var(--ab-ink); }
+  .hm-event-date { display: block; margin-top: 18px; font-family: var(--ab-mono); font-size: clamp(1.1rem, 2.4vw, 1.6rem); letter-spacing: 0.1em; color: var(--ab-highlight); }
+  .hm-event .ab-lede { color: #c9d1d9; margin: 28px 0 32px; }
+
+  .countdown-panel {
+    position: relative; overflow: hidden;
+    aspect-ratio: 4 / 3;
+    display: flex; flex-direction: column; justify-content: space-between;
+    padding: clamp(20px, 4vw, 32px);
+    background:
+      linear-gradient(to right, rgba(255,255,255,0.04) 1px, transparent 1px) 0 0 / 40px 40px,
+      linear-gradient(to bottom, rgba(255,255,255,0.04) 1px, transparent 1px) 0 0 / 40px 40px,
+      var(--ab-black);
+    border-top: 8px solid var(--ab-accent);
+  }
+  .countdown-panel::after {
+    content: ""; position: absolute;
+    width: 30%; height: 140%; right: -6%; top: -20%;
+    background: color-mix(in srgb, var(--ab-accent) 10%, transparent);
+    transform: skewX(-20deg);
+  }
+  .countdown-head { position: relative; z-index: 1; display: flex; justify-content: space-between; align-items: center; }
+  .countdown-label { font-family: var(--ab-mono); font-size: 11px; font-weight: 700; letter-spacing: 0.25em; text-transform: uppercase; color: #8b949e; }
+  .live-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 5px 12px;
+    background: var(--ab-accent); color: var(--ab-ink);
+    font-family: var(--ab-mono); font-size: 10px; font-weight: 700; letter-spacing: 0.2em;
+    clip-path: polygon(6px 0, 100% 0, calc(100% - 6px) 100%, 0 100%);
+  }
+  .live-badge::before { content: ""; width: 7px; height: 7px; background: var(--ab-ink); animation: hm-blink 1.4s steps(1) infinite; }
+  .countdown-number {
+    position: relative; z-index: 1;
+    font-size: clamp(5rem, 16vw, 11rem); font-weight: 700; line-height: 0.85; letter-spacing: -0.06em;
+    color: #fff;
+  }
+  .countdown-number .cnt-unit { color: var(--ab-accent); font-size: 0.45em; letter-spacing: -0.02em; margin-left: 0.05em; }
+  .countdown-sub { display: block; margin-top: 10px; font-family: var(--ab-mono); font-size: 12px; letter-spacing: 0.15em; text-transform: uppercase; color: #8b949e; }
+  .countdown-footer { position: relative; z-index: 1; font-family: var(--ab-mono); font-size: 10px; letter-spacing: 0.25em; text-transform: uppercase; color: #6e7681; }
+
+  /* ── 5. Get involved (black) ── */
+  .hm-cta { background: var(--ab-black); color: #fff; }
+  .hm-cta .ab-eyebrow { color: var(--ab-accent); }
+  .cta-grid { display: grid; gap: 20px; margin-top: clamp(40px, 6vw, 56px); }
+  .cta-card {
+    position: relative; overflow: hidden;
+    display: flex; flex-direction: column; justify-content: space-between; gap: 40px;
+    min-height: 280px;
+    padding: clamp(24px, 4vw, 40px);
+    background: var(--ab-surface); color: #fff;
+    transition: translate 0.25s ease;
+  }
+  .cta-card:hover { translate: 0 -4px; }
+  .cta-card:focus-visible { outline: 3px solid var(--ab-highlight); outline-offset: 4px; }
+  .cta-card::after {
+    content: ""; position: absolute;
+    width: 22%; height: 160%; right: -4%; top: -30%;
+    background: rgba(255, 255, 255, 0.04);
+    transform: skewX(-20deg);
+  }
+  .cta-card.accent { background: var(--ab-accent); color: var(--ab-ink); }
+  .cta-card.accent::after { background: rgba(0, 0, 0, 0.08); }
+  .cta-label { font-family: var(--ab-mono); font-size: 11px; font-weight: 700; letter-spacing: 0.25em; text-transform: uppercase; opacity: 0.75; }
+  .cta-title { font-size: clamp(2rem, 4vw, 3rem); font-weight: 700; letter-spacing: -0.035em; text-transform: uppercase; line-height: 0.95; }
+  .cta-desc { margin-top: 12px; max-width: 40ch; opacity: 0.85; }
+  .cta-desc strong { font-weight: 700; opacity: 1; }
+  .cta-link {
+    display: inline-flex; align-items: center; gap: 10px; margin-top: 24px;
+    font-family: var(--ab-mono); font-size: 12px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase;
+  }
+  .cta-link .arrow { transition: transform 0.25s ease; }
+  .cta-card:hover .cta-link .arrow { transform: translateX(4px); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hm-cursor, .live-badge::before { animation: none; }
+    .marquee-track { animation: none; }
+    .sector-card, .sector-arrow, .cta-card, .cta-link .arrow { transition: none; }
+  }
+
+  @media (min-width: 640px) {
+    .sector-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (min-width: 768px) {
+    .hm-stats-grid { grid-template-columns: repeat(4, 1fr); }
+    .cta-grid { grid-template-columns: 1fr 1fr; }
+  }
+  @media (min-width: 1024px) {
+    .sector-grid { grid-template-columns: repeat(4, 1fr); }
+    .hm-event-grid { grid-template-columns: 1.1fr 1fr; }
+  }
+</style>
 </head>
 <body>
 
-<cs-header active-page = "index"></cs-header>
+<cs-header active-page="index"></cs-header>
 
+<main class="ab-page">
 
-<!-- Hero -->
-<section class="hero" id="about">
-  <div class="hero-grid-bg grid-bg"></div>
-  <div class="hero-rail hero-rail-left"><span class="vtext">/ Index · Home</span></div>
-  <div class="hero-rail hero-rail-right"><span class="vtext">est. 2018 · Warren NJ</span></div>
-  <div class="hero-inner">
-    <p class="eyebrow reveal" style="margin-bottom:32px">/ 001 — Computer Science Club · WHRHS</p>
-    <h1 class="hero-headline reveal reveal-d1">
-      We write code<br>
-      <span class="dim">and we </span><span class="accent">ship</span><span class="dim"> it.</span>
-    </h1>
-    <div class="hero-bottom">
-      <div class="hero-desc-col">
-        <p class="hero-desc reveal reveal-d2">
-          A student-run engineering collective at Watchung Hills Regional High School. We build games, websites, and the hackathon that teaches the next 50 students how to do the same.
-        </p>
-        <div class="hero-btns reveal reveal-d3">
-          <a href="projects.html" class="btn-primary">See projects <span class="arrow">→</span></a>
-          <a href="events.html" class="btn-outline">HillsHacks 2027 <span class="arrow">→</span></a>
-        </div>
-      </div>
-      <div class="hero-stats reveal reveal-d2">
-        <div class="stat-row">
-          <span class="stat-key">Members</span>
-          <span class="stat-val">40+</span>
-        </div>
-        <div class="stat-row">
-          <span class="stat-key">Active projects</span>
-          <span class="stat-val">12</span>
-        </div>
-        <div class="stat-row">
-          <span class="stat-key">HillsHacks attendance</span>
-          <span class="stat-val">50 students</span>
-        </div>
-        <div class="stat-row">
-          <span class="stat-key">Repos shipped</span>
-          <span class="stat-val">27</span>
-        </div>
-      </div>
+  <!-- 1. HERO -->
+  <section class="ab-hero hm-hero" id="about" aria-labelledby="hm-hero-title">
+    <div class="ab-hero-shapes" aria-hidden="true" data-animation="children" data-child-animation="scaleUp" data-from="0.6" data-stagger="0.12">
+      <span class="ab-shape ab-shape-1"></span>
+      <span class="ab-shape ab-shape-2"></span>
+      <span class="ab-shape ab-shape-3"></span>
     </div>
-  </div>
-</section>
-
-<!-- Marquee -->
-<div class="marquee-wrap">
-  <div class="marquee-track" id="marquee">
-    <div class="marquee-group">
-      <span class="marquee-item">Game Dev</span><span class="marquee-sep">/</span>
-      <span class="marquee-item">Web Dev</span><span class="marquee-sep">/</span>
-      <span class="marquee-item">HillsHacks 2027</span><span class="marquee-sep">/</span>
-      <span class="marquee-item">Pygame</span><span class="marquee-sep">/</span>
-      <span class="marquee-item">Unity</span><span class="marquee-sep">/</span>
-      <span class="marquee-item">JS Canvas</span><span class="marquee-sep">/</span>
-      <span class="marquee-item">Open Source</span><span class="marquee-sep">/</span>
-      <span class="marquee-item">Competitive Programming</span><span class="marquee-sep">/</span>
-    </div>
-    <div class="marquee-group">
-      <span class="marquee-item">Game Dev</span><span class="marquee-sep">/</span>
-      <span class="marquee-item">Web Dev</span><span class="marquee-sep">/</span>
-      <span class="marquee-item">HillsHacks 2027</span><span class="marquee-sep">/</span>
-      <span class="marquee-item">Pygame</span><span class="marquee-sep">/</span>
-      <span class="marquee-item">Unity</span><span class="marquee-sep">/</span>
-      <span class="marquee-item">JS Canvas</span><span class="marquee-sep">/</span>
-      <span class="marquee-item">Open Source</span><span class="marquee-sep">/</span>
-      <span class="marquee-item">Competitive Programming</span><span class="marquee-sep">/</span>
-    </div>
-  </div>
-</div>
-
-<!-- Sectors -->
-<section id="projects">
-  <div class="sectors-header">
-    <p class="eyebrow reveal">/ 002 — Sectors</p>
-    <h2 class="section-heading reveal reveal-d1">Four disciplines.<br>One club.</h2>
-  </div>
-  <div class="sector-grid reveal reveal-d2">
-    <a href="projects.html#game-dev" class="sector-card">
-      <div class="sector-card-num">
-        <span>/01</span>
-        <svg class="arrow-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7h10v10"/><path d="M7 17 17 7"/></svg>
-      </div>
-      <svg class="sector-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><line x1="6" x2="10" y1="11" y2="11"/><line x1="8" x2="8" y1="9" y2="13"/><line x1="15" x2="15.01" y1="12" y2="12"/><line x1="18" x2="18.01" y1="10" y2="10"/><path d="M17.32 5H6.68a4 4 0 0 0-3.978 3.59c-.006.052-.01.101-.017.152C2.604 9.416 2 14.456 2 16a3 3 0 0 0 3 3c1 0 1.5-.5 2-1l1.414-1.4１4A2 2 0 0 １ 9.8２8 １6h4.344a2 2 0 0 １ １.4１4.586１7 １8c.5.5 １ １ ２ １a3 3 0 ０ ０ ３-３c０-１.５４５-.6０４-６.５８４-.6８５-７.２５８-.００７-.０５-.０１１-.１-.０１７-.１５１A4 4 0 ０ ０ ₁₇.₃₂ ₅z"/></svg>
-      <div class="sector-title">Game Dev</div>
-      <div class="sector-desc">Unity, Pygame, JS Canvas. Individual &amp; group games.</div>
-    </a>
-    <a href="projects.html#web-dev" class="sector-card">
-      <div class="sector-card-num">
-        <span>/02</span>
-        <svg class="arrow-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7h10v10"/><path d="M7 17 17 7"/></svg>
-      </div>
-      <svg class="sector-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="m18 16 4-4-4-4"/><path d="m6 8-4 4 4 4"/><path d="m14.5 4-5 16"/></svg>
-      <div class="sector-title">Web Dev</div>
-      <div class="sector-desc">Live sites we built for other WHRHS clubs.</div>
-    </a>
-    <a href="events.html#hackathon-overview" class="sector-card">
-      <div class="sector-card-num">
-        <span>/03</span>
-        <svg class="arrow-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7h10v10"/><path d="M7 17 17 7"/></svg>
-      </div>
-      <svg class="sector-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/></svg>
-      <div class="sector-title">HillsHacks</div>
-      <div class="sector-desc">Our student-run hackathon. March 21, 2027.</div>
-    </a>
-    <a href="events.html#competitive-programming" class="sector-card">
-      <div class="sector-card-num">
-        <span>/04</span>
-        <svg class="arrow-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7h10v10"/><path d="M7 17 17 7"/></svg>
-      </div>
-      <svg class="sector-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect width="16" height="16" x="4" y="4" rx="2"/><rect width="6" height="6" x="9" y="9" rx="1"/><path d="M15 2v2"/><path d="M15 20v2"/><path d="M2 15h2"/><path d="M20 15h2"/><path d="M2 9h2"/><path d="M20 9h2"/><path d="M9 2v2"/><path d="M9 20v2"/></svg>
-      <div class="sector-title">Competitive Prog.</div>
-      <div class="sector-desc">Weekly practice. USACO, codeforces, leaderboards.</div>
-    </a>
-  </div>
-</section>
-
-<!-- HillsHacks -->
-<section id="events">
-  <p class="eyebrow reveal" style="margin-bottom:32px">/ 003 — Flagship event</p>
-  <div class="hillshacks-grid">
-    <div class="hillshacks-copy">
-      <h2 class="hillshacks-title reveal reveal-d1">
-        Hills<span class="accent">Hacks</span><br>
-        <span class="hillshacks-date">03 / 21 / 2027</span>
-      </h2>
-      <p class="hillshacks-desc reveal reveal-d2">
-        A one-day, student-run hackathon teaching 50+ elementary and middle schoolers Web Development, Hex Code pixel art, and Game Development. Saturday, 11am – 4pm.
+    <div class="ab-inner">
+      <p class="ab-eyebrow" data-animation="fadeInUp" data-trigger="load">/ 001 — Computer Science Club · WHRHS</p>
+      <h1 class="ab-hero-title" id="hm-hero-title" data-animation="scaleUp" data-from="0.92" data-trigger="load" data-delay="0.1">
+        We write code and we <span class="ab-mark"><span>ship</span></span> <span style="white-space: nowrap">it.<span class="hm-cursor" aria-hidden="true"></span></span>
+      </h1>
+      <p class="ab-lede" data-terminal-command="$ boot_whrhs_cs_club.sh">
+        A student-run engineering collective at Watchung Hills Regional High School. We build games, websites, and the hackathon that teaches the next 50 students how to do the same.
       </p>
-      <a href="events.html#schedule" class="link-arrow reveal reveal-d3">Schedule details <span class="arrow">→</span></a>
+      <div class="ab-hero-actions" data-animation="fadeInUp" data-trigger="load" data-delay="0.5">
+        <a href="projects.html" class="ab-btn ab-btn-black">See projects →</a>
+        <a href="events.html" class="ab-btn ab-btn-ghost">HillsHacks 2027</a>
+      </div>
     </div>
-    <div class="hillshacks-visual reveal reveal-d2">
-      <div class="countdown-outer">
-        <div class="countdown-panel grid-bg">
-          <div class="countdown-cells">
-            <div></div><div></div><div></div>
-            <div></div><div></div><div></div>
-            <div></div><div></div><div></div>
-          </div>
-          <div class="live-badge">● LIVE</div>
-          <div class="countdown-content">
-            <p class="countdown-label">/ T-minus</p>
-            <div class="countdown-number">
-              <span id="days">0</span><span class="cnt-unit">d</span>
-            </div>
-          </div>
-          <div class="countdown-footer">WHRHS // Warren, NJ</div>
+    <span class="ab-hero-tag" aria-hidden="true">est. 2018 · Warren NJ</span>
+  </section>
+
+  <!-- 2. TICKER + STATS -->
+  <section class="ab-section hm-stats" aria-label="Club by the numbers">
+    <div class="hm-ticker" aria-hidden="true">
+      <div class="marquee-track" id="marquee">
+        <div class="marquee-group">
+          <span class="marquee-item">Game Dev</span><span class="marquee-sep">/</span>
+          <span class="marquee-item">Web Dev</span><span class="marquee-sep">/</span>
+          <span class="marquee-item">HillsHacks 2027</span><span class="marquee-sep">/</span>
+          <span class="marquee-item">Pygame</span><span class="marquee-sep">/</span>
+          <span class="marquee-item">Unity</span><span class="marquee-sep">/</span>
+          <span class="marquee-item">JS Canvas</span><span class="marquee-sep">/</span>
+          <span class="marquee-item">Open Source</span><span class="marquee-sep">/</span>
+          <span class="marquee-item">Competitive Programming</span><span class="marquee-sep">/</span>
+        </div>
+        <div class="marquee-group">
+          <span class="marquee-item">Game Dev</span><span class="marquee-sep">/</span>
+          <span class="marquee-item">Web Dev</span><span class="marquee-sep">/</span>
+          <span class="marquee-item">HillsHacks 2027</span><span class="marquee-sep">/</span>
+          <span class="marquee-item">Pygame</span><span class="marquee-sep">/</span>
+          <span class="marquee-item">Unity</span><span class="marquee-sep">/</span>
+          <span class="marquee-item">JS Canvas</span><span class="marquee-sep">/</span>
+          <span class="marquee-item">Open Source</span><span class="marquee-sep">/</span>
+          <span class="marquee-item">Competitive Programming</span><span class="marquee-sep">/</span>
         </div>
       </div>
     </div>
-  </div>
-</section>
-
-<!-- CTA Cards -->
-<section>
-  <div class="cta-grid">
-    <a href="projects.html#game-dev" class="cta-card reveal">
-      <p class="eyebrow cta-label">/ Members</p>
-      <div>
-        <div class="cta-title">Upload your game.</div>
-        <p class="cta-desc">Got something built? Push it to the people's games gallery.</p>
-        <span class="cta-link">Upload <span class="arrow">→</span></span>
+    <div class="ab-inner">
+      <div class="hm-stats-grid" data-animation="children">
+        <div class="hm-stat"><div class="hm-stat-num">40+</div><div class="hm-stat-label">Members</div></div>
+        <div class="hm-stat"><div class="hm-stat-num">12</div><div class="hm-stat-label">Active projects</div></div>
+        <div class="hm-stat"><div class="hm-stat-num">50</div><div class="hm-stat-label">HillsHacks students</div></div>
+        <div class="hm-stat"><div class="hm-stat-num">27</div><div class="hm-stat-label">Repos shipped</div></div>
       </div>
-    </a>
-    <a href="sponsors.html#tiers" class="cta-card accent reveal reveal-d1" id="sponsors">
-      <p class="eyebrow cta-label">/ Sponsors</p>
-      <div>
-        <div class="cta-title">Back HillsHacks.</div>
-        <p class="cta-desc"><span id="homepage-fundraising-amount">$605</span> of $1,500 raised. Silver, Gold, or Platinum tier.</p>
-        <span class="cta-link">View tiers <span class="arrow">→</span></span>
-      </div>
-    </a>
-  </div>
-</section>
+    </div>
+  </section>
 
-<!-- Footer -->
+  <!-- 3. SECTORS -->
+  <section class="ab-section hm-sectors" id="projects" aria-labelledby="hm-sectors-title">
+    <div class="ab-inner">
+      <p class="ab-eyebrow">/ 002 — Sectors</p>
+      <h2 class="ab-h2" id="hm-sectors-title" data-terminal-command="$ load_featured_projects()">Four disciplines.<br>One club.</h2>
+      <div class="sector-grid" data-animation="children" data-child-animation="scaleUp" data-from="0.9" data-stagger="0.08">
+        <a href="projects.html#game-dev" class="sector-card">
+          <div class="sector-card-top">
+            <span class="sector-num">/01</span>
+            <svg class="sector-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 7h10v10"/><path d="M7 17 17 7"/></svg>
+          </div>
+          <span class="sector-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="6" x2="10" y1="12" y2="12"/><line x1="8" x2="8" y1="10" y2="14"/><line x1="15" x2="15.01" y1="13" y2="13"/><line x1="18" x2="18.01" y1="11" y2="11"/><rect x="2" y="6" width="20" height="12" rx="2"/></svg></span>
+          <div class="sector-title">Game Dev</div>
+          <div class="sector-desc">Unity, Pygame, JS Canvas. Individual &amp; group games.</div>
+        </a>
+        <a href="projects.html#web-dev" class="sector-card">
+          <div class="sector-card-top">
+            <span class="sector-num">/02</span>
+            <svg class="sector-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 7h10v10"/><path d="M7 17 17 7"/></svg>
+          </div>
+          <span class="sector-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m18 16 4-4-4-4"/><path d="m6 8-4 4 4 4"/><path d="m14.5 4-5 16"/></svg></span>
+          <div class="sector-title">Web Dev</div>
+          <div class="sector-desc">Live sites we built for other WHRHS clubs.</div>
+        </a>
+        <a href="events.html#hackathon-overview" class="sector-card">
+          <div class="sector-card-top">
+            <span class="sector-num">/03</span>
+            <svg class="sector-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 7h10v10"/><path d="M7 17 17 7"/></svg>
+          </div>
+          <span class="sector-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/></svg></span>
+          <div class="sector-title">HillsHacks</div>
+          <div class="sector-desc">Our student-run hackathon. March 21, 2027.</div>
+        </a>
+        <a href="events.html#competitive-programming" class="sector-card">
+          <div class="sector-card-top">
+            <span class="sector-num">/04</span>
+            <svg class="sector-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 7h10v10"/><path d="M7 17 17 7"/></svg>
+          </div>
+          <span class="sector-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="16" height="16" x="4" y="4" rx="2"/><rect width="6" height="6" x="9" y="9" rx="1"/><path d="M15 2v2"/><path d="M15 20v2"/><path d="M2 15h2"/><path d="M20 15h2"/><path d="M2 9h2"/><path d="M20 9h2"/><path d="M9 2v2"/><path d="M9 20v2"/></svg></span>
+          <div class="sector-title">Competitive Prog.</div>
+          <div class="sector-desc">Weekly practice. USACO, Codeforces, leaderboards.</div>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. HILLSHACKS -->
+  <section class="ab-section hm-event" id="events" aria-labelledby="hm-event-title">
+    <div class="ab-inner hm-event-grid">
+      <div>
+        <p class="ab-eyebrow">/ 003 — Flagship event</p>
+        <h2 class="hm-event-title" id="hm-event-title" data-animation="textReveal">Hills<span class="ab-mark"><span>Hacks</span></span></h2>
+        <span class="hm-event-date" data-animation="fadeInUp" data-delay="0.2">03 / 21 / 2027</span>
+        <p class="ab-lede" data-terminal-command="$ fetch_events()">
+          A one-day, student-run hackathon teaching 50+ elementary and middle schoolers Web Development, Hex Code pixel art, and Game Development. Saturday, 11am – 4pm.
+        </p>
+        <a href="events.html#schedule" class="ab-btn ab-btn-accent" data-animation="fadeInUp" data-delay="0.4">Schedule details →</a>
+      </div>
+      <div class="countdown-panel" data-animation="slideInRight" data-delay="0.2">
+        <div class="countdown-head">
+          <p class="countdown-label">/ T-minus</p>
+          <span class="live-badge">LIVE</span>
+        </div>
+        <div class="countdown-number">
+          <span id="days">0</span><span class="cnt-unit">d</span>
+          <span class="countdown-sub">until doors open</span>
+        </div>
+        <div class="countdown-footer">WHRHS // Warren, NJ</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5. GET INVOLVED -->
+  <section class="ab-section hm-cta" id="sponsors" aria-labelledby="hm-cta-title">
+    <div class="ab-inner">
+      <p class="ab-eyebrow">/ 004 — Get involved</p>
+      <h2 class="ab-h2" id="hm-cta-title" data-animation="textReveal">Build it.<br>Back it.</h2>
+      <div class="cta-grid" data-animation="children" data-stagger="0.12">
+        <a href="projects.html#game-dev" class="cta-card">
+          <p class="cta-label">/ Members</p>
+          <div>
+            <div class="cta-title">Upload your game.</div>
+            <p class="cta-desc">Got something built? Push it to the people's games gallery.</p>
+            <span class="cta-link">Upload <span class="arrow" aria-hidden="true">→</span></span>
+          </div>
+        </a>
+        <a href="sponsors.html#tiers" class="cta-card accent">
+          <p class="cta-label">/ Sponsors</p>
+          <div>
+            <div class="cta-title">Back HillsHacks.</div>
+            <p class="cta-desc"><strong id="homepage-fundraising-amount">$605</strong> of $1,500 raised. Silver, Gold, or Platinum tier.</p>
+            <span class="cta-link">View tiers <span class="arrow" aria-hidden="true">→</span></span>
+          </div>
+        </a>
+      </div>
+    </div>
+  </section>
+
+</main>
+
 <cs-footer></cs-footer>
 
+<script type="module">
+  import "/scriptFolder/global-animations.js";
+</script>
 </body>
 </html>

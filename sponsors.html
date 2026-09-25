@@ -1,96 +1,363 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="terminal">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Sponsor HillsHacks and help teach 50+ kids to code.">
-  <title>Sponsors — WHRHS CS Club</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styleFolder/style.css">
-  <link rel="stylesheet" href="styleFolder/sponsors.css">
-  <link rel="stylesheet" href="styleFolder/index.css">
-  <script type="module" src="scriptFolder/header.js" defer></script>
-  <script type="module" src="scriptFolder/footer.js" defer></script>
-  <script type="module" src="scriptFolder/index.js" defer></script>
-  <script type="module" src="scriptFolder/sponsors.js" defer></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Sponsor HillsHacks and help teach 50+ kids to code.">
+<title>Sponsors — WHRHS CS Club</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styleFolder/style.css">
+<link rel="stylesheet" href="styleFolder/brand.css">
+<script type="module" src="scriptFolder/header.js" defer></script>
+<script type="module" src="scriptFolder/footer.js" defer></script>
+<script type="module" src="scriptFolder/sponsors.js" defer></script>
+<script>
+  if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    document.documentElement.classList.add('anim-pending');
+    setTimeout(() => document.documentElement.classList.remove('anim-pending'), 3000);
+  }
+</script>
+<style>
+  /* ── 1. Hero (coral) ── */
+  .sp-hero-grid { display: grid; gap: clamp(40px, 6vw, 72px); align-items: center; }
+  .sp-hero .ab-hero-title { font-size: clamp(2.8rem, 8vw, 7rem); max-width: 12ch; }
+
+  .sp-fund-wrap { position: relative; }
+  .sp-fund-wrap::before {
+    content: ""; position: absolute;
+    inset: 18px -18px -18px 18px;
+    background: var(--ab-surface);
+    transform: skewX(-6deg);
+  }
+  .sp-fund {
+    position: relative;
+    padding: clamp(24px, 4vw, 36px);
+    background: var(--ab-black); color: #fff;
+    border-top: 8px solid var(--ab-highlight);
+  }
+  .sp-fund .ab-eyebrow { color: var(--ab-accent); }
+  .fundraising-total { display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 12px; }
+  .fundraising-total strong {
+    font-size: clamp(3rem, 7vw, 5rem); font-weight: 700; line-height: 1;
+    letter-spacing: -0.045em; color: var(--ab-highlight);
+  }
+  .fundraising-total span { font-family: var(--ab-mono); font-size: 14px; color: #9a9a9a; }
+  .progress-bar {
+    position: relative; overflow: hidden;
+    height: 22px; margin: 22px 0 12px;
+    background: repeating-linear-gradient(-60deg, #1c1c1c 0 10px, #161616 10px 20px);
+  }
+  .progress-bar span {
+    position: absolute; left: 0; top: 0; bottom: 0;
+    width: 0;
+    background: var(--ab-accent);
+    clip-path: polygon(0 0, 100% 0, calc(100% - 12px) 100%, 0 100%);
+    transition: width 1.1s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  .progress-label {
+    font-family: var(--ab-mono); font-size: 11px; font-weight: 700;
+    letter-spacing: 0.2em; text-transform: uppercase; color: #bdbdbd;
+  }
+
+  .exec-progress-control {
+    display: grid; gap: 10px;
+    margin-top: 24px; padding-top: 20px;
+    border-top: 1px dashed #333;
+  }
+  .exec-progress-control[hidden] { display: none; }
+  .exec-progress-control label {
+    font-family: var(--ab-mono); font-size: 10px; font-weight: 700;
+    letter-spacing: 0.2em; text-transform: uppercase; color: var(--ab-highlight);
+  }
+  .exec-progress-control output { color: #fff; }
+  .exec-progress-control input[type="range"] { width: 100%; accent-color: var(--ab-accent); }
+  .exec-progress-control .ab-btn { justify-self: start; padding: 10px 20px; font-size: 11px; }
+  #fundraising-save-status { font-family: var(--ab-mono); font-size: 12px; color: #bdbdbd; min-height: 1em; }
+
+  /* ── 2. Tiers (black) ── */
+  .sp-tiers { background: var(--ab-black); color: #fff; }
+  .sp-tiers .ab-eyebrow { color: var(--ab-accent); }
+  .tiers-grid { display: grid; gap: 20px; margin-top: clamp(40px, 6vw, 64px); align-items: stretch; }
+  .tier-card {
+    --tier-accent: #fff;
+    position: relative;
+    display: flex; flex-direction: column;
+    padding: 32px 28px 28px;
+    background: #151515;
+    border-top: 6px solid var(--tier-accent);
+    transition: translate 0.25s ease, background-color 0.25s ease;
+  }
+  .tier-card:hover { translate: 0 -4px; background: #1b1b1b; }
+  .tier-card.featured { --tier-accent: var(--ab-highlight); background: #1a1a1a; }
+  .tier-card.platinum { --tier-accent: var(--ab-accent); }
+  .tier-num {
+    font-family: var(--ab-mono); font-size: 11px; font-weight: 700;
+    letter-spacing: 0.2em; text-transform: uppercase; color: #8a8a8a;
+  }
+  .tier-card h3 {
+    margin-top: 10px;
+    font-size: clamp(1.8rem, 3vw, 2.4rem); font-weight: 700;
+    letter-spacing: -0.03em; text-transform: uppercase; line-height: 1;
+    color: var(--tier-accent);
+  }
+  .tier-price {
+    margin-top: 18px;
+    font-size: clamp(3rem, 5vw, 4rem); font-weight: 700; letter-spacing: -0.05em; line-height: 1;
+  }
+  .tier-price span {
+    display: block; margin-top: 6px;
+    font-family: var(--ab-mono); font-size: 11px; font-weight: 700;
+    letter-spacing: 0.2em; text-transform: uppercase; color: #8a8a8a;
+  }
+  .tier-card ul { flex: 1; margin: 24px 0 28px; padding: 0; list-style: none; display: grid; gap: 12px; align-content: start; }
+  .tier-card li { position: relative; padding-left: 24px; color: #d0d0d0; }
+  .tier-card li::before {
+    content: ""; position: absolute; left: 0; top: 0.5em;
+    width: 12px; height: 8px;
+    background: var(--tier-accent);
+    transform: skewX(-20deg);
+  }
+  .tier-card .ab-btn { justify-content: center; }
+  .tier-card:not(.featured) .ab-btn { background: #fff; color: var(--ab-ink); }
+  .tier-card:not(.featured) .ab-btn:hover { background: var(--ab-accent); }
+  .tier-card.featured .ab-btn { background: var(--ab-highlight); color: var(--ab-ink); }
+  .tier-card.featured .ab-btn:hover { background: var(--ab-accent); }
+  .most-chosen {
+    position: absolute; top: -18px; right: 20px;
+    padding: 6px 14px;
+    background: var(--ab-highlight); color: var(--ab-ink);
+    font-family: var(--ab-mono); font-size: 10px; font-weight: 700;
+    letter-spacing: 0.18em; text-transform: uppercase;
+    clip-path: polygon(8px 0, 100% 0, calc(100% - 8px) 100%, 0 100%);
+  }
+
+  /* ── 3. Budget (yellow) ── */
+  .sp-budget { background: var(--ab-highlight-bg, var(--ab-highlight)); color: var(--ab-ink); }
+  .budget-grid { display: grid; gap: 20px; margin-top: clamp(40px, 6vw, 64px); }
+  .budget-column { background: var(--ab-black); color: #fff; padding: 28px; }
+  .budget-column .ab-eyebrow { color: var(--ab-highlight); margin-bottom: 8px; }
+  .budget-column dl { margin: 0; }
+  .budget-row { padding: 16px 0; border-bottom: 1px solid #262626; }
+  .budget-row-head { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; }
+  .budget-row dt { font-weight: 600; font-size: 1.05rem; }
+  .budget-row dd { margin: 0; font-family: var(--ab-mono); font-size: 1rem; font-weight: 700; color: var(--ab-accent); }
+  .budget-bar { height: 6px; margin-top: 10px; background: #1c1c1c; }
+  .budget-bar span { display: block; height: 100%; width: var(--w); background: var(--ab-accent); transform: skewX(-20deg); transform-origin: left; }
+  .budget-total {
+    display: flex; justify-content: space-between; align-items: baseline;
+    padding-top: 18px;
+    font-family: var(--ab-mono); font-size: 11px; font-weight: 700;
+    letter-spacing: 0.2em; text-transform: uppercase; color: #9a9a9a;
+  }
+  .budget-total strong { font-size: 1.3rem; letter-spacing: -0.02em; color: #fff; }
+
+  /* ── 4. Contact (cream) ── */
+  .sp-contact { background: var(--ab-paper); color: var(--ab-ink); }
+  .sp-contact .ab-eyebrow { color: var(--ab-accent-deep); }
+  .sp-contact-grid { display: grid; gap: clamp(40px, 6vw, 72px); align-items: start; }
+  .sp-contact-title {
+    font-size: clamp(2.8rem, 9vw, 7rem);
+    font-weight: 700; line-height: 0.9; letter-spacing: -0.045em; text-transform: uppercase;
+  }
+  .sp-contact-title em { font-style: normal; color: var(--ab-accent-deep); }
+  .sp-contact .ab-lede { margin: 24px 0 28px; color: #333; }
+  .sp-contact address {
+    font-style: normal;
+    font-family: var(--ab-mono); font-size: 13px; line-height: 2; color: #444;
+    border-left: 4px solid var(--ab-accent); padding-left: 20px;
+  }
+  .sp-contact address a { color: var(--ab-ink); font-weight: 700; }
+  .sp-contact address a:hover { color: var(--ab-accent-deep); }
+
+  .sponsor-form {
+    display: grid; grid-template-columns: 1fr; gap: 18px;
+    padding: clamp(24px, 4vw, 36px);
+    background: var(--ab-black); color: #fff;
+    border-top: 8px solid var(--ab-accent);
+  }
+  .sponsor-form label {
+    display: flex; flex-direction: column; gap: 8px;
+    font-family: var(--ab-mono); font-size: 10px; font-weight: 700;
+    letter-spacing: 0.22em; text-transform: uppercase; color: #9a9a9a;
+  }
+  .sponsor-form input, .sponsor-form select, .sponsor-form textarea {
+    width: 100%;
+    padding: 12px 14px;
+    background: #161616; color: #fff;
+    border: 0; border-left: 4px solid #333;
+    font-family: var(--ab-mono); font-size: 13px; letter-spacing: normal; text-transform: none;
+    outline: none;
+    transition: border-color 0.2s ease, background-color 0.2s ease;
+  }
+  .sponsor-form textarea { min-height: 140px; resize: vertical; }
+  .sponsor-form input:focus, .sponsor-form select:focus, .sponsor-form textarea:focus { border-left-color: var(--ab-accent); background: #1c1c1c; }
+  .sponsor-form .ab-glow { justify-self: start; }
+  .form-status { font-family: var(--ab-mono); font-size: 12px; color: var(--ab-highlight); min-height: 1em; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .progress-bar span { transition: none; }
+    .tier-card, .sponsor-form input, .sponsor-form select, .sponsor-form textarea { transition: none; }
+  }
+
+  @media (max-width: 639px) {
+    .sp-fund-wrap::before { inset: 10px -10px -10px 10px; }
+  }
+  @media (min-width: 640px) {
+    .sponsor-form { grid-template-columns: 1fr 1fr; }
+    .sponsor-form .message-field, .sponsor-form .sp-form-foot { grid-column: 1 / -1; }
+  }
+  @media (min-width: 900px) {
+    .sp-hero-grid { grid-template-columns: 1.3fr 1fr; }
+    .tiers-grid { grid-template-columns: repeat(3, 1fr); }
+    .tier-card.featured { margin-top: -16px; margin-bottom: 16px; }
+    .budget-grid { grid-template-columns: 1fr 1fr; }
+    .sp-contact-grid { grid-template-columns: 1fr 1.3fr; }
+  }
+</style>
 </head>
 <body>
-  <cs-header active-page="sponsors"></cs-header>
+<cs-header active-page="sponsors"></cs-header>
 
-  <main>
-    <section class="sponsor-hero">
-      <p class="eyebrow">/ 05 · Sponsors</p>
-      <h1>Help us<br><span>teach <em>50+ kids</em> to<br>code.</span></h1>
-      <div class="hero-details">
-        <div class="fundraising-progress">
-          <p class="eyebrow">/ Fundraising progress</p>
-          <p class="fundraising-total"><strong id="fundraising-amount">$605</strong> <span>/ $1,500</span></p>
-          <div class="progress-bar" id="progress-bar" role="progressbar" aria-label="Fundraising progress" aria-valuemin="0" aria-valuemax="1500" aria-valuenow="605"><span></span></div>
-          <p class="progress-label">40% to goal · as of 02/02/2026</p>
+<main class="ab-page">
+
+  <!-- 1. HERO -->
+  <section class="ab-hero sp-hero" aria-labelledby="sp-hero-title">
+    <div class="ab-inner sp-hero-grid">
+      <div>
+        <p class="ab-eyebrow" data-animation="fadeInUp" data-trigger="load">/ 05 · Sponsors</p>
+        <h1 class="ab-hero-title" id="sp-hero-title" data-animation="scaleUp" data-from="0.92" data-trigger="load" data-delay="0.1">
+          Help us teach <span class="ab-mark"><span>50+ kids</span></span> to code.
+        </h1>
+        <p class="ab-lede" data-terminal-command="$ load_partners()">
+          HillsHacks is funded entirely by local businesses and community sponsors. Your contribution pays directly for equipment, lunch, free t-shirts, and prizes — a monitor, gift cards, and more — for elementary and middle school attendees.
+        </p>
+        <div class="ab-hero-actions" data-animation="fadeInUp" data-trigger="load" data-delay="0.5">
+          <a href="#tiers" class="ab-btn ab-btn-black">Pick a tier →</a>
+          <a href="#contact" class="ab-btn ab-btn-ghost">Contact us</a>
         </div>
-        <p class="hero-copy">HillsHacks is funded entirely by local businesses and community sponsors. Your contribution pays directly for equipment, lunch, free t-shirts, and prizes — a monitor, gift cards, and more — for elementary and middle school attendees.</p>
       </div>
-      <div class="exec-progress-control" id="exec-progress-control" hidden>
-        <label for="fundraising-slider">Exec control · <output id="fundraising-slider-output">$605</output></label>
-        <input id="fundraising-slider" type="range" min="0" max="1500" step="5" value="605">
-        <button type="button" id="save-fundraising-progress">Save progress</button>
-        <p id="fundraising-save-status" aria-live="polite"></p>
-      </div>
-    </section>
 
-    <section class="tiers-section" id="tiers">
-      <div class="section-heading">
-        <p class="eyebrow">/ Sponsorship tiers</p>
-        <h2>Pick a tier.<br>Get represented.</h2>
+      <div class="sp-fund-wrap" data-animation="slideInRight" data-trigger="load" data-delay="0.3">
+      <div class="sp-fund fundraising-progress">
+        <p class="ab-eyebrow">/ Fundraising progress</p>
+        <p class="fundraising-total"><strong id="fundraising-amount">$605</strong> <span>/ $1,500 goal</span></p>
+        <div class="progress-bar" id="progress-bar" role="progressbar" aria-label="Fundraising progress" aria-valuemin="0" aria-valuemax="1500" aria-valuenow="605"><span></span></div>
+        <p class="progress-label" id="progress-label">40% to goal</p>
+
+        <div class="exec-progress-control" id="exec-progress-control" hidden>
+          <label for="fundraising-slider">Exec control · <output id="fundraising-slider-output">$605</output></label>
+          <input id="fundraising-slider" type="range" min="0" max="1500" step="5" value="605">
+          <button type="button" id="save-fundraising-progress" class="ab-btn ab-btn-accent">Save progress</button>
+          <p id="fundraising-save-status" aria-live="polite"></p>
+        </div>
       </div>
-      <div class="tiers-grid">
-        <article class="tier-card">
-          <p class="eyebrow">Tier · 01</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2. TIERS -->
+  <section class="ab-section sp-tiers" id="tiers" aria-labelledby="sp-tiers-title">
+    <div class="ab-inner">
+      <p class="ab-eyebrow">/ Sponsorship tiers</p>
+      <h2 class="ab-h2" id="sp-tiers-title" data-animation="textReveal">Pick a tier.<br>Get represented.</h2>
+      <div class="tiers-grid" data-animation="children" data-child-animation="scaleUp" data-from="0.88" data-stagger="0.1">
+        <article class="tier-card" data-terminal-command="$ display_tier()" data-terminal-compact>
+          <p class="tier-num">Tier · 01</p>
           <h3>Silver</h3>
           <p class="tier-price">$10 <span>one-time</span></p>
           <ul><li>Logo on Sponsorship Board</li><li>Shout out at closing ceremony</li></ul>
-          <button type="button" data-tier="Silver — $10">Sponsor as Silver <span class="arrow">→</span></button>
+          <button type="button" class="ab-btn" data-tier="Silver — $10">Sponsor as Silver <span aria-hidden="true">→</span></button>
         </article>
-        <article class="tier-card featured">
+        <article class="tier-card featured" data-terminal-command="$ display_tier()" data-terminal-compact>
           <span class="most-chosen">Most chosen</span>
-          <p class="eyebrow">Tier · 02</p>
+          <p class="tier-num">Tier · 02</p>
           <h3>Gold</h3>
           <p class="tier-price">$50 <span>one-time</span></p>
           <ul><li>Logo on Sponsorship Board</li><li>Logo on back of HillsHacks T-shirt</li><li>Shout out at closing ceremony</li></ul>
-          <button type="button" data-tier="Gold — $50">Sponsor as Gold <span class="arrow">→</span></button>
+          <button type="button" class="ab-btn" data-tier="Gold — $50">Sponsor as Gold <span aria-hidden="true">→</span></button>
         </article>
-        <article class="tier-card platinum">
-          <p class="eyebrow">Tier · 03</p>
+        <article class="tier-card platinum" data-terminal-command="$ display_tier()" data-terminal-compact>
+          <p class="tier-num">Tier · 03</p>
           <h3>Platinum</h3>
           <p class="tier-price">$100 <span>one-time</span></p>
           <ul><li>Logo on Sponsorship Board</li><li>Logo on back of HillsHacks T-shirt</li><li>Special shout out at closing ceremony</li><li>Formal speech of thanks from members</li></ul>
-          <button type="button" data-tier="Platinum — $100">Sponsor as Platinum <span class="arrow">→</span></button>
+          <button type="button" class="ab-btn" data-tier="Platinum — $100">Sponsor as Platinum <span aria-hidden="true">→</span></button>
         </article>
       </div>
-    </section>
+    </div>
+  </section>
 
-    <section class="budget-section">
-      <div class="section-heading budget-heading"><p class="eyebrow">/ Where it goes</p><h2>Every dollar is line-itemed.</h2></div>
-      <div class="budget-grid">
-        <div class="budget-column"><p class="eyebrow">/ Operating</p><dl><div><dt>Food + drinks</dt><dd>$450</dd></div><div><dt>Equipment</dt><dd>$300</dd></div><div><dt>Free t-shirts</dt><dd>$250</dd></div></dl></div>
-        <div class="budget-column"><p class="eyebrow">/ Prizes</p><dl><div><dt>Monitor</dt><dd>$300</dd></div><div><dt>Gift cards</dt><dd>$200</dd></div></dl></div>
+  <!-- 3. BUDGET -->
+  <section class="ab-section sp-budget" id="budget" aria-labelledby="sp-budget-title">
+    <div class="ab-inner">
+      <p class="ab-eyebrow">/ Where it goes</p>
+      <h2 class="ab-h2" id="sp-budget-title" data-animation="textReveal">Every dollar is<br>line-itemed.</h2>
+      <div class="budget-grid" data-animation="children" data-child-animation="slideInLeft" data-stagger="0.12">
+        <div class="budget-column">
+          <p class="ab-eyebrow">/ Operating</p>
+          <dl>
+            <div class="budget-row"><div class="budget-row-head"><dt>Food + drinks</dt><dd>$450</dd></div><div class="budget-bar" aria-hidden="true"><span style="--w: 100%"></span></div></div>
+            <div class="budget-row"><div class="budget-row-head"><dt>Equipment</dt><dd>$300</dd></div><div class="budget-bar" aria-hidden="true"><span style="--w: 66.7%"></span></div></div>
+            <div class="budget-row"><div class="budget-row-head"><dt>Free t-shirts</dt><dd>$250</dd></div><div class="budget-bar" aria-hidden="true"><span style="--w: 55.6%"></span></div></div>
+          </dl>
+          <p class="budget-total"><span>Subtotal</span><strong>$1,000</strong></p>
+        </div>
+        <div class="budget-column">
+          <p class="ab-eyebrow">/ Prizes</p>
+          <dl>
+            <div class="budget-row"><div class="budget-row-head"><dt>Monitor</dt><dd>$300</dd></div><div class="budget-bar" aria-hidden="true"><span style="--w: 66.7%"></span></div></div>
+            <div class="budget-row"><div class="budget-row-head"><dt>Gift cards</dt><dd>$200</dd></div><div class="budget-bar" aria-hidden="true"><span style="--w: 44.4%"></span></div></div>
+          </dl>
+          <p class="budget-total"><span>Subtotal</span><strong>$500</strong></p>
+        </div>
       </div>
-    </section>
+    </div>
+  </section>
 
-    <section class="contact-section" id="contact">
-      <div class="contact-copy"><p class="eyebrow">/ Contact us</p><h2>Let’s<br><em>talk.</em></h2><p>Sponsors, partners, or curious students — leave a note and a club officer will respond within 48 hours.</p><address>cs.whrhs.club@gmail.com<br>Watchung Hills Regional HS<br>108 Stirling Rd · Warren, NJ</address></div>
-      <form class="sponsor-form" id="sponsor-form">
-        <label>Name<input name="name" required></label><label>Organization<input name="organization"></label>
-        <label>Email<input type="email" name="email" required></label><label>Tier interest<select name="tier" id="tier-interest"><option>Just inquiring</option><option>Silver — $10</option><option>Gold — $50</option><option>Platinum — $100</option><option>Custom</option></select></label>
+  <!-- 4. CONTACT -->
+  <section class="ab-section sp-contact" id="contact" aria-labelledby="sp-contact-title">
+    <div class="ab-inner sp-contact-grid">
+      <div>
+        <p class="ab-eyebrow">/ Contact us</p>
+        <h2 class="sp-contact-title" id="sp-contact-title" data-animation="textReveal">Let’s<br><em>talk.</em></h2>
+        <p class="ab-lede" data-animation="fadeInUp" data-delay="0.2">Sponsors, partners, or curious students — leave a note and a club officer will respond within 48 hours.</p>
+        <address data-animation="fadeInUp" data-delay="0.3">
+          <a href="mailto:cs.whrhs.club@gmail.com">cs.whrhs.club@gmail.com</a><br>
+          Watchung Hills Regional HS<br>
+          108 Stirling Rd · Warren, NJ
+        </address>
+      </div>
+
+      <form class="sponsor-form" id="sponsor-form" data-animation="slideInRight" data-delay="0.15">
+        <label>Name<input name="name" autocomplete="name" required></label>
+        <label>Organization<input name="organization" autocomplete="organization"></label>
+        <label>Email<input type="email" name="email" autocomplete="email" required></label>
+        <label>Tier interest
+          <select name="tier" id="tier-interest">
+            <option>Just inquiring</option>
+            <option>Silver — $10</option>
+            <option>Gold — $50</option>
+            <option>Platinum — $100</option>
+            <option>Custom</option>
+          </select>
+        </label>
         <label class="message-field">Message<textarea name="message" required></textarea></label>
-        <button class="send-button" type="submit">Send message <span>→</span></button>
-        <p class="form-status" id="form-status" aria-live="polite"></p>
+        <div class="sp-form-foot">
+          <span class="ab-glow" data-animation="pulseGlow" data-delay="0.6"><button class="send-button ab-btn ab-btn-accent" type="submit">Send message <span aria-hidden="true">→</span></button></span>
+          <p class="form-status" id="form-status" aria-live="polite"></p>
+        </div>
       </form>
-    </section>
-  </main>
+    </div>
+  </section>
 
-  <cs-footer></cs-footer>
+</main>
+
+<cs-footer></cs-footer>
+
+<script type="module">
+  import "/scriptFolder/global-animations.js";
+</script>
 </body>
 </html>

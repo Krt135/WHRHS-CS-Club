@@ -1,0 +1,36 @@
+/* Colour themes. The default palette (coral / charcoal / yellow / cream) lives in
+   brand.css, site-header.css and site-footer.css. A theme only swaps the tokens,
+   so every page picks it up without other changes.
+
+   Opt a page in:   <html lang="en" data-theme="terminal">
+   Revert a page:   remove the data-theme attribute.
+
+   Loaded on every page via scriptFolder/header.js. */
+
+/* ── Terminal: dark editor surfaces, terminal green, link blue ── */
+:root[data-theme="terminal"] {
+  /* Page sections (brand.css) */
+  --ab-accent: #3FB950;       /* terminal green — hero, buttons, tags */
+  --ab-accent-deep: #1A7F37;  /* green that reads on light backgrounds */
+  --ab-highlight: #58A6FF;    /* link blue — numbers, badges, focus rings */
+  --ab-surface: #161B22;      /* editor panel */
+  --ab-black: #0D1117;        /* editor background */
+  --ab-paper: #F6F8FA;        /* light sections */
+  --ab-ink: #0D1117;
+  --ab-hero-stripe: #F6F8FA;  /* keeps blue off the green hero */
+  --ab-hero-tag: #0D1117;
+  --ab-highlight-bg: #DDF4FF; /* soft blue tint instead of solid blue sections */
+
+  /* Header + footer (site-header.css / site-footer.css) */
+  --cs-accent: #3FB950;
+  --cs-accent-deep: #2EA043;
+  --cs-highlight: #58A6FF;
+  --cs-surface: #161B22;
+  --cs-black: #0D1117;
+  --cs-text-dim: #9DA7B3;
+
+  /* Pages still on the original design (style.css, admin.css, auth.css) */
+  --primary: #3FB950;
+  --primary-fg: #0D1117;
+  --admin-accent: #3FB950;
+}

@@ -12,6 +12,7 @@ import {
     set,
     serverTimestamp 
 } from "firebase/database";
+import { createScrollTrigger, fadeInUp } from "./animations.js";
 
 const firebaseConfig = {
     apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -37,20 +38,15 @@ function esc(s) {
     return String(s || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 }
 
-// ==========================================================================
-// 1. REVEAL SYSTEM TRIGGER ENGINE
-// ==========================================================================
-document.addEventListener("DOMContentLoaded", () => {
-    // Find all elements containing the reveal class token
-    const revealElements = document.querySelectorAll(".reveal");
-
-    // Micro-timeout ensures the browser registers the initial 0 opacity state first
-    setTimeout(() => {
-        revealElements.forEach((el) => {
-            el.classList.add("in");
-        });
-    }, 50);
-});
+// Only http(s) links are rendered as clickable URLs
+function safeUrl(url) {
+    try {
+        const parsed = new URL(url, window.location.href);
+        return ["http:", "https:"].includes(parsed.protocol) ? parsed.href : "#";
+    } catch {
+        return "#";
+    }
+}
 
 // ==========================================================================
 // 2. MODAL INTERACTIVE MANAGEMENT
@@ -210,101 +206,72 @@ if (formAddLink) {
 // Function to generate the HTML for a single row
 function createResourceHTML(item, index) {
   let iconSvg = '';
+  let kind = '';
   if (item.type === "link") {
-    iconSvg = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>`;
+    kind = "Link";
+    iconSvg = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>`;
   } else if (item.format === "video") {
-    iconSvg = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>`;
+    kind = "Video lecture";
+    iconSvg = `<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="6 3 20 12 6 21 6 3"></polygon></svg>`;
   } else {
-    iconSvg = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>`;
+    kind = "Written lesson";
+    iconSvg = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>`;
   }
 
-  const delayClass = `reveal-d${(index % 3) + 1}`; 
   const indexDisplay = String(index + 1).padStart(2, '0');
-  
-  const isText = item.format === "text";
+  const kindHtml = `<span class="res-kind">${kind}</span>`;
+
   let titleHtml = '';
-
-  if (isText) {
-    titleHtml = `<button class="res-title btn-read-essay" title="Read Essay">${esc(item.title)}</button>`;
+  if (item.format === "text") {
+    titleHtml = `<button type="button" class="res-title btn-read-essay" title="Read lesson">${esc(item.title)}${kindHtml}</button>`;
   } else {
-    titleHtml = `<a href="${item.content || item.url}" target="_blank" class="res-title">${esc(item.title)}</a>`;
+    titleHtml = `<a href="${esc(safeUrl(item.content || item.url))}" target="_blank" rel="noopener noreferrer" class="res-title">${esc(item.title)}${kindHtml}</a>`;
   }
 
-  // 🌟 BUILD DYNAMIC INTERACTIVE AVATAR BUBBLE
+  // Author badge links to the contributor's profile
   const avatarLetter = (item.meta || '??').substring(0, 2).toUpperCase();
-  let bubbleHtml = "";
-  if (item.authorUid) {
-      bubbleHtml = `
-        <div class="resource-author-bubble" 
-             title="View ${esc(item.meta)}'s Profile"
-             onclick="event.preventDefault(); event.stopPropagation(); window.location.href='account.html?user=${item.authorUid}';"
-             style="
-                width: 24px;
-                height: 24px;
-                border-radius: 50%;
-                background-color: var(--primary);
-                color: var(--background);
-                display: inline-flex;
-                align-items: center;
-                justify-content: center;
-                font-family: monospace;
-                font-weight: bold;
-                font-size: 0.7rem;
-                cursor: pointer;
-                margin-right: 8px;
-                border: 1px solid var(--border);
-                transition: transform 0.2s ease;
-             "
-             onmouseover="this.style.transform='scale(1.15)'"
-             onmouseout="this.style.transform='scale(1)'">
-            ${avatarLetter}
-        </div>
-      `;
-  }
+  const bubbleHtml = item.authorUid
+    ? `<a class="res-author" href="account.html?user=${encodeURIComponent(item.authorUid)}" title="View ${esc(item.meta)}'s profile" aria-label="View ${esc(item.meta)}'s profile">${esc(avatarLetter)}</a>`
+    : "";
 
   return `
-    <div class="resource-row reveal ${delayClass}" data-id="${item.id}">
+    <div class="resource-row" data-id="${esc(item.id)}" data-type="${esc(item.type)}">
       <div class="res-index">${indexDisplay}</div>
       <div class="res-icon">${iconSvg}</div>
       ${titleHtml}
-      <div class="res-tag">${esc(item.tag)}</div>
-      <div class="res-meta" style="display: flex; align-items: center;">
+      <div class="res-tag"><span class="ab-tag">${esc(item.tag)}</span></div>
+      <div class="res-meta">
          ${bubbleHtml}
          <span>${esc(item.meta)}</span>
       </div>
       <div class="res-action exec-only">
-        <button class="btn-delete-resource" title="Delete Resource">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+        <button type="button" class="btn-delete-resource" title="Delete resource" aria-label="Delete ${esc(item.title)}">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
         </button>
       </div>
     </div>
   `;
 }
 
-// Function to inject data into the DOM
-function renderList(dataArray) {
-    resourceListContainer.innerHTML = ""; // Clear current list
-
+// Function to inject data into the DOM. Rows animate in on load and filter
+// changes, but not on every search keystroke.
+function renderList(dataArray, { animate = true } = {}) {
     if (dataArray.length === 0) {
-        resourceListContainer.innerHTML = `<p style="color: #666; font-family: monospace; padding: 40px 0;">No resources found.</p>`;
+        resourceListContainer.innerHTML = `<div class="rs-empty">No resources found.</div>`;
         resultCountBadge.textContent = "0 RESULTS";
         return;
     }
 
-    const htmlString = dataArray.map((item, index) => createResourceHTML(item, index)).join("");
-    resourceListContainer.innerHTML = htmlString;
+    resourceListContainer.innerHTML = dataArray.map((item, index) => createResourceHTML(item, index)).join("");
     resultCountBadge.textContent = `${dataArray.length} RESULT${dataArray.length !== 1 ? 'S' : ''}`;
 
-    // Trigger the reveal animation for newly injected rows
-    setTimeout(() => {
-        const newReveals = resourceListContainer.querySelectorAll(".reveal");
-        newReveals.forEach(el => el.classList.add("in"));
-    }, 50);
+    if (animate) {
+        resourceListContainer.querySelectorAll(".resource-row").forEach((row, i) => {
+            createScrollTrigger(row, fadeInUp, { delay: Math.min(i, 8) * 0.05 });
+        });
+    }
 }
 
-// ==========================================================================
-// 6. 🌟 FULL SCREEN OVERLAY ENGINE (FIXED LOGIC)
-// ==========================================================================
 // ==========================================================================
 // 6. 🌟 FULL SCREEN OVERLAY ENGINE (FIXED LOGIC)
 // ==========================================================================
@@ -460,7 +427,7 @@ function applyFilter(filterType) {
 // ==========================================================================
 const searchInput = document.getElementById("resource-search");
 
-function performSearchAndFilter() {
+function performSearchAndFilter({ animate = true } = {}) {
     const activeFilterBtn = document.querySelector(".filter-btn.active");
     const currentCategory = activeFilterBtn ? activeFilterBtn.getAttribute("data-filter") : "all";
     const query = searchInput.value.toLowerCase().trim();
@@ -479,11 +446,11 @@ function performSearchAndFilter() {
         return matchesCategory && matchesSearch;
     });
 
-    renderList(filteredResults);
+    renderList(filteredResults, { animate });
 }
 
 if (searchInput) {
-    searchInput.addEventListener("input", performSearchAndFilter);
+    searchInput.addEventListener("input", () => performSearchAndFilter({ animate: false }));
 }
 
 filterButtons.forEach((btn) => {
@@ -509,10 +476,7 @@ onValue(resourcesRef, (snapshot) => {
         renderList(globalResources);
     } else {
         resourceListContainer.innerHTML = `
-            <div class="empty-state reveal in" style="text-align: center; padding: 60px 0; color: #444;">
-                <p style="font-family: monospace;">// No resources currently available.</p>
-                <p style="font-size: 12px; margin-top: 10px;">Check back later or add one above.</p>
-            </div>
+            <div class="rs-empty">No resources yet.<small>Check back later or add one above.</small></div>
         `;
         resultCountBadge.textContent = "0 RESULTS";
     }

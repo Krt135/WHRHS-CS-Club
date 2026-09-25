@@ -1,0 +1,138 @@
+/* Shared design system for the redesigned pages (about, projects, events, …).
+   Colours come from the tokens below; styleFolder/themes.css swaps them per theme.
+   Page-specific sections stay in each page's own <style> block. */
+
+:root {
+  --ab-accent: #FF6B4A;
+  --ab-accent-deep: #E8502F;
+  --ab-surface: #2A3F3F;
+  --ab-black: #0B0B0B;
+  --ab-highlight: #FFD23F;
+  --ab-paper: #F4F1EC;
+  --ab-ink: #111111;
+  --ab-cut: 5vw;           /* height of the diagonal cut between sections */
+  --ab-gutter: clamp(16px, 5vw, 64px);
+  --ab-mono: 'JetBrains Mono', ui-monospace, monospace;
+}
+
+.ab-page { font-family: 'Space Grotesk', system-ui, sans-serif; overflow-x: hidden; }
+
+/* ── Sections with alternating diagonal edges ── */
+.ab-section {
+  position: relative;
+  padding: calc(var(--ab-cut) + clamp(56px, 9vw, 120px)) var(--ab-gutter) clamp(56px, 9vw, 120px);
+  margin-top: calc(var(--ab-cut) * -1);
+  clip-path: polygon(0 var(--ab-cut), 100% 0, 100% 100%, 0 100%);
+}
+.ab-section:nth-of-type(even) { clip-path: polygon(0 0, 100% var(--ab-cut), 100% 100%, 0 100%); }
+.ab-inner { max-width: 1200px; margin: 0 auto; position: relative; z-index: 1; }
+
+/* ── Type ── */
+.ab-eyebrow {
+  display: inline-block;
+  font-family: var(--ab-mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  margin-bottom: 20px;
+}
+.ab-h2 {
+  font-size: clamp(2.2rem, 6vw, 4.5rem);
+  font-weight: 700;
+  line-height: 0.95;
+  letter-spacing: -0.035em;
+  text-transform: uppercase;
+}
+.ab-lede { font-size: clamp(1rem, 1.6vw, 1.2rem); line-height: 1.6; max-width: 56ch; }
+
+/* ── Parallelogram primitives ── */
+.ab-para { transform: skewX(-16deg); }
+.ab-para > * { transform: skewX(16deg); display: inline-block; }
+
+/* Black slanted highlight behind a word: <span class="ab-mark"><span>word</span></span> */
+.ab-mark {
+  display: inline-block;
+  background: var(--ab-black);
+  color: var(--ab-accent);
+  padding: 0 0.12em;
+  transform: skewX(-12deg);
+}
+.ab-mark > span { display: inline-block; transform: skewX(12deg); }
+
+.ab-tag {
+  font-family: var(--ab-mono); font-size: 10px; font-weight: 700;
+  letter-spacing: 0.15em; text-transform: uppercase;
+  background: var(--ab-accent); color: var(--ab-ink);
+  padding: 4px 12px;
+  clip-path: polygon(6px 0, 100% 0, calc(100% - 6px) 100%, 0 100%);
+}
+
+/* ── Buttons ── */
+.ab-btn {
+  display: inline-flex; align-items: center; gap: 10px;
+  padding: 16px 30px;
+  border: 0; cursor: pointer;
+  font-family: var(--ab-mono);
+  font-size: 13px; font-weight: 700;
+  letter-spacing: 0.15em; text-transform: uppercase;
+  clip-path: polygon(14px 0, 100% 0, calc(100% - 14px) 100%, 0 100%);
+  transition: transform 0.2s ease, background-color 0.2s ease, color 0.2s ease;
+}
+.ab-btn:hover { transform: translateX(4px); }
+.ab-btn:focus-visible { outline: 3px solid var(--ab-highlight); outline-offset: 4px; }
+.ab-btn:disabled { opacity: 0.5; cursor: wait; transform: none; }
+.ab-btn-accent { background: var(--ab-accent); color: var(--ab-ink); }
+.ab-btn-accent:hover { background: var(--ab-highlight); }
+.ab-btn-black { background: var(--ab-black); color: #fff; }
+.ab-btn-black:hover { background: var(--ab-surface); }
+.ab-btn-ghost { background: transparent; box-shadow: inset 0 0 0 2px var(--ab-ink); color: var(--ab-ink); clip-path: none; }
+.ab-btn-ghost:hover { background: var(--ab-ink); color: var(--ab-accent); }
+
+/* ── Hero (coral) ── */
+.ab-hero {
+  position: relative;
+  background: var(--ab-accent);
+  color: var(--ab-ink);
+  padding: clamp(72px, 12vw, 160px) var(--ab-gutter) calc(var(--ab-cut) + clamp(72px, 10vw, 140px));
+  overflow: hidden;
+}
+.ab-hero-title {
+  font-size: clamp(3rem, 11vw, 9rem);
+  font-weight: 700;
+  line-height: 0.88;
+  letter-spacing: -0.05em;
+  text-transform: uppercase;
+  max-width: 11ch;
+}
+.ab-hero .ab-lede { margin: 32px 0 40px; font-weight: 500; }
+.ab-hero-actions { display: flex; flex-wrap: wrap; gap: 14px; }
+
+.ab-hero-shapes { position: absolute; inset: 0; pointer-events: none; }
+.ab-shape { position: absolute; background: var(--ab-black); transform: skewX(-20deg); }
+.ab-shape-1 { width: 20vw; height: 70%; right: -6vw; top: 0; }
+.ab-shape-2 { width: 8vw; height: 42%; right: 14vw; bottom: 12%; background: var(--ab-surface); }
+.ab-shape-3 { width: 2.6vw; height: 55%; right: 23vw; top: 8%; background: var(--ab-hero-stripe, var(--ab-highlight)); }
+.ab-hero-tag {
+  position: absolute; right: var(--ab-gutter); bottom: calc(var(--ab-cut) + 32px);
+  font-family: var(--ab-mono); font-size: 11px; letter-spacing: 0.25em;
+  text-transform: uppercase; color: var(--ab-hero-tag, var(--ab-highlight)); z-index: 1;
+}
+
+/* ── Scroll animations (GSAP, see scriptFolder/animations.js) ──
+   Pages opt in with the anim-pending snippet in <head> and
+   import "/scriptFolder/global-animations.js". */
+html.anim-pending [data-animation],
+html.anim-pending [data-terminal-command] { visibility: hidden; }
+.ab-glow { display: inline-block; }
+
+@media (prefers-reduced-motion: reduce) {
+  .ab-btn { transition: none; }
+}
+
+@media (max-width: 767px) {
+  :root { --ab-cut: 8vw; }
+  .ab-shape-1 { width: 34vw; height: 110px; right: -12vw; top: auto; bottom: calc(var(--ab-cut) + 8px); }
+  .ab-shape-2, .ab-shape-3 { display: none; }
+  .ab-hero-tag { display: none; }
+}

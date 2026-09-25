@@ -1,6 +1,7 @@
 import { initializeApp, getApps, getApp } from "firebase/app"; 
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { getDatabase, ref, get, set, push, onValue, remove } from "firebase/database"; // 🌟 Added remove!
+import { createScrollTrigger, fadeInUp } from "./animations.js";
 
 // 1. Firebase Config
 const firebaseConfig = {
@@ -101,21 +102,30 @@ onValue(ref(db, 'competitions'), (snapshot) => {
 
         records.forEach(comp => {
             combinedHtml += `
-              <div class="comp-row">
-                <span class="comp-col-name comp-name">${comp.name}</span>
-                <span class="comp-col-period comp-period">${comp.date}</span>
-                <span class="comp-col-result comp-result">${comp.result}</span>
-                <button class="delete-btn" data-id="${comp.id}" title="Delete entry">✕</button>
+              <div class="comp-row" role="row">
+                <span class="comp-col-name comp-name" role="cell">${escapeHTML(comp.name)}</span>
+                <span class="comp-col-period comp-period" role="cell">${escapeHTML(comp.date)}</span>
+                <span class="comp-col-result comp-result" role="cell">${escapeHTML(comp.result)}</span>
+                <button class="delete-btn" data-id="${escapeHTML(comp.id)}" title="Delete entry" aria-label="Delete ${escapeHTML(comp.name)}">✕</button>
               </div>
             `;
         });
     } else {
         competitionRecords = [];
-        combinedHtml = `<p class="font-mono" style="color: var(--muted-fg); padding: 16px 0;">No competition logs on record.</p>`;
+        combinedHtml = `<div class="ev-comp-empty">No competition logs on record.</div>`;
     }
     
     compListContainer.innerHTML = combinedHtml;
+
+    // Rows rise in one after another as the table scrolls into view
+    compListContainer.querySelectorAll(".comp-row").forEach((row, i) => {
+        createScrollTrigger(row, fadeInUp, { delay: Math.min(i, 8) * 0.05 });
+    });
 });
+
+function escapeHTML(value) {
+    return String(value ?? "").replace(/[&<>"']/g, ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch]));
+}
 
 // 7. Event Delegation: Listen for dynamic trash clicks
 compListContainer.addEventListener("click", (e) => {

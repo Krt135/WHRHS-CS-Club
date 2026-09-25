@@ -1,251 +1,508 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="terminal">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Projects // WHRHS CS Club</title>
-    <link rel="stylesheet" href="styleFolder/style.css" />
-    <link rel="stylesheet" href="styleFolder/index.css" />
-    <link rel="stylesheet" href="styleFolder/projects.css"/>
-    
-    <script type="module" src="scriptFolder/header.js"></script>
-    <script type="module" src="scriptFolder/footer.js"></script>
-    <script type="module" src="scriptFolder/projects.js"></script>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Projects // WHRHS CS Club</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styleFolder/style.css" />
+<link rel="stylesheet" href="styleFolder/brand.css">
+<script type="module" src="scriptFolder/header.js"></script>
+<script type="module" src="scriptFolder/footer.js"></script>
+<script type="module" src="scriptFolder/projects.js"></script>
+<script>
+  if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    document.documentElement.classList.add('anim-pending');
+    setTimeout(() => document.documentElement.classList.remove('anim-pending'), 3000);
+  }
+</script>
+<style>
+  .ab-hero .ab-lede strong { font-weight: 700; }
+
+  /* ── 2. Arcade / Game Dev (black) ── */
+  .pj-arcade { background: var(--ab-black); color: #fff; }
+  .pj-arcade .ab-eyebrow { color: var(--ab-accent); }
+  .pj-arcade .ab-lede { color: #bdbdbd; margin-top: 20px; }
+
+  .pj-controls {
+    display: grid; gap: 24px;
+    margin: clamp(32px, 5vw, 56px) 0 clamp(28px, 4vw, 40px);
+    padding-bottom: 28px;
+    border-bottom: 1px solid #262626;
+  }
+  .pj-control-label {
+    display: block; margin-bottom: 10px;
+    font-family: var(--ab-mono); font-size: 10px; font-weight: 700;
+    letter-spacing: 0.25em; text-transform: uppercase; color: #8a8a8a;
+  }
+  .pj-segment { display: inline-flex; flex-wrap: wrap; gap: 6px; }
+  .pj-chip {
+    border: 0; cursor: pointer;
+    padding: 10px 20px;
+    font-family: var(--ab-mono); font-size: 12px; font-weight: 700;
+    letter-spacing: 0.12em; text-transform: uppercase;
+    background: #1c1c1c; color: #bdbdbd;
+    clip-path: polygon(10px 0, 100% 0, calc(100% - 10px) 100%, 0 100%);
+    transition: background-color 0.2s ease, color 0.2s ease;
+  }
+  .pj-chip:hover { background: #2a2a2a; color: #fff; }
+  .pj-chip:focus-visible { outline: 2px solid var(--ab-highlight); outline-offset: 3px; }
+  .pj-chip.is-active { background: var(--ab-accent); color: var(--ab-ink); }
+  .pj-chip-engine.is-active { background: var(--ab-highlight); }
+  .pj-controls .ab-btn { justify-self: start; }
+
+  .pj-game-grid {
+    display: grid; gap: 20px;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr));
+  }
+  .pj-empty {
+    grid-column: 1 / -1;
+    padding: 48px 24px;
+    text-align: center;
+    font-family: var(--ab-mono); font-size: 12px; letter-spacing: 0.15em; text-transform: uppercase;
+    color: #8a8a8a;
+    background: repeating-linear-gradient(-60deg, #141414 0 14px, #101010 14px 28px);
+  }
+
+  .pj-game {
+    position: relative;
+    display: flex; flex-direction: column;
+    background: #151515;
+    transition: translate 0.25s ease, background-color 0.25s ease;
+  }
+  .pj-game:hover { translate: 0 -4px; background: #1b1b1b; }
+  .pj-game-link { display: block; flex: 1; }
+  .pj-game-link:focus-visible { outline: 3px solid var(--ab-highlight); outline-offset: 3px; }
+  .pj-game-preview {
+    position: relative; overflow: hidden;
+    aspect-ratio: 16 / 10;
+    background: var(--ab-surface);
+    display: grid; place-items: center;
+  }
+  .pj-game-preview::before {
+    content: ""; position: absolute;
+    width: 38%; height: 140%; right: -8%; top: -20%;
+    background: var(--pj-accent, var(--ab-accent));
+    transform: skewX(-20deg);
+    transition: right 0.35s ease;
+  }
+  .pj-game-preview::after {
+    content: ""; position: absolute;
+    width: 5%; height: 140%; right: 36%; top: -20%;
+    background: var(--ab-black);
+    transform: skewX(-20deg);
+  }
+  .pj-game:hover .pj-game-preview::before { right: -2%; }
+  .pj-game-engine {
+    position: relative; z-index: 1;
+    font-size: clamp(1.6rem, 3vw, 2.2rem); font-weight: 700;
+    letter-spacing: -0.03em; text-transform: uppercase; color: #fff;
+    margin-right: 30%;
+  }
+  .pj-game[data-engine="Pygame"] { --pj-accent: var(--ab-highlight); }
+  .pj-game[data-engine="JSCanvas"] { --pj-accent: #fff; }
+  .pj-game[data-engine="Other"] { --pj-accent: #7d9a9a; }
+  .pj-game-body { padding: 20px 20px 8px; }
+  .pj-game-body h3 { font-size: 1.25rem; font-weight: 700; letter-spacing: -0.02em; line-height: 1.2; overflow-wrap: anywhere; }
+  .pj-game-body p { color: #9a9a9a; font-size: 0.9rem; margin-top: 4px; }
+  .pj-game-foot {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 20px 20px;
+  }
+  .pj-game-author {
+    width: 38px; height: 34px; flex-shrink: 0;
+    display: grid; place-items: center;
+    background: var(--ab-highlight); color: var(--ab-ink);
+    font-family: var(--ab-mono); font-size: 12px; font-weight: 700;
+    clip-path: polygon(22% 0, 100% 0, 78% 100%, 0 100%);
+    transition: background-color 0.2s ease;
+  }
+  .pj-game-author:hover { background: var(--ab-accent); }
+  .pj-game-author:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
+  .pj-game-delete {
+    background: transparent; border: 0; cursor: pointer;
+    font-family: var(--ab-mono); font-size: 10px; font-weight: 700;
+    letter-spacing: 0.15em; text-transform: uppercase;
+    color: #ff8a73; padding: 6px 0;
+  }
+  .pj-game-delete:hover { color: #fff; text-decoration: underline; }
+  .pj-game-play {
+    margin-left: auto;
+    font-family: var(--ab-mono); font-size: 11px; font-weight: 700;
+    letter-spacing: 0.15em; text-transform: uppercase; color: var(--ab-accent);
+  }
+
+  /* ── 3. Web Dev (cream) ── */
+  .pj-web { background: var(--ab-paper); color: var(--ab-ink); }
+  .pj-web .ab-eyebrow { color: var(--ab-accent-deep); }
+  .pj-web .ab-lede { margin-top: 20px; color: #333; }
+  .pj-web-grid { display: grid; gap: 20px; margin-top: clamp(40px, 6vw, 64px); }
+  .pj-site {
+    display: flex; flex-direction: column;
+    background: #fff;
+    border-left: 6px solid var(--ab-accent);
+    transition: translate 0.25s ease;
+  }
+  .pj-site:hover { translate: 0 -4px; }
+  .pj-site:focus-visible { outline: 3px solid var(--ab-ink); outline-offset: 3px; }
+  .pj-site-preview {
+    position: relative; overflow: hidden;
+    aspect-ratio: 16 / 9;
+    background: var(--ab-surface);
+  }
+  .pj-site-preview::before {
+    content: ""; position: absolute; left: 0; right: 0; top: 0; height: 28px;
+    background: var(--ab-black);
+  }
+  .pj-site-preview::after {
+    content: ""; position: absolute;
+    width: 30%; height: 160%; left: 55%; top: -10%;
+    background: var(--ab-highlight); opacity: 0.9;
+    transform: skewX(-20deg);
+    transition: left 0.35s ease;
+  }
+  .pj-site:hover .pj-site-preview::after { left: 62%; }
+  .pj-site-dots { position: absolute; top: 10px; left: 12px; display: flex; gap: 6px; z-index: 1; }
+  .pj-site-dots span { width: 8px; height: 8px; background: #444; transform: skewX(-20deg); }
+  .pj-site-dots span:first-child { background: var(--ab-accent); }
+  .pj-site-body { padding: 22px 22px 24px; display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; }
+  .pj-site-body h3 { font-size: 1.3rem; font-weight: 700; letter-spacing: -0.02em; text-transform: uppercase; line-height: 1.1; }
+  .pj-site-body p { color: #555; font-size: 0.92rem; margin-top: 4px; }
+
+  /* ── 4. Open Source (yellow) ── */
+  .pj-oss { background: var(--ab-highlight-bg, var(--ab-highlight)); color: var(--ab-ink); }
+  .pj-repo-list { display: grid; gap: 4px; margin-top: clamp(40px, 6vw, 64px); }
+  .pj-repo {
+    display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 8px 20px;
+    background: var(--ab-black); color: #fff;
+    padding: 24px 28px;
+    transition: background-color 0.2s ease, padding-left 0.25s ease;
+  }
+  .pj-repo:hover { background: var(--ab-surface); padding-left: 36px; }
+  .pj-repo:focus-visible { outline: 3px solid var(--ab-ink); outline-offset: 3px; }
+  .pj-repo svg { color: var(--ab-accent); }
+  .pj-repo h3 { font-family: var(--ab-mono); font-size: 1rem; font-weight: 700; letter-spacing: 0.02em; }
+  .pj-repo p { color: #b8b8b8; font-size: 0.92rem; margin-top: 2px; }
+  .pj-repo-link {
+    font-family: var(--ab-mono); font-size: 11px; font-weight: 700;
+    letter-spacing: 0.15em; text-transform: uppercase; color: var(--ab-highlight);
+  }
+
+  /* ── 5. CTA (charcoal) ── */
+  .pj-cta { background: var(--ab-surface); color: #fff; overflow: hidden; }
+  .pj-cta .ab-eyebrow { color: var(--ab-highlight); }
+  .pj-cta-title {
+    font-size: clamp(2.8rem, 9vw, 7.5rem);
+    font-weight: 700; line-height: 0.9; letter-spacing: -0.045em; text-transform: uppercase;
+  }
+  .pj-cta-title em { font-style: normal; color: var(--ab-accent); }
+  .pj-cta .ab-lede { color: #c9d3d3; margin-top: 28px; }
+  .pj-cta-actions { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 32px; }
+  .pj-cta .ab-btn-ghost { --ab-ink: #fff; }
+  .pj-cta .ab-btn-ghost:hover { color: var(--ab-surface); }
+
+  /* ── Upload modal ── */
+  .upload-modal-overlay {
+    display: none;
+    position: fixed; inset: 0; z-index: 9999;
+    align-items: center; justify-content: center;
+    padding: 16px;
+    background: rgba(11, 11, 11, 0.88);
+    font-family: 'Space Grotesk', system-ui, sans-serif;
+  }
+  .upload-modal-card {
+    position: relative;
+    width: 100%; max-width: 560px; max-height: 90vh; overflow-y: auto;
+    background: var(--ab-black); color: #fff;
+    border-top: 8px solid var(--ab-accent);
+    padding: clamp(24px, 5vw, 40px);
+    animation: pj-modal-in 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  @keyframes pj-modal-in { from { opacity: 0; transform: translateY(24px) scale(0.97); } }
+  .upload-modal-title {
+    font-size: clamp(1.6rem, 4vw, 2.2rem); font-weight: 700;
+    letter-spacing: -0.03em; text-transform: uppercase; line-height: 1;
+    margin-bottom: 28px;
+  }
+  .upload-modal-title em { font-style: normal; color: var(--ab-accent); }
+  .upload-modal-label {
+    display: block; margin-bottom: 8px;
+    font-family: var(--ab-mono); font-size: 10px; font-weight: 700;
+    letter-spacing: 0.22em; text-transform: uppercase; color: #9a9a9a;
+  }
+  .upload-modal-input {
+    width: 100%;
+    margin-bottom: 22px;
+    padding: 12px 14px;
+    background: #161616; color: #fff;
+    border: 0; border-left: 4px solid #333;
+    font-family: var(--ab-mono); font-size: 13px;
+    outline: none;
+    transition: border-color 0.2s ease, background-color 0.2s ease;
+  }
+  .upload-modal-input:focus { border-left-color: var(--ab-accent); background: #1c1c1c; }
+  .upload-modal-row { display: flex; flex-wrap: wrap; gap: 16px; }
+  .upload-modal-row > div { flex: 1; min-width: 200px; }
+  .upload-modal-file { color: #bdbdbd; font-family: var(--ab-mono); font-size: 12px; margin-bottom: 16px; max-width: 100%; }
+  .upload-modal-file::file-selector-button {
+    margin-right: 12px; padding: 8px 14px; border: 0; cursor: pointer;
+    background: var(--ab-highlight); color: var(--ab-ink);
+    font-family: var(--ab-mono); font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+  }
+  .upload-modal-status {
+    min-height: 1.2rem; margin-top: 8px;
+    font-family: var(--ab-mono); font-size: 12px; color: var(--ab-highlight);
+  }
+  .upload-modal-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 12px; margin-top: 28px; }
+  .upload-modal-actions .ab-btn-ghost { --ab-ink: #fff; }
+  .upload-modal-actions .ab-btn-ghost:hover { color: var(--ab-black); }
+  .upload-modal-actions .ab-btn:disabled { opacity: 0.5; cursor: wait; transform: none; }
+
+  /* ── Page-specific reduced motion (shared rules in brand.css) ── */
+  @media (prefers-reduced-motion: reduce) {
+    .pj-game, .pj-site, .pj-repo, .pj-chip { transition: none; }
+    .pj-game-preview::before, .pj-site-preview::after { transition: none; }
+    .upload-modal-card { animation: none; }
+  }
+
+  /* ── Breakpoints ── */
+  @media (max-width: 767px) {
+    .pj-repo { grid-template-columns: auto 1fr; padding: 20px; }
+    .pj-repo:hover { padding-left: 24px; }
+    .pj-repo-link { grid-column: 2; }
+  }
+  @media (min-width: 768px) {
+    .pj-controls { grid-template-columns: auto 1fr auto; align-items: end; column-gap: 40px; }
+    .pj-web-grid { grid-template-columns: repeat(3, 1fr); }
+  }
+</style>
 </head>
 <body>
-    <cs-header active-page="projects"></cs-header>
+<cs-header active-page="projects"></cs-header>
 
-    <main class="projects-main">
-        <section class="projects-hero">
-            <div class="hero-wrapper reveal">
-                <p class="eyebrow">/ 02 · Projects</p>
-                <h1 class="hero-title">
-                    What we<br />
-                    <span class="highlight">ship.</span>
-                </h1>
-                <p class="hero-subtitle">
-                    Two arms: <span class="text-foreground">Game Dev</span> and
-                    <span class="text-foreground">Web Dev</span>.
-                    Members publish under their own name, exec board ships group work,
-                    and everything ends up on GitHub.
-                </p>
-            </div>
-        </section>
+<main class="ab-page">
 
-        <section class="sector-section" id="game-dev">
-            <div class="sector-header">
-                <div class="sector-header-left">
-                    <p class="eyebrow">/ Sector 01 · Game Dev</p>
-                    <h2 class="sector-title">Made with —</h2>
-                    <div class="tech-tags" id="engineFilters">
-                        <span id="tag-Unity" style="cursor:pointer;">Unity</span>
-                        <span id="tag-Pygame" style="cursor:pointer;">Pygame</span>
-                        <span id="tag-JSCanvas" style="cursor:pointer;">JS Canvas</span>
-                    </div>
-                </div>
-                <div class="sector-header-right">
-                    <button id="filter-people" class="btn-outline" style="border-color: var(--primary); color: var(--primary);">People’s Games</button>
-                    <button id="filter-group" class="btn-outline">Group Games</button>
-                    
-                    <button class="btn-primary" onclick="toggleUploadModal(true)">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12"/><path d="m17 8-5-5-5 5"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/></svg>
-                        Upload your game
-                    </button>
-                </div>
-            </div>
-            <div id="gameGridContainer" class="game-grid">
-                <div class="empty-state">No games yet. Sign in to become a member and submit yours.</div>
-            </div>
-        </section>
+  <!-- 1. HERO -->
+  <section class="ab-hero" aria-labelledby="pj-hero-title">
+    <div class="ab-hero-shapes" aria-hidden="true" data-animation="children" data-child-animation="scaleUp" data-from="0.6" data-stagger="0.12">
+      <span class="ab-shape ab-shape-1"></span>
+      <span class="ab-shape ab-shape-2"></span>
+      <span class="ab-shape ab-shape-3"></span>
+    </div>
+    <div class="ab-inner">
+      <p class="ab-eyebrow" data-animation="fadeInUp" data-trigger="load">/ 02 · Projects</p>
+      <h1 class="ab-hero-title" id="pj-hero-title" data-animation="scaleUp" data-from="0.92" data-trigger="load" data-delay="0.1">
+        What we <span class="ab-mark"><span>ship.</span></span>
+      </h1>
+      <p class="ab-lede" data-animation="fadeInUp" data-trigger="load" data-delay="0.35">
+        Two arms: <strong>Game Dev</strong> and <strong>Web Dev</strong>.
+        Members publish under their own name, the exec board ships group work,
+        and everything ends up on GitHub.
+      </p>
+      <div class="ab-hero-actions" data-animation="fadeInUp" data-trigger="load" data-delay="0.5">
+        <button type="button" class="ab-btn ab-btn-black" onclick="toggleUploadModal(true)">Upload your game →</button>
+        <a href="#game-dev" class="ab-btn ab-btn-ghost">Browse the arcade</a>
+      </div>
+    </div>
+    <span class="ab-hero-tag" aria-hidden="true">Build · Ship · Repeat</span>
+  </section>
 
-        <section class="sector-section" id="web-dev">
-            <div class="sector-header-simple">
-                <p class="eyebrow">/ Sector 02 · Web Dev</p>
-                <h2 class="sector-title">Live showcase.</h2>
-                <p class="sector-desc">Real, in‑production websites we built for other WHRHS clubs. Click any card to open and interact with the live site.</p>
-            </div>
-            <div class="web-grid">
-                <a href="https://example.com" target="_blank" rel="noopener noreferrer" class="project-card">
-                    <div class="card-preview">
-                        <div class="window-dots">
-                            <span></span><span></span><span></span>
-                        </div>
-                        <div class="preview-placeholder">
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>
-                        </div>
-                    </div>
-                    <div class="card-footer">
-                        <div>
-                            <h3>WHRHS Debate Team</h3>
-                            <p>Tournament schedule + roster</p>
-                        </div>
-                        <span class="card-open">Open →</span>
-                    </div>
-                </a>
-                <a href="https://example.com" target="_blank" rel="noopener noreferrer" class="project-card">
-                    <div class="card-preview">
-                        <div class="window-dots">
-                            <span></span><span></span><span></span>
-                        </div>
-                        <div class="preview-placeholder">
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>
-                        </div>
-                    </div>
-                    <div class="card-footer">
-                        <div>
-                            <h3>Robotics Club</h3>
-                            <p>Sponsor packet + match log</p>
-                        </div>
-                        <span class="card-open">Open →</span>
-                    </div>
-                </a>
-                <a href="https://example.com" target="_blank" rel="noopener noreferrer" class="project-card">
-                    <div class="card-preview">
-                        <div class="window-dots">
-                            <span></span><span></span><span></span>
-                        </div>
-                        <div class="preview-placeholder">
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>
-                        </div>
-                    </div>
-                    <div class="card-footer">
-                        <div>
-                            <h3>Art Club Gallery</h3>
-                            <p>Curated student portfolio</p>
-                        </div>
-                        <span class="card-open">Open →</span>
-                    </div>
-                </a>
-            </div>
-        </section>
+  <!-- 2. GAME DEV / ARCADE -->
+  <section class="ab-section pj-arcade" id="game-dev" aria-labelledby="pj-arcade-title">
+    <div class="ab-inner">
+      <p class="ab-eyebrow">/ Sector 01 · Game Dev</p>
+      <h2 class="ab-h2" id="pj-arcade-title" data-animation="textReveal">The arcade.</h2>
+      <p class="ab-lede" data-terminal-command="$ npm run fetch_projects --recent">Games built by members and the exec board. Click any card to play it right in your browser.</p>
 
-        <section class="sector-section">
-            <div class="sector-header-simple">
-                <p class="eyebrow">/ Sector 03 · Open Source</p>
-                <h2 class="sector-title">Repos in the open.</h2>
-            </div>
-            <div class="repo-list">
-                <a href="https://github.com/Krt135/WHRHS-CS-Club" target="_blank" class="repo-item">
-                    <div>
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/><path d="M9 18c-4.51 2-5-2-7-2"/></svg>
-                        <div>
-                            <h4>whrhs‑cs/site</h4>
-                            <p>This website. Made with Vite and Node.js</p>
-                        </div>
-                    </div>
-                    <span class="repo-link">View repo →</span>
-                </a>
-                <a href="https://github.com/whrhs-cs/hillshacks" target="_blank" class="repo-item">
-                    <div>
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/><path d="M9 18c-4.51 2-5-2-7-2"/></svg>
-                        <div>
-                            <h4>whrhs‑cs/hillshacks</h4>
-                            <p>Hackathon registration &amp; schedule app.</p>
-                        </div>
-                    </div>
-                    <span class="repo-link">View repo →</span>
-                </a>
-                <a href="https://github.com/whrhs-cs/lecture-notes" target="_blank" class="repo-item">
-                    <div>
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/><path d="M9 18c-4.51 2-5-2-7-2"/></svg>
-                        <div>
-                            <h4>whrhs‑cs/lecture‑notes</h4>
-                            <p>Markdown archive of every club lecture.</p>
-                        </div>
-                    </div>
-                    <span class="repo-link">View repo →</span>
-                </a>
-                <a href="https://github.com/whrhs-cs/competitive" target="_blank" class="repo-item">
-                    <div>
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/><path d="M9 18c-4.51 2-5-2-7-2"/></svg>
-                        <div>
-                            <h4>whrhs‑cs/competitive</h4>
-                            <p>Practice problems + member solutions.</p>
-                        </div>
-                    </div>
-                    <span class="repo-link">View repo →</span>
-                </a>
-            </div>
-        </section>
-    </main>
-
-    <cs-footer></cs-footer>
-
-    <div id="uploadModal" class="upload-modal-overlay">
-        <div class="upload-modal-card">
-            <h3 class="upload-modal-title">DEPLOY NEW PROJECT</h3>
-            
-            <label class="upload-modal-label">PROJECT TITLE</label>
-            <input type="text" id="projTitle" class="upload-modal-input" placeholder="e.g., Space Invaders Pro" />
-
-            <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
-                <div style="flex: 1; min-width: 200px;">
-                    <label class="upload-modal-label">CATEGORY</label>
-                    <select id="projCategory" class="upload-modal-input" style="margin-bottom: 0;">
-                        <option value="people">People's Game (Individual)</option>
-                        <option value="group">Group Game (Execs Only)</option>
-                    </select>
-                </div>
-                <div style="flex: 1; min-width: 200px;">
-                    <label class="upload-modal-label">ENGINE / TAG</label>
-                    <select id="projEngine" class="upload-modal-input" style="margin-bottom: 0;">
-                        <option value="Unity">Unity WebGL</option>
-                        <option value="Pygame">Pygame (WASM)</option>
-                        <option value="JSCanvas">JS Canvas</option>
-                        <option value="Other">Other / Web</option>
-                    </select>
-                </div>
-            </div>
-
-            <label class="upload-modal-label">DEPLOYMENT FORMAT</label>
-            <select id="projType" class="upload-modal-input">
-                <option value="game">Game Folder Zip (Upload to Firebase Storage)</option>
-                <option value="web">External Live Link (GitHub Pages, etc.)</option>
-            </select>
-
-            <div id="gameUploadGroup">
-                <label class="upload-modal-label" style="text-transform: none;">CHOOSE COMPRESSED ZIP (Must have index.html at root)</label>
-                <input type="file" id="projZipFile" accept=".zip" style="color: var(--muted-fg); font-family: inherit; font-size: 0.85rem; margin-bottom: 1rem;" />
-            </div>
-
-            <div id="webUploadGroup" style="display: none;">
-                <label class="upload-modal-label">EXTERNAL HOSTING ROUTING URL</label>
-                <input type="url" id="projExternalUrl" class="upload-modal-input" placeholder="https://username.github.io/game" />
-            </div>
-
-            <div id="uploadStatus" style="margin-top: 1rem; font-size: 0.8rem; color: var(--primary); min-height: 1.2rem;"></div>
-
-            <div style="margin-top: 2rem; display: flex; gap: 1rem; justify-content: flex-end; flex-wrap: wrap;">
-                <button class="btn-outline" onclick="toggleUploadModal(false)">Cancel</button>
-                <button id="submitUploadBtn" class="btn-primary">Deploy Core ➔</button>
-            </div>
+      <div class="pj-controls" data-animation="fadeInUp" data-delay="0.3">
+        <div>
+          <span class="pj-control-label" id="pj-category-label">Category</span>
+          <div class="pj-segment" role="group" aria-labelledby="pj-category-label">
+            <button type="button" id="filter-people" class="pj-chip is-active" aria-pressed="true">People’s Games</button>
+            <button type="button" id="filter-group" class="pj-chip" aria-pressed="false">Group Games</button>
+          </div>
         </div>
+        <div>
+          <span class="pj-control-label" id="pj-engine-label">Made with —</span>
+          <div class="pj-segment" id="engineFilters" role="group" aria-labelledby="pj-engine-label">
+            <button type="button" id="tag-Unity" class="pj-chip pj-chip-engine" aria-pressed="false">Unity</button>
+            <button type="button" id="tag-Pygame" class="pj-chip pj-chip-engine" aria-pressed="false">Pygame</button>
+            <button type="button" id="tag-JSCanvas" class="pj-chip pj-chip-engine" aria-pressed="false">JS Canvas</button>
+          </div>
+        </div>
+        <button type="button" class="ab-btn ab-btn-accent" onclick="toggleUploadModal(true)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M12 3v12"/><path d="m17 8-5-5-5 5"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/></svg>
+          Upload
+        </button>
+      </div>
+
+      <div id="gameGridContainer" class="pj-game-grid" aria-live="polite">
+        <div class="pj-empty">Loading the arcade…</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3. WEB DEV -->
+  <section class="ab-section pj-web" id="web-dev" aria-labelledby="pj-web-title">
+    <div class="ab-inner">
+      <p class="ab-eyebrow">/ Sector 02 · Web Dev</p>
+      <h2 class="ab-h2" id="pj-web-title" data-animation="textReveal">Live<br>showcase.</h2>
+      <p class="ab-lede" data-animation="slideInLeft" data-delay="0.15">Real, in‑production websites we built for other WHRHS clubs. Click any card to open and interact with the live site.</p>
+      <div class="pj-web-grid" data-animation="children" data-child-animation="slideInLeft" data-stagger="0.12">
+        <a href="https://example.com" target="_blank" rel="noopener noreferrer" class="pj-site">
+          <div class="pj-site-preview" aria-hidden="true"><div class="pj-site-dots"><span></span><span></span><span></span></div></div>
+          <div class="pj-site-body">
+            <div>
+              <h3>WHRHS Debate Team</h3>
+              <p>Tournament schedule + roster</p>
+            </div>
+            <span class="ab-tag">Open →</span>
+          </div>
+        </a>
+        <a href="https://example.com" target="_blank" rel="noopener noreferrer" class="pj-site">
+          <div class="pj-site-preview" aria-hidden="true"><div class="pj-site-dots"><span></span><span></span><span></span></div></div>
+          <div class="pj-site-body">
+            <div>
+              <h3>Robotics Club</h3>
+              <p>Sponsor packet + match log</p>
+            </div>
+            <span class="ab-tag">Open →</span>
+          </div>
+        </a>
+        <a href="https://example.com" target="_blank" rel="noopener noreferrer" class="pj-site">
+          <div class="pj-site-preview" aria-hidden="true"><div class="pj-site-dots"><span></span><span></span><span></span></div></div>
+          <div class="pj-site-body">
+            <div>
+              <h3>Art Club Gallery</h3>
+              <p>Curated student portfolio</p>
+            </div>
+            <span class="ab-tag">Open →</span>
+          </div>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. OPEN SOURCE -->
+  <section class="ab-section pj-oss" id="open-source" aria-labelledby="pj-oss-title">
+    <div class="ab-inner">
+      <p class="ab-eyebrow">/ Sector 03 · Open Source</p>
+      <h2 class="ab-h2" id="pj-oss-title" data-animation="textReveal">Repos in<br>the open.</h2>
+      <div class="pj-repo-list" data-animation="children" data-stagger="0.1">
+        <a href="https://github.com/Krt135/WHRHS-CS-Club" target="_blank" rel="noopener noreferrer" class="pj-repo">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/><path d="M9 18c-4.51 2-5-2-7-2"/></svg>
+          <div>
+            <h3>whrhs‑cs/site</h3>
+            <p>This website. Made with Vite and Node.js</p>
+          </div>
+          <span class="pj-repo-link">View repo →</span>
+        </a>
+        <a href="https://github.com/whrhs-cs/hillshacks" target="_blank" rel="noopener noreferrer" class="pj-repo">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/><path d="M9 18c-4.51 2-5-2-7-2"/></svg>
+          <div>
+            <h3>whrhs‑cs/hillshacks</h3>
+            <p>Hackathon registration &amp; schedule app.</p>
+          </div>
+          <span class="pj-repo-link">View repo →</span>
+        </a>
+        <a href="https://github.com/whrhs-cs/lecture-notes" target="_blank" rel="noopener noreferrer" class="pj-repo">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/><path d="M9 18c-4.51 2-5-2-7-2"/></svg>
+          <div>
+            <h3>whrhs‑cs/lecture‑notes</h3>
+            <p>Markdown archive of every club lecture.</p>
+          </div>
+          <span class="pj-repo-link">View repo →</span>
+        </a>
+        <a href="https://github.com/whrhs-cs/competitive" target="_blank" rel="noopener noreferrer" class="pj-repo">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/><path d="M9 18c-4.51 2-5-2-7-2"/></svg>
+          <div>
+            <h3>whrhs‑cs/competitive</h3>
+            <p>Practice problems + member solutions.</p>
+          </div>
+          <span class="pj-repo-link">View repo →</span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5. CTA -->
+  <section class="ab-section pj-cta" aria-labelledby="pj-cta-title">
+    <div class="ab-inner">
+      <p class="ab-eyebrow">/ Members</p>
+      <h2 class="pj-cta-title" id="pj-cta-title" data-animation="textReveal">Got something<br><em>built?</em></h2>
+      <p class="ab-lede" data-animation="fadeInUp" data-delay="0.2">Zip your game folder with index.html at the root and push it to the arcade. It'll be playable here in seconds.</p>
+      <div class="pj-cta-actions" data-animation="fadeInUp" data-delay="0.3">
+        <span class="ab-glow" data-animation="pulseGlow" data-delay="0.6"><button type="button" class="ab-btn ab-btn-accent" onclick="toggleUploadModal(true)">Upload your game →</button></span>
+        <a href="resources.html" class="ab-btn ab-btn-ghost">Learn how in Resources</a>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<cs-footer></cs-footer>
+
+<div id="uploadModal" class="upload-modal-overlay" role="dialog" aria-modal="true" aria-labelledby="uploadModalTitle">
+  <div class="upload-modal-card">
+    <h3 class="upload-modal-title" id="uploadModalTitle">Deploy new <em>project.</em></h3>
+
+    <label class="upload-modal-label" for="projTitle">Project title</label>
+    <input type="text" id="projTitle" class="upload-modal-input" placeholder="e.g., Space Invaders Pro" />
+
+    <div class="upload-modal-row">
+      <div>
+        <label class="upload-modal-label" for="projCategory">Category</label>
+        <select id="projCategory" class="upload-modal-input">
+          <option value="people">People's Game (Individual)</option>
+          <option value="group">Group Game (Execs Only)</option>
+        </select>
+      </div>
+      <div>
+        <label class="upload-modal-label" for="projEngine">Engine / Tag</label>
+        <select id="projEngine" class="upload-modal-input">
+          <option value="Unity">Unity WebGL</option>
+          <option value="Pygame">Pygame (WASM)</option>
+          <option value="JSCanvas">JS Canvas</option>
+          <option value="Other">Other / Web</option>
+        </select>
+      </div>
     </div>
 
-    <script>
-        // Layout helper window visibility toggle switches
-        window.toggleUploadModal = function(show) {
-            const modal = document.getElementById("uploadModal");
-            if (modal) modal.style.display = show ? "flex" : "none";
-        };
+    <label class="upload-modal-label" for="projType">Deployment format</label>
+    <select id="projType" class="upload-modal-input">
+      <option value="game">Game Folder Zip (Upload to Firebase Storage)</option>
+      <option value="web">External Live Link (GitHub Pages, etc.)</option>
+    </select>
 
-        (function() {
-            const reveals = document.querySelectorAll('.reveal');
-            if (reveals.length === 0) return;
+    <div id="gameUploadGroup">
+      <label class="upload-modal-label" for="projZipFile">Choose compressed zip (index.html at root)</label>
+      <input type="file" id="projZipFile" class="upload-modal-file" accept=".zip" />
+    </div>
 
-            const observer = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        entry.target.classList.add('in');
-                    }
-                });
-            }, { 
-                threshold: 0.15,
-                rootMargin: '0px 0px -50px 0px'
-            });
+    <div id="webUploadGroup" style="display: none;">
+      <label class="upload-modal-label" for="projExternalUrl">External hosting URL</label>
+      <input type="url" id="projExternalUrl" class="upload-modal-input" placeholder="https://username.github.io/game" />
+    </div>
 
-            reveals.forEach(el => observer.observe(el));
-        })();
-    </script>
+    <div id="uploadStatus" class="upload-modal-status" role="status"></div>
+
+    <div class="upload-modal-actions">
+      <button type="button" class="ab-btn ab-btn-ghost" onclick="toggleUploadModal(false)">Cancel</button>
+      <button type="button" id="submitUploadBtn" class="ab-btn ab-btn-accent">Deploy →</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  window.toggleUploadModal = function (show) {
+    const modal = document.getElementById("uploadModal");
+    if (modal) modal.style.display = show ? "flex" : "none";
+  };
+</script>
+<script type="module">
+  import "/scriptFolder/global-animations.js";
+</script>
 </body>
 </html>

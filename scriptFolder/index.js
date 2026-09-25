@@ -29,18 +29,6 @@ onAuthStateChanged(auth, async (user) => {
     }
 });
 
-const observer = new IntersectionObserver((entries) => {
-    entries.forEach(e => {
-      if (e.isIntersecting) e.target.classList.add('in');
-    });
-  }, { threshold: 0.1 });
-
-  document.querySelectorAll('.reveal').forEach(el => {
-    observer.observe(el);
-    if (el.closest('.hero')) el.classList.add('in');
-  });
-
-  
   //JS for Countdown in index.html
   document.addEventListener("DOMContentLoaded", () => {
     // 1. Grab the HTML element where the number lives

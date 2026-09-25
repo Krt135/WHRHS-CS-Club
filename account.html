@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="terminal">
 
 <head>
     <meta charset="UTF-8">
@@ -17,7 +17,7 @@
     <cs-header></cs-header>
     <main class="container">
 
-        <section class="profile-header">
+        <section class="profile-header" data-terminal-command="$ authenticate_user()" data-terminal-compact>
             <div style="width: 100%;">
                 <p class="eyebrow">/ Account · 00</p>
             </div>
@@ -33,7 +33,7 @@
 
         <section class="grid-layout font-mono">
 
-            <div class="edit-profile">
+            <div class="edit-profile" data-terminal-command="$ load_profile()" data-terminal-compact>
                 <p class="eyebrow">/ Edit profile</p>
 
                 <div class="input-group">
@@ -70,7 +70,7 @@
                 </div>
             </div>
 
-            <aside class="account-info">
+            <aside class="account-info" data-terminal-command="$ load_profile()" data-terminal-compact>
                 <p class="eyebrow">/ Account</p>
                 <dl>
                     <dt>Role</dt>

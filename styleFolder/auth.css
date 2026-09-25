@@ -91,8 +91,8 @@
 }
 
 .auth-feedback {
-  border: 1px solid oklch(89% 0.22 122 / 40%);
-  background: oklch(89% 0.22 122 / 10%);
+  border: 1px solid color-mix(in oklch, var(--primary) 40%, transparent);
+  background: color-mix(in oklch, var(--primary) 10%, transparent);
   color: var(--foreground);
   border-radius: var(--radius-sm);
   padding: 12px 14px;

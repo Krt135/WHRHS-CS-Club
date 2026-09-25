@@ -1,145 +1,445 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="terminal">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Resources // WHRHS CS Club</title>
-    <link rel="stylesheet" href="styleFolder/style.css">
-    <link rel="stylesheet" href="styleFolder/resources.css">
-    <link rel="stylesheet" href="styleFolder/index.css">
-    <script type="module" src="scriptFolder/header.js"></script>
-    <script type="module" src="scriptFolder/footer.js"></script>
-    <script type="module" src="scriptFolder/resources.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Resources // WHRHS CS Club</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styleFolder/style.css">
+<link rel="stylesheet" href="styleFolder/brand.css">
+<script type="module" src="scriptFolder/header.js"></script>
+<script type="module" src="scriptFolder/footer.js"></script>
+<script type="module" src="scriptFolder/resources.js"></script>
+<script>
+  if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    document.documentElement.classList.add('anim-pending');
+    setTimeout(() => document.documentElement.classList.remove('anim-pending'), 3000);
+  }
+</script>
+<style>
+  /* ── 2. Library (cream) ── */
+  .rs-library { background: var(--ab-paper); color: var(--ab-ink); }
+  .rs-library .ab-eyebrow { color: var(--ab-accent-deep); }
+  .rs-library .ab-lede { margin-top: 20px; color: #333; }
+
+  .rs-toolbar {
+    display: grid; gap: 20px;
+    margin: clamp(32px, 5vw, 56px) 0 clamp(24px, 4vw, 36px);
+  }
+  .rs-search {
+    display: flex; align-items: center; gap: 14px;
+    padding: 0 20px;
+    background: var(--ab-black); color: #fff;
+    border-left: 6px solid var(--ab-accent);
+  }
+  .rs-search svg { flex-shrink: 0; color: var(--ab-accent); }
+  .rs-search input {
+    flex: 1; min-width: 0;
+    padding: 18px 0;
+    background: transparent; border: 0; outline: none;
+    color: #fff;
+    font-family: var(--ab-mono); font-size: 14px;
+  }
+  .rs-search input::placeholder { color: #8a8a8a; }
+  .rs-search input::-webkit-search-cancel-button { filter: invert(1); }
+  .rs-search:focus-within { border-left-color: var(--ab-highlight); }
+  .rs-count {
+    flex-shrink: 0;
+    font-family: var(--ab-mono); font-size: 10px; font-weight: 700;
+    letter-spacing: 0.2em; color: var(--ab-highlight);
+  }
+
+  .rs-controls { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 16px; }
+  .rs-filters { display: inline-flex; flex-wrap: wrap; gap: 6px; }
+  .filter-btn {
+    border: 0; cursor: pointer;
+    padding: 10px 20px;
+    font-family: var(--ab-mono); font-size: 12px; font-weight: 700;
+    letter-spacing: 0.12em; text-transform: uppercase;
+    background: #e4e0d8; color: #444;
+    clip-path: polygon(10px 0, 100% 0, calc(100% - 10px) 100%, 0 100%);
+    transition: background-color 0.2s ease, color 0.2s ease;
+  }
+  .filter-btn:hover { background: #d6d1c7; color: var(--ab-ink); }
+  .filter-btn:focus-visible { outline: 2px solid var(--ab-ink); outline-offset: 3px; }
+  .filter-btn.active { background: var(--ab-black); color: var(--ab-accent); }
+  .rs-actions { display: none; gap: 10px; flex-wrap: wrap; }
+  .rs-actions .ab-btn { padding: 12px 22px; font-size: 12px; }
+
+  /* Resource rows */
+  .resource-list { display: grid; gap: 6px; }
+  .resource-row {
+    display: grid;
+    grid-template-columns: 44px 44px minmax(0, 1fr) auto minmax(0, 200px) 40px;
+    align-items: center; gap: 16px;
+    padding: 18px 20px;
+    background: #fff;
+    border-left: 6px solid transparent;
+    transition: border-color 0.2s ease, translate 0.25s ease;
+  }
+  .resource-row:hover { border-left-color: var(--ab-accent); translate: 4px 0; }
+  .res-index { font-family: var(--ab-mono); font-size: 13px; font-weight: 700; color: var(--ab-accent-deep); }
+  .res-icon {
+    width: 40px; height: 34px;
+    display: grid; place-items: center;
+    background: var(--ab-black); color: var(--ab-highlight);
+    clip-path: polygon(20% 0, 100% 0, 80% 100%, 0 100%);
+  }
+  .res-icon svg { width: 16px; height: 16px; }
+  .resource-row[data-type="link"] .res-icon { background: var(--ab-accent); color: var(--ab-ink); }
+  .res-title {
+    min-width: 0;
+    background: none; border: 0; padding: 0; cursor: pointer; text-align: left;
+    font: inherit; font-size: 1.15rem; font-weight: 700; letter-spacing: -0.015em;
+    color: var(--ab-ink);
+    overflow-wrap: anywhere;
+    text-decoration: underline; text-decoration-color: transparent; text-underline-offset: 4px; text-decoration-thickness: 2px;
+    transition: text-decoration-color 0.2s ease, color 0.2s ease;
+  }
+  .res-title:hover, .res-title:focus-visible { text-decoration-color: var(--ab-accent); outline: none; }
+  .res-title:focus-visible { box-shadow: 0 0 0 2px var(--ab-ink); }
+  .res-title .res-kind {
+    display: block; margin-top: 2px;
+    font-family: var(--ab-mono); font-size: 10px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase;
+    color: #8a8a8a;
+  }
+  .res-tag { justify-self: start; }
+  .res-meta { display: flex; align-items: center; gap: 10px; min-width: 0; font-family: var(--ab-mono); font-size: 12px; color: #555; }
+  .res-meta span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .res-author {
+    flex-shrink: 0;
+    width: 34px; height: 28px;
+    display: grid; place-items: center;
+    background: var(--ab-highlight); color: var(--ab-ink);
+    font-family: var(--ab-mono); font-size: 11px; font-weight: 700;
+    clip-path: polygon(22% 0, 100% 0, 78% 100%, 0 100%);
+    transition: background-color 0.2s ease;
+  }
+  .res-author:hover { background: var(--ab-accent); }
+  .res-author:focus-visible { outline: 2px solid var(--ab-ink); outline-offset: 2px; }
+  .res-action { display: none; justify-content: flex-end; }
+  .is-exec-user .resource-row .res-action { display: flex; }
+  .btn-delete-resource {
+    width: 34px; height: 34px;
+    display: grid; place-items: center;
+    background: transparent; border: 0; cursor: pointer;
+    color: #b0402a;
+    transition: background-color 0.2s ease, color 0.2s ease;
+  }
+  .btn-delete-resource:hover { background: var(--ab-accent); color: var(--ab-ink); }
+  .btn-delete-resource:focus-visible { outline: 2px solid var(--ab-ink); outline-offset: 2px; }
+  .rs-empty {
+    padding: 48px 24px; text-align: center;
+    font-family: var(--ab-mono); font-size: 12px; letter-spacing: 0.15em; text-transform: uppercase;
+    color: #777;
+    background: repeating-linear-gradient(-60deg, #ebe7df 0 14px, #e4e0d8 14px 28px);
+  }
+  .rs-empty small { display: block; margin-top: 8px; letter-spacing: 0.05em; text-transform: none; }
+
+  /* ── 3. CTA (charcoal) ── */
+  .rs-cta { background: var(--ab-surface); color: #fff; }
+  .rs-cta .ab-eyebrow { color: var(--ab-highlight); }
+  .rs-cta-title {
+    font-size: clamp(2.8rem, 9vw, 7.5rem);
+    font-weight: 700; line-height: 0.9; letter-spacing: -0.045em; text-transform: uppercase;
+  }
+  .rs-cta-title em { font-style: normal; color: var(--ab-accent); }
+  .rs-cta .ab-lede { color: #c9d3d3; margin-top: 28px; }
+  .rs-cta-actions { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 32px; }
+  .rs-cta .ab-btn-ghost { --ab-ink: #fff; }
+  .rs-cta .ab-btn-ghost:hover { color: var(--ab-surface); }
+
+  /* ── Modals ── */
+  .modal-overlay {
+    display: none;
+    position: fixed; inset: 0; z-index: 9999;
+    align-items: center; justify-content: center;
+    padding: 16px;
+    background: rgba(11, 11, 11, 0.88);
+    font-family: 'Space Grotesk', system-ui, sans-serif;
+  }
+  .modal-overlay.open { display: flex; }
+  .rs-modal {
+    position: relative;
+    width: 100%; max-width: 540px; max-height: 90vh; overflow-y: auto;
+    background: var(--ab-black); color: #fff;
+    border-top: 8px solid var(--ab-accent);
+    padding: clamp(24px, 5vw, 36px);
+    animation: rs-modal-in 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  @keyframes rs-modal-in { from { opacity: 0; transform: translateY(24px) scale(0.97); } }
+  .rs-modal-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; margin-bottom: 24px; }
+  .rs-modal-head h3 {
+    font-size: clamp(1.6rem, 4vw, 2rem); font-weight: 700;
+    letter-spacing: -0.03em; text-transform: uppercase; line-height: 1;
+  }
+  .rs-modal-head h3 em { font-style: normal; color: var(--ab-accent); }
+  .close-modal, .modal-close {
+    width: 38px; height: 34px; flex-shrink: 0;
+    display: grid; place-items: center;
+    background: #1c1c1c; color: #fff; border: 0; cursor: pointer;
+    font-size: 20px; line-height: 1;
+    clip-path: polygon(20% 0, 100% 0, 80% 100%, 0 100%);
+    transition: background-color 0.2s ease, color 0.2s ease;
+  }
+  .close-modal:hover, .modal-close:hover { background: var(--ab-accent); color: var(--ab-ink); }
+  .close-modal:focus-visible, .modal-close:focus-visible { outline: 2px solid var(--ab-highlight); outline-offset: 3px; }
+
+  .input-group { display: flex; flex-direction: column; gap: 8px; margin-bottom: 18px; min-width: 0; }
+  .input-group > label {
+    font-family: var(--ab-mono); font-size: 10px; font-weight: 700;
+    letter-spacing: 0.22em; text-transform: uppercase; color: #9a9a9a;
+  }
+  .input-group input[type="text"], .input-group input[type="url"], .input-group textarea {
+    width: 100%;
+    padding: 12px 14px;
+    background: #161616; color: #fff;
+    border: 0; border-left: 4px solid #333;
+    font-family: var(--ab-mono); font-size: 13px;
+    outline: none; resize: vertical;
+    transition: border-color 0.2s ease, background-color 0.2s ease;
+  }
+  .input-group input:focus, .input-group textarea:focus { border-left-color: var(--ab-accent); background: #1c1c1c; }
+  .input-row { display: flex; flex-wrap: wrap; gap: 16px; }
+  .input-row > .input-group { flex: 1; min-width: 180px; }
+
+  .format-slider { display: inline-flex; gap: 6px; }
+  .format-slider input { position: absolute; opacity: 0; pointer-events: none; }
+  .format-slider label {
+    padding: 10px 18px; cursor: pointer;
+    background: #1c1c1c; color: #bdbdbd;
+    font-family: var(--ab-mono); font-size: 11px; font-weight: 700;
+    letter-spacing: 0.12em; text-transform: uppercase;
+    clip-path: polygon(10px 0, 100% 0, calc(100% - 10px) 100%, 0 100%);
+    transition: background-color 0.2s ease, color 0.2s ease;
+  }
+  .format-slider input:checked + label { background: var(--ab-accent); color: var(--ab-ink); }
+  .format-slider input:focus-visible + label { outline: 2px solid var(--ab-highlight); outline-offset: 3px; }
+
+  .modal-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 12px; margin-top: 28px; }
+  .modal-actions .ab-btn-ghost { --ab-ink: #fff; }
+  .modal-actions .ab-btn-ghost:hover { color: var(--ab-black); }
+
+  /* Essay reader */
+  #lessonModal { align-items: flex-start; overflow-y: auto; padding: clamp(16px, 5vw, 64px) 16px; }
+  .lesson-modal {
+    position: relative;
+    width: 100%; max-width: 820px; margin: auto;
+    background: var(--ab-paper); color: var(--ab-ink);
+    border-top: 10px solid var(--ab-accent);
+    padding: clamp(28px, 6vw, 64px);
+    animation: rs-modal-in 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  .lesson-modal .modal-close { position: absolute; top: 20px; right: 20px; background: var(--ab-black); }
+  .essay-title {
+    font-size: clamp(2.2rem, 6vw, 4rem); font-weight: 700;
+    line-height: 0.95; letter-spacing: -0.035em; text-transform: uppercase;
+    padding-right: 48px;
+  }
+  .lesson-meta {
+    margin-top: 16px;
+    font-family: var(--ab-mono); font-size: 11px; font-weight: 700;
+    letter-spacing: 0.18em; text-transform: uppercase; color: var(--ab-accent-deep);
+  }
+  .lesson-divider { width: 80px; height: 6px; margin: 28px 0; background: var(--ab-accent); transform: skewX(-30deg); }
+  .lesson-text { max-width: 68ch; font-size: 1.08rem; line-height: 1.75; color: #222; }
+  .essay-paragraph { margin-bottom: 1.2em; white-space: pre-line; }
+  .essay-heading {
+    margin: 1.8em 0 0.6em;
+    font-size: 1.5rem; font-weight: 700; letter-spacing: -0.02em; text-transform: uppercase;
+  }
+  .essay-example-box {
+    margin: 1.4em 0; padding: 20px 24px;
+    background: var(--ab-black); color: #eee;
+    border-left: 6px solid var(--ab-highlight);
+    font-family: var(--ab-mono); font-size: 0.9rem; line-height: 1.7; white-space: pre-line;
+  }
+  .essay-example-box strong { color: var(--ab-highlight); letter-spacing: 0.15em; font-size: 0.75rem; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .filter-btn, .resource-row, .res-title, .res-author, .btn-delete-resource, .format-slider label { transition: none; }
+    .rs-modal, .lesson-modal { animation: none; }
+  }
+
+  @media (max-width: 767px) {
+    .resource-row {
+      grid-template-columns: 40px minmax(0, 1fr) auto;
+      grid-template-areas: "icon title action" "icon tag tag" "icon meta meta";
+      gap: 8px 14px; padding: 16px;
+    }
+    .res-index { display: none; }
+    .res-icon { grid-area: icon; align-self: start; }
+    .res-title { grid-area: title; }
+    .res-tag { grid-area: tag; }
+    .res-meta { grid-area: meta; }
+    .res-action { grid-area: action; }
+  }
+</style>
 </head>
 <body>
-    <cs-header active-page="resources"></cs-header>
+<cs-header active-page="resources"></cs-header>
 
-    <main>
-        <section class="page-hero">
-            <div class="hero-wrapper reveal">
-                <p class="section-label">/ 04 · RESOURCES</p>
-                <h1 class="hero-title">Learning <br><span class="highlight">hub.</span></h1>
-                <p class="hero-subtitle">Every lecture we've recorded and every link we trust — in one searchable library.<br>Members add to it after every meeting.</p>
-            </div>
-        </section>
+<main class="ab-page">
 
-        <section class="toolbar-section reveal reveal-d1">
-            <div class="search-container">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                <input type="text" id="resource-search" placeholder="Search lectures and links...">
-                <span class="result-count" id="result-count">0 RESULTS</span>
-            </div>
-            
-            <div class="controls-container">
-                <div class="filter-group">
-                    <button class="filter-btn active" data-filter="all">ALL</button>
-                    <button class="filter-btn" data-filter="lecture">LECTURE</button>
-                    <button class="filter-btn" data-filter="link">LINK</button>
-                </div>
-                
-                <div class="action-group exec-only">
-                    <button id="btn-open-lecture-modal" class="action-btn outline">+ LECTURE</button>
-                    <button id="btn-open-link-modal" class="action-btn solid">+ LINK</button>
-                </div>
-            </div>
-        </section>
-
-        <section class="resource-list reveal reveal-d2" id="resource-list">
-            </section>
-    </main>
-
-    <div id="lectureModal" class="modal-overlay" style="display: none;">
-        <div class="modal-content">
-            <div class="modal-header">
-                <span class="modal-title">/ ADD LECTURE</span>
-                <button class="close-modal">&times;</button>
-            </div>
-            <form id="form-add-lecture">
-                <div class="input-group">
-                    <label>TITLE</label>
-                    <input type="text" id="lec-title" required>
-                </div>
-                
-                <div class="input-row">
-                    <div class="input-group">
-                        <label>TAG</label>
-                        <input type="text" id="lec-tag" placeholder="General" required>
-                    </div>
-                    <div class="input-group">
-                        <label>SPEAKER · DURATION</label>
-                        <input type="text" id="lec-meta" placeholder="S. Liu · 24 min" required>
-                    </div>
-                </div>
-
-                <div class="input-group toggle-group">
-                    <label>FORMAT</label>
-                    <div class="format-slider">
-                        <input type="radio" id="format-video" name="lec-format" value="video" checked>
-                        <label for="format-video">Video Link</label>
-
-                        <input type="radio" id="format-text" name="lec-format" value="text">
-                        <label for="format-text">Written Essay</label>
-                    </div>
-                </div>
-
-                <div class="input-group" id="dynamic-content-area">
-                    <label id="dynamic-content-label">SLIDES / VIDEO URL</label>
-                    <input type="url" id="lec-url">
-                    <textarea id="lec-text" rows="6" placeholder="Write your lesson text here..." style="display: none;"></textarea>
-                </div>
-
-                <div class="modal-actions">
-                    <button type="button" class="btn-cancel">CANCEL</button>
-                    <button type="submit" class="btn-submit">ADD &rarr;</button>
-                </div>
-            </form>
-        </div>
+  <!-- 1. HERO -->
+  <section class="ab-hero" aria-labelledby="rs-hero-title">
+    <div class="ab-hero-shapes" aria-hidden="true" data-animation="children" data-child-animation="scaleUp" data-from="0.6" data-stagger="0.12">
+      <span class="ab-shape ab-shape-1"></span>
+      <span class="ab-shape ab-shape-2"></span>
+      <span class="ab-shape ab-shape-3"></span>
     </div>
-
-    <div id="linkModal" class="modal-overlay" style="display: none;">
-        <div class="modal-content">
-            <div class="modal-header">
-                <span class="modal-title">/ ADD LINK</span>
-                <button class="close-modal">&times;</button>
-            </div>
-            <form id="form-add-link">
-                <div class="input-group">
-                    <label>TITLE</label>
-                    <input type="text" id="link-title" required>
-                </div>
-                
-                <div class="input-row">
-                    <div class="input-group">
-                        <label>TAG</label>
-                        <input type="text" id="link-tag" placeholder="General" required>
-                    </div>
-                    <div class="input-group">
-                        <label>TYPE</label>
-                        <input type="text" id="link-type" placeholder="Reference, Curriculum, etc." required>
-                    </div>
-                </div>
-
-                <div class="input-group">
-                    <label>URL</label>
-                    <input type="url" id="link-url" required>
-                </div>
-
-                <div class="modal-actions">
-                    <button type="button" class="btn-cancel">CANCEL</button>
-                    <button type="submit" class="btn-submit">ADD &rarr;</button>
-                </div>
-            </form>
-        </div>
+    <div class="ab-inner">
+      <p class="ab-eyebrow" data-animation="fadeInUp" data-trigger="load">/ 04 · Resources</p>
+      <h1 class="ab-hero-title" id="rs-hero-title" data-animation="scaleUp" data-from="0.92" data-trigger="load" data-delay="0.1">
+        Learning <span class="ab-mark"><span>hub.</span></span>
+      </h1>
+      <p class="ab-lede" data-animation="fadeInUp" data-trigger="load" data-delay="0.35">
+        Every lecture we've recorded and every link we trust — in one searchable library.
+        Members add to it after every meeting.
+      </p>
+      <div class="ab-hero-actions" data-animation="fadeInUp" data-trigger="load" data-delay="0.5">
+        <a href="#library" class="ab-btn ab-btn-black">Browse the library →</a>
+      </div>
     </div>
+    <span class="ab-hero-tag" aria-hidden="true">Learn · Build · Share</span>
+  </section>
 
-    <div class="modal-overlay" id="lessonModal">
-  <div class="modal lesson-modal">
-    <button class="modal-close" onclick="window.closeModal('lessonModal')">×</button>
-    <div id="lessonBody">
-       </div>
+  <!-- 2. LIBRARY -->
+  <section class="ab-section rs-library" id="library" aria-labelledby="rs-library-title">
+    <div class="ab-inner">
+      <p class="ab-eyebrow">/ The library</p>
+      <h2 class="ab-h2" id="rs-library-title" data-animation="textReveal">Lectures<br>&amp; links.</h2>
+      <p class="ab-lede" data-terminal-command="$ compile_resources.sh">Written lessons open right here. Videos, slides, and links open in a new tab.</p>
+
+      <div class="rs-toolbar" data-animation="fadeInUp" data-delay="0.3">
+        <div class="rs-search">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+          <input type="search" id="resource-search" placeholder="Search lectures and links…" autocomplete="off" aria-label="Search resources">
+          <span class="rs-count" id="result-count" aria-live="polite">0 RESULTS</span>
+        </div>
+        <div class="rs-controls" data-terminal-command="$ fetch_category()" data-terminal-compact>
+          <div class="rs-filters" role="group" aria-label="Filter by type">
+            <button type="button" class="filter-btn active" data-filter="all">All</button>
+            <button type="button" class="filter-btn" data-filter="lecture">Lectures</button>
+            <button type="button" class="filter-btn" data-filter="link">Links</button>
+          </div>
+          <div class="rs-actions action-group exec-only">
+            <button type="button" id="btn-open-lecture-modal" class="ab-btn ab-btn-black">+ Lecture</button>
+            <button type="button" id="btn-open-link-modal" class="ab-btn ab-btn-accent">+ Link</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="resource-list" id="resource-list">
+        <div class="rs-empty">Loading the library…</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3. CTA -->
+  <section class="ab-section rs-cta" aria-labelledby="rs-cta-title">
+    <div class="ab-inner">
+      <p class="ab-eyebrow">/ Next step</p>
+      <h2 class="rs-cta-title" id="rs-cta-title" data-animation="textReveal">Learned<br><em>something?</em></h2>
+      <p class="ab-lede" data-animation="fadeInUp" data-delay="0.2">Put it to work. Build a game or a site and publish it to the club arcade for everyone to try.</p>
+      <div class="rs-cta-actions" data-animation="fadeInUp" data-delay="0.3">
+        <span class="ab-glow" data-animation="pulseGlow" data-delay="0.6"><a href="projects.html" class="ab-btn ab-btn-accent">Ship a project →</a></span>
+        <a href="events.html" class="ab-btn ab-btn-ghost">See upcoming events</a>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<div id="lectureModal" class="modal-overlay" style="display: none;" role="dialog" aria-modal="true" aria-labelledby="lectureModalTitle">
+  <div class="rs-modal">
+    <div class="rs-modal-head">
+      <h3 id="lectureModalTitle">Add <em>lecture.</em></h3>
+      <button type="button" class="close-modal" aria-label="Close">&times;</button>
+    </div>
+    <form id="form-add-lecture">
+      <div class="input-group">
+        <label for="lec-title">Title</label>
+        <input type="text" id="lec-title" required>
+      </div>
+      <div class="input-row">
+        <div class="input-group">
+          <label for="lec-tag">Tag</label>
+          <input type="text" id="lec-tag" placeholder="General" required>
+        </div>
+        <div class="input-group">
+          <label for="lec-meta">Speaker · Duration</label>
+          <input type="text" id="lec-meta" placeholder="S. Liu · 24 min" required>
+        </div>
+      </div>
+      <div class="input-group toggle-group">
+        <label>Format</label>
+        <div class="format-slider" role="radiogroup" aria-label="Format">
+          <input type="radio" id="format-video" name="lec-format" value="video" checked>
+          <label for="format-video">Video link</label>
+          <input type="radio" id="format-text" name="lec-format" value="text">
+          <label for="format-text">Written essay</label>
+        </div>
+      </div>
+      <div class="input-group" id="dynamic-content-area">
+        <label id="dynamic-content-label" for="lec-url">Slides / Video URL</label>
+        <input type="url" id="lec-url">
+        <textarea id="lec-text" rows="6" placeholder="Write your lesson text here..." style="display: none;" aria-labelledby="dynamic-content-label"></textarea>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn-cancel ab-btn ab-btn-ghost">Cancel</button>
+        <button type="submit" class="btn-submit ab-btn ab-btn-accent">Add →</button>
+      </div>
+    </form>
   </div>
 </div>
 
-    <cs-footer></cs-footer>
+<div id="linkModal" class="modal-overlay" style="display: none;" role="dialog" aria-modal="true" aria-labelledby="linkModalTitle">
+  <div class="rs-modal">
+    <div class="rs-modal-head">
+      <h3 id="linkModalTitle">Add <em>link.</em></h3>
+      <button type="button" class="close-modal" aria-label="Close">&times;</button>
+    </div>
+    <form id="form-add-link">
+      <div class="input-group">
+        <label for="link-title">Title</label>
+        <input type="text" id="link-title" required>
+      </div>
+      <div class="input-row">
+        <div class="input-group">
+          <label for="link-tag">Tag</label>
+          <input type="text" id="link-tag" placeholder="General" required>
+        </div>
+        <div class="input-group">
+          <label for="link-type">Type</label>
+          <input type="text" id="link-type" placeholder="Reference, Curriculum, etc." required>
+        </div>
+      </div>
+      <div class="input-group">
+        <label for="link-url">URL</label>
+        <input type="url" id="link-url" required>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn-cancel ab-btn ab-btn-ghost">Cancel</button>
+        <button type="submit" class="btn-submit ab-btn ab-btn-accent">Add →</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="modal-overlay" id="lessonModal" role="dialog" aria-modal="true" aria-label="Lesson">
+  <div class="lesson-modal">
+    <button type="button" class="modal-close" aria-label="Close lesson" onclick="window.closeModal('lessonModal')">×</button>
+    <div id="lessonBody"></div>
+  </div>
+</div>
+
+<cs-footer></cs-footer>
+
+<script type="module">
+  import "/scriptFolder/global-animations.js";
+</script>
 </body>
 </html>

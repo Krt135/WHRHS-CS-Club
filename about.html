@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="terminal">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>About // WHRHS CS Club</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styleFolder/style.css">
+<link rel="stylesheet" href="styleFolder/brand.css">
+<script type="module" src="scriptFolder/header.js" defer></script>
+<script type="module" src="scriptFolder/footer.js" defer></script>
+<script>
+  if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    document.documentElement.classList.add('anim-pending');
+    setTimeout(() => document.documentElement.classList.remove('anim-pending'), 3000);
+  }
+</script>
+<style>
+  /* ── Stats strip (black) ── */
+  .ab-stats { background: var(--ab-black); color: #fff; }
+  .ab-stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1px; background: #262626; }
+  .ab-stat { background: var(--ab-black); padding: 28px 20px; }
+  .ab-stat-num {
+    font-size: clamp(2.4rem, 5vw, 3.8rem); font-weight: 700;
+    letter-spacing: -0.04em; line-height: 1; color: var(--ab-highlight);
+  }
+  .ab-stat-label {
+    margin-top: 10px; font-family: var(--ab-mono); font-size: 11px;
+    letter-spacing: 0.2em; text-transform: uppercase; color: #9a9a9a;
+  }
+
+  /* ── 2. Mission (cream) ── */
+  .ab-mission { background: var(--ab-paper); color: var(--ab-ink); }
+  .ab-mission .ab-eyebrow { color: var(--ab-accent-deep); }
+  .ab-mission-head { display: grid; gap: 28px; margin-bottom: clamp(40px, 6vw, 72px); }
+  .ab-values { display: grid; gap: 20px; }
+  .ab-value {
+    position: relative;
+    background: #fff;
+    padding: 36px 28px 32px;
+    border-left: 6px solid var(--ab-accent);
+  }
+  .ab-value-num {
+    display: inline-block; margin-bottom: 20px;
+    background: var(--ab-black); color: var(--ab-highlight);
+    font-family: var(--ab-mono); font-size: 12px; font-weight: 700;
+    letter-spacing: 0.15em; padding: 6px 14px;
+  }
+  .ab-value h3 { font-size: 1.6rem; font-weight: 700; letter-spacing: -0.02em; text-transform: uppercase; margin-bottom: 10px; }
+  .ab-value p { color: #444; }
+  .ab-mission-accent {
+    position: absolute; right: -6vw; top: 18%;
+    width: 22vw; height: 14px; background: var(--ab-highlight); transform: skewX(-30deg);
+    z-index: 0;
+  }
+
+  /* ── 3. Team (charcoal) ── */
+  .ab-team { background: var(--ab-surface); color: #fff; }
+  .ab-team .ab-eyebrow { color: var(--ab-highlight); }
+  .ab-team .ab-lede { color: #c9d3d3; margin-top: 20px; }
+  .ab-team-grid { display: grid; gap: 20px; margin-top: clamp(40px, 6vw, 64px); }
+  .ab-member {
+    background: rgba(0, 0, 0, 0.28);
+    padding: 24px;
+    display: flex; flex-direction: column; gap: 18px;
+    transition: translate 0.25s ease, background-color 0.25s ease;
+  }
+  .ab-member:hover { translate: 0 -4px; background: rgba(0, 0, 0, 0.45); }
+  .ab-avatar {
+    width: 84px; height: 84px;
+    background: var(--ab-accent); color: var(--ab-ink);
+    clip-path: polygon(22% 0, 100% 0, 78% 100%, 0 100%);
+    display: grid; place-items: center;
+    font-size: 1.6rem; font-weight: 700; letter-spacing: -0.02em;
+  }
+  .ab-member:nth-child(2) .ab-avatar { background: var(--ab-highlight); }
+  .ab-member:nth-child(3) .ab-avatar { background: #fff; }
+  .ab-member-role {
+    font-family: var(--ab-mono); font-size: 11px; font-weight: 700;
+    letter-spacing: 0.2em; text-transform: uppercase; color: var(--ab-accent);
+  }
+  .ab-member-name { font-size: 1.4rem; font-weight: 700; letter-spacing: -0.02em; line-height: 1.1; margin-top: 4px; }
+  .ab-member p { color: #c9d3d3; font-size: 0.95rem; }
+
+  /* ── 4. What we do (yellow) ── */
+  .ab-do { background: var(--ab-highlight-bg, var(--ab-highlight)); color: var(--ab-ink); }
+  .ab-do-grid { display: grid; gap: 4px; margin-top: clamp(40px, 6vw, 64px); }
+  .ab-do-item {
+    background: var(--ab-black); color: #fff;
+    padding: 32px 28px;
+    display: grid; grid-template-columns: auto 1fr; gap: 8px 20px; align-items: baseline;
+    transition: background-color 0.2s ease;
+  }
+  .ab-do-item:hover { background: var(--ab-surface); }
+  .ab-do-idx { font-family: var(--ab-mono); font-size: 12px; font-weight: 700; color: var(--ab-accent); grid-row: span 2; }
+  .ab-do-item h3 { font-size: clamp(1.4rem, 2.6vw, 2rem); font-weight: 700; letter-spacing: -0.02em; text-transform: uppercase; }
+  .ab-do-item p { color: #b8b8b8; }
+  .ab-do-tags { grid-column: 2; display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+
+  /* ── 5. Contact CTA (black) ── */
+  .ab-cta { background: var(--ab-black); color: #fff; overflow: hidden; }
+  .ab-cta .ab-eyebrow { color: var(--ab-accent); }
+  .ab-cta-title {
+    font-size: clamp(2.8rem, 9vw, 7.5rem);
+    font-weight: 700; line-height: 0.9; letter-spacing: -0.045em; text-transform: uppercase;
+  }
+  .ab-cta-title em { font-style: normal; color: var(--ab-accent); }
+  .ab-cta-row { display: grid; gap: 40px; margin-top: 40px; align-items: end; }
+  .ab-cta .ab-lede { color: #bdbdbd; }
+  .ab-cta-actions { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 28px; }
+  .ab-cta-details {
+    font-family: var(--ab-mono); font-size: 12px; line-height: 2;
+    letter-spacing: 0.08em; color: #9a9a9a; font-style: normal;
+    border-left: 4px solid var(--ab-highlight); padding-left: 20px;
+  }
+  .ab-cta-details a { color: #fff; }
+  .ab-cta-details a:hover { color: var(--ab-accent); }
+
+  /* ── Page-specific reduced motion (shared rules in brand.css) ── */
+  @media (prefers-reduced-motion: reduce) {
+    .ab-member, .ab-do-item { transition: none; }
+  }
+
+  /* ── Breakpoints ── */
+  @media (max-width: 767px) {
+    .ab-mission-accent { display: none; }
+  }
+  @media (min-width: 640px) {
+    .ab-team-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (min-width: 768px) {
+    .ab-stats-grid { grid-template-columns: repeat(4, 1fr); }
+    .ab-values { grid-template-columns: repeat(3, 1fr); }
+    .ab-do-grid { grid-template-columns: repeat(2, 1fr); }
+    .ab-mission-head { grid-template-columns: 1.1fr 1fr; align-items: end; }
+    .ab-cta-row { grid-template-columns: 1.4fr 1fr; }
+  }
+  @media (min-width: 1024px) {
+    .ab-team-grid { grid-template-columns: repeat(4, 1fr); }
+  }
+</style>
+</head>
+<body>
+<cs-header active-page="about"></cs-header>
+
+<main class="ab-page">
+
+  <!-- 1. HERO -->
+  <section class="ab-hero" aria-labelledby="ab-hero-title">
+    <div class="ab-hero-shapes" aria-hidden="true" data-animation="children" data-child-animation="scaleUp" data-from="0.6" data-stagger="0.12">
+      <span class="ab-shape ab-shape-1"></span>
+      <span class="ab-shape ab-shape-2"></span>
+      <span class="ab-shape ab-shape-3"></span>
+    </div>
+    <div class="ab-inner">
+      <p class="ab-eyebrow" data-animation="fadeInUp" data-trigger="load">/ 01 · About the club</p>
+      <h1 class="ab-hero-title" id="ab-hero-title" data-animation="scaleUp" data-from="0.92" data-trigger="load" data-delay="0.1">
+        We turn students into <span class="ab-mark"><span>builders.</span></span>
+      </h1>
+      <p class="ab-lede" data-animation="fadeInUp" data-trigger="load" data-delay="0.35">
+        The WHRHS Computer Science Club is a student-run engineering collective at Watchung Hills Regional High School.
+        Since 2018 we've been writing code, shipping games and websites, and teaching the next wave of students to do the same.
+      </p>
+      <div class="ab-hero-actions" data-animation="fadeInUp" data-trigger="load" data-delay="0.5">
+        <a href="#contact" class="ab-btn ab-btn-black">Join the club →</a>
+        <a href="#team" class="ab-btn ab-btn-ghost">Meet the team</a>
+      </div>
+    </div>
+    <span class="ab-hero-tag" aria-hidden="true">est. 2018 · Warren NJ</span>
+  </section>
+
+  <!-- STATS -->
+  <section class="ab-section ab-stats" aria-label="Club by the numbers">
+    <div class="ab-inner">
+      <div class="ab-stats-grid" data-animation="children">
+        <div class="ab-stat"><div class="ab-stat-num">40+</div><div class="ab-stat-label">Members</div></div>
+        <div class="ab-stat"><div class="ab-stat-num">12</div><div class="ab-stat-label">Active projects</div></div>
+        <div class="ab-stat"><div class="ab-stat-num">27</div><div class="ab-stat-label">Repos shipped</div></div>
+        <div class="ab-stat"><div class="ab-stat-num">50</div><div class="ab-stat-label">HillsHacks students</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2. MISSION -->
+  <section class="ab-section ab-mission" id="mission" aria-labelledby="ab-mission-title">
+    <span class="ab-mission-accent" aria-hidden="true"></span>
+    <div class="ab-inner">
+      <div class="ab-mission-head">
+        <div>
+          <p class="ab-eyebrow">/ 02 · Mission</p>
+          <h2 class="ab-h2" id="ab-mission-title" data-animation="textReveal">Learn it.<br>Build it.<br>Ship it.</h2>
+        </div>
+        <p class="ab-lede" data-terminal-command="$ initialize_club()">
+          Tutorials only get you so far. We believe the fastest way to learn computer science is to make real things
+          for real people — then hand what we learned to whoever comes next.
+        </p>
+      </div>
+      <div class="ab-values" data-terminal-command="$ compile_values.js" data-terminal-compact>
+        <article class="ab-value">
+          <span class="ab-value-num ab-para"><span>/01</span></span>
+          <h3>Build real things</h3>
+          <p>Games, tools, and live websites for other WHRHS clubs. Every project ends up in front of actual users.</p>
+        </article>
+        <article class="ab-value">
+          <span class="ab-value-num ab-para"><span>/02</span></span>
+          <h3>Teach forward</h3>
+          <p>Through HillsHacks we teach elementary and middle schoolers web dev, pixel art, and game development.</p>
+        </article>
+        <article class="ab-value">
+          <span class="ab-value-num ab-para"><span>/03</span></span>
+          <h3>Open to everyone</h3>
+          <p>No experience required. Beginners and competitive programmers work side by side, and everyone ships.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3. TEAM -->
+  <!-- TODO: replace the placeholder names below with this year's officers. -->
+  <section class="ab-section ab-team" id="team" aria-labelledby="ab-team-title">
+    <div class="ab-inner">
+      <p class="ab-eyebrow">/ 03 · Officers</p>
+      <h2 class="ab-h2" id="ab-team-title" data-animation="textReveal">The people<br>behind the code.</h2>
+      <p class="ab-lede" data-terminal-command="$ fetch_team_members()">Our executive board runs meetings, mentors new members, and organizes HillsHacks every year.</p>
+      <div class="ab-team-grid" data-animation="children" data-child-animation="scaleUp" data-from="0.85" data-stagger="0.1">
+        <article class="ab-member">
+          <div class="ab-avatar" aria-hidden="true">P</div>
+          <div>
+            <div class="ab-member-role">President</div>
+            <div class="ab-member-name">Name TBA</div>
+          </div>
+          <p>Sets the club's direction and leads weekly meetings and project planning.</p>
+        </article>
+        <article class="ab-member">
+          <div class="ab-avatar" aria-hidden="true">VP</div>
+          <div>
+            <div class="ab-member-role">Vice President</div>
+            <div class="ab-member-name">Name TBA</div>
+          </div>
+          <p>Runs the project pipeline and pairs new members with teams.</p>
+        </article>
+        <article class="ab-member">
+          <div class="ab-avatar" aria-hidden="true">T</div>
+          <div>
+            <div class="ab-member-role">Treasurer</div>
+            <div class="ab-member-name">Name TBA</div>
+          </div>
+          <p>Manages sponsorships and the HillsHacks budget.</p>
+        </article>
+        <article class="ab-member">
+          <div class="ab-avatar" aria-hidden="true">S</div>
+          <div>
+            <div class="ab-member-role">Secretary</div>
+            <div class="ab-member-name">Name TBA</div>
+          </div>
+          <p>Keeps the resource library, meeting notes, and club announcements up to date.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. WHAT WE DO -->
+  <section class="ab-section ab-do" id="what-we-do" aria-labelledby="ab-do-title">
+    <div class="ab-inner">
+      <p class="ab-eyebrow">/ 04 · What we do</p>
+      <h2 class="ab-h2" id="ab-do-title" data-animation="textReveal">Four disciplines.<br>One club.</h2>
+      <div class="ab-do-grid" data-animation="children" data-stagger="0.1">
+        <article class="ab-do-item">
+          <span class="ab-do-idx">/01</span>
+          <h3>Game Dev</h3>
+          <p>Individual and group games, published to the club arcade for anyone to play.</p>
+          <div class="ab-do-tags"><span class="ab-tag">Unity</span><span class="ab-tag">Pygame</span><span class="ab-tag">JS Canvas</span></div>
+        </article>
+        <article class="ab-do-item">
+          <span class="ab-do-idx">/02</span>
+          <h3>Web Dev</h3>
+          <p>Live sites we design and build for other WHRHS clubs — including this one.</p>
+          <div class="ab-do-tags"><span class="ab-tag">HTML/CSS</span><span class="ab-tag">JavaScript</span><span class="ab-tag">Firebase</span></div>
+        </article>
+        <article class="ab-do-item">
+          <span class="ab-do-idx">/03</span>
+          <h3>HillsHacks</h3>
+          <p>Our student-run hackathon for 50+ elementary and middle schoolers. Next up: March 21, 2027.</p>
+          <div class="ab-do-tags"><span class="ab-tag">Teaching</span><span class="ab-tag">Hackathon</span></div>
+        </article>
+        <article class="ab-do-item">
+          <span class="ab-do-idx">/04</span>
+          <h3>Competitive Prog.</h3>
+          <p>Tuesday afternoons in Room 214: USACO mocks, Codeforces virtual contests, and shared solutions.</p>
+          <div class="ab-do-tags"><span class="ab-tag">USACO</span><span class="ab-tag">Codeforces</span></div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5. CONTACT CTA -->
+  <section class="ab-section ab-cta" id="contact" aria-labelledby="ab-cta-title">
+    <div class="ab-inner">
+      <p class="ab-eyebrow">/ 05 · Get involved</p>
+      <h2 class="ab-cta-title" id="ab-cta-title" data-animation="textReveal">Come build<br><em>with us.</em></h2>
+      <div class="ab-cta-row">
+        <div>
+          <p class="ab-lede" data-animation="fadeInUp" data-delay="0.2">Any grade, any skill level. Create an account to upload projects and access the resource library, or reach out with questions.</p>
+          <div class="ab-cta-actions">
+            <span class="ab-glow" data-animation="pulseGlow" data-delay="0.5"><a href="login.html" class="ab-btn ab-btn-accent">Join the club →</a></span>
+            <a href="mailto:cs.whrhs.club@gmail.com" class="ab-btn ab-btn-ghost" style="--ab-ink:#fff">Email us</a>
+          </div>
+        </div>
+        <address class="ab-cta-details" data-animation="slideInRight" data-delay="0.2">
+          <a href="mailto:cs.whrhs.club@gmail.com">cs.whrhs.club@gmail.com</a><br>
+          Room 214 · Tuesday afternoons<br>
+          Watchung Hills Regional HS<br>
+          108 Stirling Rd · Warren, NJ
+        </address>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<cs-footer></cs-footer>
+
+<script type="module">
+  import "/scriptFolder/global-animations.js";
+</script>
+</body>
+</html>

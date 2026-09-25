@@ -2,6 +2,8 @@ import { auth, db, storage } from "./firebase.js";
 import { onAuthStateChanged } from "firebase/auth";
 import { ref as dbRef, onValue, update, remove, get, set, push } from "firebase/database";
 import { ref, uploadBytes } from "firebase/storage";
+import { createScrollTrigger, scaleUp } from "./animations.js";
+import { registerTerminal } from "./init-terminal-animations.js";
 
 import * as fflate from "https://cdn.jsdelivr.net/npm/fflate@0.8.2/+esm";
 
@@ -10,6 +12,7 @@ let currentUserRole = 'member'; // Default to member until fetched
 let allGames = [];
 
 let activeEngine = null; 
+let hasPlayedCardTerminals = false;
 let activeCategory = 'people'; 
 
 const gameGridContainer = document.getElementById("gameGridContainer");
@@ -51,29 +54,16 @@ onValue(projectsRef, (snapshot) => {
 });
 
 // ─── 2. FILTERING LOGIC ───────────────────────────────────────────
-function updateFilterUI() {
-    if (filterPeopleBtn) {
-        filterPeopleBtn.style.borderColor = activeCategory === 'people' ? 'var(--primary)' : 'var(--border)';
-        filterPeopleBtn.style.color = activeCategory === 'people' ? 'var(--primary)' : 'var(--muted-fg)';
-    }
-    
-    if (filterGroupBtn) {
-        filterGroupBtn.style.borderColor = activeCategory === 'group' ? 'var(--primary)' : 'var(--border)';
-        filterGroupBtn.style.color = activeCategory === 'group' ? 'var(--primary)' : 'var(--muted-fg)';
-    }
+function setActive(button, isActive) {
+    if (!button) return;
+    button.classList.toggle('is-active', isActive);
+    button.setAttribute('aria-pressed', String(isActive));
+}
 
-    Object.keys(engineTags).forEach(engine => {
-        if (!engineTags[engine]) return;
-        if (activeEngine === engine) {
-            engineTags[engine].style.background = 'var(--primary)';
-            engineTags[engine].style.color = 'var(--background)'; 
-            engineTags[engine].style.borderColor = 'var(--primary)';
-        } else {
-            engineTags[engine].style.background = 'transparent';
-            engineTags[engine].style.color = 'var(--muted-fg)';
-            engineTags[engine].style.borderColor = 'var(--border)';
-        }
-    });
+function updateFilterUI() {
+    setActive(filterPeopleBtn, activeCategory === 'people');
+    setActive(filterGroupBtn, activeCategory === 'group');
+    Object.keys(engineTags).forEach(engine => setActive(engineTags[engine], activeEngine === engine));
 }
 
 if (filterPeopleBtn) filterPeopleBtn.addEventListener("click", () => { activeCategory = 'people'; renderGames(); });
@@ -101,75 +91,65 @@ function renderGames() {
     });
 
     if (filteredGames.length === 0) {
-        gameGridContainer.innerHTML = `<div class="empty-state">No games found for this filter combination.</div>`;
+        gameGridContainer.innerHTML = `<div class="pj-empty">No games found for this filter combination.</div>`;
         return;
     }
 
-    // 🌟 The min() function prevents horizontal overflow on screens narrower than 250px (like early iPhones)
-    let gridHTML = `<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 250px), 1fr)); gap: 1.5rem; text-align: left;">`;
-    
-    filteredGames.forEach(game => {
-        // 🌟 CONDITIONAL DELETE BUTTON LOGIC
-        let deleteBtnHTML = "";
-        if (currentUser && (currentUser.uid === game.authorUid || ['exec', 'admin'].includes(currentUserRole))) {
-            deleteBtnHTML = `<button onclick="event.preventDefault(); window.deleteGame('${game.id}')" style="background: transparent; color: #ef4444; border: 1px solid #ef4444; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 0.8rem; margin-right: auto; transition: 0.2s;">DELETE</button>`;
-        }
+    gameGridContainer.innerHTML = filteredGames.map(game => {
+        const playUrl = `play.html?id=${encodeURIComponent(game.id)}`;
+        const author = game.authorName || 'Anonymous';
+        const canDelete = currentUser && (currentUser.uid === game.authorUid || ['exec', 'admin'].includes(currentUserRole));
+        const deleteBtnHTML = canDelete
+            ? `<button type="button" class="pj-game-delete" data-delete-id="${escapeHTML(game.id)}">Delete</button>`
+            : "";
 
-        gridHTML += `
-            <div class="project-card" style="position: relative;">
-                <div class="project-author-icon" 
-                     title="View ${game.authorName}'s Profile"
-                     onclick="event.preventDefault(); event.stopPropagation(); window.location.href='account.html?user=${game.authorUid || ''}';"
-                     style="
-                        position: absolute;
-                        top: 4px;       /*Pushes bubble vertically*/
-                        right: 8px;     /*Pushes bubble horizontally*/
-                        width: 32px;
-                        height: 32px;
-                        border-radius: 50%;
-                        background-color: #ccff00;
-                        color: #111;
-                        display: flex;
-                        align-items: center;
-                        justify-content: center;
-                        font-family: monospace;
-                        font-weight: bold;
-                        font-size: 0.85rem;
-                        cursor: pointer;
-                        z-index: 10;
-                        box-shadow: 0 2px 8px rgba(0,0,0,0.5);
-                        border: 2px solid #111;
-                        transition: transform 0.2s ease;
-                     "
-                     onmouseover="this.style.transform='scale(1.1)'"
-                     onmouseout="this.style.transform='scale(1)'">
-                    ${(game.authorName || '??').substring(0, 2).toUpperCase()}
-                </div>
-
-                <a href="play.html?id=${game.id}" style="text-decoration: none; color: inherit; display: block; height: 100%;">
-                    <div class="card-preview">
-                        <div class="window-dots"><span></span><span></span><span></span></div>
-                        <div class="preview-placeholder">
-                            <span style="font-family: monospace; font-size: 1.5rem; font-weight: bold; color: #e5e5e5;">${game.engine || 'WEB'}</span>
-                        </div>
-                    </div>
-                    <div class="card-footer" style="flex-direction: column; align-items: flex-start; gap: 0.5rem;">
-                        <div>
-                            <h3 style="font-size: 1.1rem;">${game.title}</h3>
-                            <p>By: ${game.authorName}</p>
-                        </div>
-                        <div style="display: flex; width: 100%; justify-content: flex-end; align-items: center; margin-top: 4px;">
-                            ${deleteBtnHTML}
-                            <span class="card-open" style="align-self: flex-end;">Play →</span>
-                        </div>
+        return `
+            <article class="pj-game" data-engine="${escapeHTML(game.engine || 'Other')}">
+                <a class="pj-game-link" href="${playUrl}">
+                    <div class="pj-game-preview"><span class="pj-game-engine">${escapeHTML(ENGINE_LABELS[game.engine] || game.engine || 'Web')}</span></div>
+                    <div class="pj-game-body">
+                        <h3>${escapeHTML(game.title)}</h3>
+                        <p>By ${escapeHTML(author)}</p>
                     </div>
                 </a>
-            </div>
+                <div class="pj-game-foot">
+                    <a class="pj-game-author" href="account.html?user=${encodeURIComponent(game.authorUid || '')}"
+                       title="View ${escapeHTML(author)}'s profile" aria-label="View ${escapeHTML(author)}'s profile">${escapeHTML(author.substring(0, 2).toUpperCase())}</a>
+                    ${deleteBtnHTML}
+                    <a class="pj-game-play" href="${playUrl}" tabindex="-1" aria-hidden="true">Play →</a>
+                </div>
+            </article>
         `;
+    }).join("");
+
+    // First load: each card "loads" through a compact terminal. After that,
+    // filter changes just ripple the cards in so the terminal doesn't replay.
+    const cards = [...gameGridContainer.children];
+    if (!hasPlayedCardTerminals) {
+        hasPlayedCardTerminals = true;
+        cards.forEach(card => {
+            card.dataset.terminalCommand = "$ load_project()";
+            card.setAttribute("data-terminal-compact", "");
+            registerTerminal(card);
+        });
+    } else {
+        cards.forEach((card, i) => {
+            createScrollTrigger(card, scaleUp, { delay: (i % 4) * 0.06, animationOptions: { from: 0.9 } });
+        });
+    }
+}
+
+const ENGINE_LABELS = { JSCanvas: 'JS Canvas' };
+
+function escapeHTML(value) {
+    return String(value ?? "").replace(/[&<>"']/g, ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch]));
+}
+
+if (gameGridContainer) {
+    gameGridContainer.addEventListener("click", (e) => {
+        const deleteBtn = e.target.closest("[data-delete-id]");
+        if (deleteBtn) window.deleteGame(deleteBtn.dataset.deleteId);
     });
-    
-    gridHTML += `</div>`;
-    gameGridContainer.innerHTML = gridHTML;
 }
 
 // ─── 3. DELETE TO MODERATION PIPELINE ─────────────────────────────
