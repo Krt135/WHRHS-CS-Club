@@ -12,6 +12,7 @@
 <script type="module" src="scriptFolder/header.js"></script>
 <script type="module" src="scriptFolder/footer.js"></script>
 <script type="module" src="scriptFolder/projects.js"></script>
+<script type="module" src="scriptFolder/projects-hub.js"></script>
 <script>
   if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
     document.documentElement.classList.add('anim-pending');
@@ -21,7 +22,151 @@
 <style>
   .ab-hero .ab-lede strong { font-weight: 700; }
 
-  /* ── 2. Arcade / Game Dev (black) ── */
+  /* ── Geometric accents (submit) ── */
+  .pj-submit { overflow: hidden; }
+  .pj-accents { position: absolute; inset: 0; pointer-events: none; }
+  .pj-accents span { position: absolute; transform: skewX(-20deg); }
+  .pj-accents span:first-child { width: 14vw; height: 38%; right: -4vw; top: calc(var(--ab-cut) + 24px); background: var(--ab-accent); opacity: 0.9; }
+  .pj-accents span:last-child { width: 1.6vw; height: 46%; right: 13vw; top: calc(var(--ab-cut) + 60px); background: var(--ab-highlight); }
+
+  /* ── 1. Hero stats strip (black tiles on the hero colour) ── */
+  .pj-hero-stats { margin-top: clamp(40px, 6vw, 64px); max-width: 880px; }
+  .pj-stat-grid {
+    display: grid; gap: 8px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .pj-stat {
+    position: relative;
+    display: flex; flex-direction: column; gap: 6px;
+    padding: 18px 18px 16px;
+    background: var(--ab-black); color: #fff;
+    min-width: 0;
+  }
+  .pj-stat-icon { width: 20px; height: 20px; color: var(--ab-highlight); margin-bottom: 4px; }
+  .pj-stat-icon svg { width: 100%; height: 100%; }
+  .pj-stat-num {
+    font-size: clamp(2rem, 4vw, 2.8rem); font-weight: 700;
+    line-height: 1; letter-spacing: -0.04em;
+    color: var(--ab-accent);
+    font-variant-numeric: tabular-nums;
+  }
+  .pj-stat-sep { color: #6f8a8a; margin: 0 0.12em; font-weight: 400; }
+  .pj-stat-label {
+    font-family: var(--ab-mono); font-size: 10px; font-weight: 700;
+    letter-spacing: 0.2em; text-transform: uppercase; color: #c9d3d3;
+  }
+  .pj-split-bar {
+    display: block; height: 4px; margin-top: 6px;
+    background: var(--ab-highlight);
+  }
+  .pj-split-bar span {
+    display: block; height: 100%;
+    width: var(--solo-share, 50%);
+    background: var(--ab-accent);
+    transition: width 0.8s ease;
+  }
+  .pj-hero-stats.is-loading .pj-stat-num { animation: pj-pulse 1.2s ease-in-out infinite; }
+  @keyframes pj-pulse { 50% { opacity: 0.35; } }
+  .pj-stats-status {
+    margin-top: 12px;
+    font-family: var(--ab-mono); font-size: 10px; font-weight: 700; letter-spacing: 0.15em;
+    text-transform: uppercase; color: var(--ab-ink); opacity: 0.7;
+  }
+
+  /* ── 3. Start here hub (charcoal) ── */
+  .pj-hub { background: var(--ab-surface); color: #fff; }
+  .pj-hub .ab-eyebrow { color: var(--ab-highlight); }
+  .pj-hub .ab-lede { color: #c9d3d3; margin-top: 20px; }
+  .pj-hub-sub {
+    margin: clamp(48px, 7vw, 80px) 0 20px;
+    font-family: var(--ab-mono); font-size: 12px; font-weight: 700;
+    letter-spacing: 0.25em; text-transform: uppercase; color: var(--ab-accent);
+  }
+
+  .pj-engine-grid { display: grid; gap: 16px; grid-template-columns: 1fr; }
+  .pj-engine {
+    display: flex; flex-direction: column;
+    padding: 24px;
+    background: var(--ab-black);
+    transition: translate 0.25s ease, box-shadow 0.25s ease;
+  }
+  .pj-engine:hover { translate: 0 -4px; box-shadow: 0 4px 0 var(--ab-accent); }
+  .pj-engine-head { display: flex; align-items: center; gap: 14px; margin-bottom: 16px; }
+  .pj-engine-logo {
+    width: 48px; height: 48px; flex-shrink: 0;
+    display: grid; place-items: center;
+    background: var(--ab-accent); color: var(--ab-ink);
+    clip-path: polygon(18% 0, 100% 0, 82% 100%, 0 100%);
+  }
+  .pj-engine-logo svg { width: 24px; height: 24px; }
+  .pj-engine-mono { font-family: var(--ab-mono); font-size: 16px; font-weight: 700; }
+  .pj-engine h4 { font-size: 1.3rem; font-weight: 700; letter-spacing: -0.02em; text-transform: uppercase; line-height: 1.1; }
+  .pj-engine-license { font-family: var(--ab-mono); font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; color: #8a8a8a; margin-top: 4px; }
+  .pj-engine-desc { color: #bdbdbd; font-size: 0.92rem; line-height: 1.55; flex: 1; }
+  .pj-engine-best { margin: 16px 0 20px; font-size: 0.9rem; color: #fff; }
+  .pj-engine-best span {
+    display: inline-block; margin-right: 6px; padding: 3px 10px;
+    font-family: var(--ab-mono); font-size: 9px; font-weight: 700;
+    letter-spacing: 0.15em; text-transform: uppercase;
+    background: var(--ab-highlight); color: var(--ab-ink);
+    clip-path: polygon(5px 0, 100% 0, calc(100% - 5px) 100%, 0 100%);
+  }
+  .pj-engine-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+  .pj-btn-sm { padding: 11px 20px; font-size: 11px; clip-path: polygon(10px 0, 100% 0, calc(100% - 10px) 100%, 0 100%); }
+  .pj-btn-line { background: transparent; color: var(--ab-accent); box-shadow: inset 0 0 0 2px var(--ab-accent); clip-path: none; }
+  .pj-btn-line:hover { background: var(--ab-accent); color: var(--ab-ink); }
+
+  .pj-learn-grid { display: grid; gap: 28px; grid-template-columns: 1fr; }
+  .pj-learn-title {
+    padding-bottom: 12px; margin-bottom: 4px;
+    border-bottom: 2px solid var(--ab-accent);
+    font-size: 1.1rem; font-weight: 700; text-transform: uppercase; letter-spacing: -0.01em;
+  }
+  .pj-learn-list { list-style: none; display: grid; gap: 4px; }
+  .pj-learn-link {
+    display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 14px;
+    padding: 16px 14px;
+    background: var(--ab-black); color: #fff;
+    transition: background-color 0.2s ease, padding-left 0.25s ease;
+  }
+  .pj-learn-link:hover { background: #111; padding-left: 20px; }
+  .pj-learn-link:focus-visible, .pj-engine a:focus-visible { outline: 3px solid var(--ab-highlight); outline-offset: 3px; }
+  .pj-learn-icon { width: 22px; height: 22px; color: var(--ab-accent); }
+  .pj-learn-icon svg { width: 100%; height: 100%; }
+  .pj-learn-text { display: flex; flex-direction: column; min-width: 0; }
+  .pj-learn-text strong { font-size: 0.98rem; }
+  .pj-learn-text span { color: #9a9a9a; font-size: 0.82rem; }
+  .pj-learn-go {
+    font-family: var(--ab-mono); font-size: 10px; font-weight: 700;
+    letter-spacing: 0.15em; text-transform: uppercase; color: var(--ab-highlight);
+    white-space: nowrap; transition: color 0.2s ease;
+  }
+  .pj-learn-link:hover .pj-learn-go { color: var(--ab-accent); }
+
+  /* ── 4. Submission guide (cream) ── */
+  .pj-submit { background: var(--ab-paper); color: var(--ab-ink); }
+  .pj-submit .ab-eyebrow { color: var(--ab-accent-deep); }
+  .pj-steps {
+    list-style: none;
+    display: grid; gap: 12px; grid-template-columns: 1fr;
+    margin-top: clamp(40px, 6vw, 64px);
+  }
+  .pj-step {
+    padding: 24px;
+    background: #fff;
+    border-left: 6px solid var(--ab-accent);
+  }
+  .pj-step-num {
+    display: block; margin-bottom: 12px;
+    font-family: var(--ab-mono); font-size: 2rem; font-weight: 700; line-height: 1;
+    color: var(--ab-accent-deep);
+  }
+  .pj-step h4 { font-size: 1.15rem; font-weight: 700; text-transform: uppercase; letter-spacing: -0.01em; margin-bottom: 6px; }
+  .pj-step p { color: #444; font-size: 0.92rem; line-height: 1.55; }
+  .pj-step code { font-family: var(--ab-mono); font-size: 0.85em; background: var(--ab-paper); padding: 1px 5px; }
+  .pj-submit-actions { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 36px; }
+
+  /* ── 5. Arcade / Game Dev (black) ── */
   .pj-arcade { background: var(--ab-black); color: #fff; }
   .pj-arcade .ab-eyebrow { color: var(--ab-accent); }
   .pj-arcade .ab-lede { color: #bdbdbd; margin-top: 20px; }
@@ -134,75 +279,6 @@
     letter-spacing: 0.15em; text-transform: uppercase; color: var(--ab-accent);
   }
 
-  /* ── 3. Web Dev (cream) ── */
-  .pj-web { background: var(--ab-paper); color: var(--ab-ink); }
-  .pj-web .ab-eyebrow { color: var(--ab-accent-deep); }
-  .pj-web .ab-lede { margin-top: 20px; color: #333; }
-  .pj-web-grid { display: grid; gap: 20px; margin-top: clamp(40px, 6vw, 64px); }
-  .pj-site {
-    display: flex; flex-direction: column;
-    background: #fff;
-    border-left: 6px solid var(--ab-accent);
-    transition: translate 0.25s ease;
-  }
-  .pj-site:hover { translate: 0 -4px; }
-  .pj-site:focus-visible { outline: 3px solid var(--ab-ink); outline-offset: 3px; }
-  .pj-site-preview {
-    position: relative; overflow: hidden;
-    aspect-ratio: 16 / 9;
-    background: var(--ab-surface);
-  }
-  .pj-site-preview::before {
-    content: ""; position: absolute; left: 0; right: 0; top: 0; height: 28px;
-    background: var(--ab-black);
-  }
-  .pj-site-preview::after {
-    content: ""; position: absolute;
-    width: 30%; height: 160%; left: 55%; top: -10%;
-    background: var(--ab-highlight); opacity: 0.9;
-    transform: skewX(-20deg);
-    transition: left 0.35s ease;
-  }
-  .pj-site:hover .pj-site-preview::after { left: 62%; }
-  .pj-site-dots { position: absolute; top: 10px; left: 12px; display: flex; gap: 6px; z-index: 1; }
-  .pj-site-dots span { width: 8px; height: 8px; background: #444; transform: skewX(-20deg); }
-  .pj-site-dots span:first-child { background: var(--ab-accent); }
-  .pj-site-body { padding: 22px 22px 24px; display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; }
-  .pj-site-body h3 { font-size: 1.3rem; font-weight: 700; letter-spacing: -0.02em; text-transform: uppercase; line-height: 1.1; }
-  .pj-site-body p { color: #555; font-size: 0.92rem; margin-top: 4px; }
-
-  /* ── 4. Open Source (yellow) ── */
-  .pj-oss { background: var(--ab-highlight-bg, var(--ab-highlight)); color: var(--ab-ink); }
-  .pj-repo-list { display: grid; gap: 4px; margin-top: clamp(40px, 6vw, 64px); }
-  .pj-repo {
-    display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 8px 20px;
-    background: var(--ab-black); color: #fff;
-    padding: 24px 28px;
-    transition: background-color 0.2s ease, padding-left 0.25s ease;
-  }
-  .pj-repo:hover { background: var(--ab-surface); padding-left: 36px; }
-  .pj-repo:focus-visible { outline: 3px solid var(--ab-ink); outline-offset: 3px; }
-  .pj-repo svg { color: var(--ab-accent); }
-  .pj-repo h3 { font-family: var(--ab-mono); font-size: 1rem; font-weight: 700; letter-spacing: 0.02em; }
-  .pj-repo p { color: #b8b8b8; font-size: 0.92rem; margin-top: 2px; }
-  .pj-repo-link {
-    font-family: var(--ab-mono); font-size: 11px; font-weight: 700;
-    letter-spacing: 0.15em; text-transform: uppercase; color: var(--ab-highlight);
-  }
-
-  /* ── 5. CTA (charcoal) ── */
-  .pj-cta { background: var(--ab-surface); color: #fff; overflow: hidden; }
-  .pj-cta .ab-eyebrow { color: var(--ab-highlight); }
-  .pj-cta-title {
-    font-size: clamp(2.8rem, 9vw, 7.5rem);
-    font-weight: 700; line-height: 0.9; letter-spacing: -0.045em; text-transform: uppercase;
-  }
-  .pj-cta-title em { font-style: normal; color: var(--ab-accent); }
-  .pj-cta .ab-lede { color: #c9d3d3; margin-top: 28px; }
-  .pj-cta-actions { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 32px; }
-  .pj-cta .ab-btn-ghost { --ab-ink: #fff; }
-  .pj-cta .ab-btn-ghost:hover { color: var(--ab-surface); }
-
   /* ── Upload modal ── */
   .upload-modal-overlay {
     display: none;
@@ -262,20 +338,29 @@
 
   /* ── Page-specific reduced motion (shared rules in brand.css) ── */
   @media (prefers-reduced-motion: reduce) {
-    .pj-game, .pj-site, .pj-repo, .pj-chip { transition: none; }
-    .pj-game-preview::before, .pj-site-preview::after { transition: none; }
+    .pj-game, .pj-chip, .pj-engine, .pj-learn-link, .pj-split-bar span { transition: none; }
+    .pj-game-preview::before { transition: none; }
+    .pj-hero-stats.is-loading .pj-stat-num { animation: none; }
     .upload-modal-card { animation: none; }
   }
 
   /* ── Breakpoints ── */
   @media (max-width: 767px) {
-    .pj-repo { grid-template-columns: auto 1fr; padding: 20px; }
-    .pj-repo:hover { padding-left: 24px; }
-    .pj-repo-link { grid-column: 2; }
+    /* The stats strip fills the bottom of the hero, where brand.css parks this shape on phones. */
+    .ab-hero .ab-shape-1 { display: none; }
+    .pj-accents span:first-child { width: 28vw; height: 90px; right: -10vw; }
+    .pj-accents span:last-child { display: none; }
+  }
+  @media (min-width: 640px) {
+    .pj-engine-grid, .pj-steps { grid-template-columns: repeat(2, 1fr); }
   }
   @media (min-width: 768px) {
     .pj-controls { grid-template-columns: auto 1fr auto; align-items: end; column-gap: 40px; }
-    .pj-web-grid { grid-template-columns: repeat(3, 1fr); }
+    .pj-stat-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  }
+  @media (min-width: 1024px) {
+    .pj-engine-grid, .pj-steps { grid-template-columns: repeat(4, 1fr); }
+    .pj-learn-grid { grid-template-columns: repeat(3, 1fr); }
   }
 </style>
 </head>
@@ -297,22 +382,48 @@
         What we <span class="ab-mark"><span>ship.</span></span>
       </h1>
       <p class="ab-lede" data-animation="fadeInUp" data-trigger="load" data-delay="0.35">
-        Two arms: <strong>Game Dev</strong> and <strong>Web Dev</strong>.
-        Members publish under their own name, the exec board ships group work,
-        and everything ends up on GitHub.
+        Games built by members and the exec board, playable right in your browser.
+        Members publish under their own name and the exec board ships group work.
       </p>
       <div class="ab-hero-actions" data-animation="fadeInUp" data-trigger="load" data-delay="0.5">
         <button type="button" class="ab-btn ab-btn-black" onclick="toggleUploadModal(true)">Upload your game →</button>
         <a href="#game-dev" class="ab-btn ab-btn-ghost">Browse the arcade</a>
       </div>
+
+      <div class="pj-hero-stats is-loading" id="club-stats" aria-label="Club stats" data-animation="fadeInUp" data-trigger="load" data-delay="0.65">
+        <div class="pj-stat-grid">
+          <div class="pj-stat">
+            <span class="pj-stat-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="6" x2="10" y1="12" y2="12"/><line x1="8" x2="8" y1="10" y2="14"/><line x1="15" x2="15.01" y1="13" y2="13"/><line x1="18" x2="18.01" y1="11" y2="11"/><rect x="2" y="6" width="20" height="12" rx="2"/></svg></span>
+            <span class="pj-stat-num" data-stat="totalGames">—</span>
+            <span class="pj-stat-label">Games created</span>
+          </div>
+          <div class="pj-stat">
+            <span class="pj-stat-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>
+            <span class="pj-stat-num" data-stat="activeMembers">—</span>
+            <span class="pj-stat-label">Active members</span>
+          </div>
+          <div class="pj-stat">
+            <span class="pj-stat-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/></svg></span>
+            <span class="pj-stat-num" data-stat="gamesThisMonth">—</span>
+            <span class="pj-stat-label">Games this month</span>
+          </div>
+          <div class="pj-stat pj-stat-split">
+            <span class="pj-stat-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3h5v5"/><path d="M8 3H3v5"/><path d="M12 22v-8.3a4 4 0 0 0-1.172-2.872L3 3"/><path d="m15 9 6-6"/></svg></span>
+            <span class="pj-stat-num"><span data-stat="soloGames">—</span><span class="pj-stat-sep">/</span><span data-stat="groupGames">—</span></span>
+            <span class="pj-stat-label">Solo / Group</span>
+            <span class="pj-split-bar" id="splitBar" aria-hidden="true"><span></span></span>
+          </div>
+        </div>
+        <p class="pj-stats-status" id="statsStatus" role="status">Loading stats…</p>
+      </div>
     </div>
     <span class="ab-hero-tag" aria-hidden="true">Build · Ship · Repeat</span>
   </section>
 
-  <!-- 2. GAME DEV / ARCADE -->
+  <!-- 2. ARCADE -->
   <section class="ab-section pj-arcade" id="game-dev" aria-labelledby="pj-arcade-title">
     <div class="ab-inner">
-      <p class="ab-eyebrow">/ Sector 01 · Game Dev</p>
+      <p class="ab-eyebrow">/ 01 · The arcade</p>
       <h2 class="ab-h2" id="pj-arcade-title" data-animation="textReveal">The arcade.</h2>
       <p class="ab-lede" data-terminal-command="$ npm run fetch_projects --recent">Games built by members and the exec board. Click any card to play it right in your browser.</p>
 
@@ -344,101 +455,58 @@
     </div>
   </section>
 
-  <!-- 3. WEB DEV -->
-  <section class="ab-section pj-web" id="web-dev" aria-labelledby="pj-web-title">
+  <!-- 3. START HERE: ENGINES + LEARNING -->
+  <section class="ab-section pj-hub" id="start-here" aria-labelledby="pj-hub-title">
     <div class="ab-inner">
-      <p class="ab-eyebrow">/ Sector 02 · Web Dev</p>
-      <h2 class="ab-h2" id="pj-web-title" data-animation="textReveal">Live<br>showcase.</h2>
-      <p class="ab-lede" data-animation="slideInLeft" data-delay="0.15">Real, in‑production websites we built for other WHRHS clubs. Click any card to open and interact with the live site.</p>
-      <div class="pj-web-grid" data-animation="children" data-child-animation="slideInLeft" data-stagger="0.12">
-        <a href="https://example.com" target="_blank" rel="noopener noreferrer" class="pj-site">
-          <div class="pj-site-preview" aria-hidden="true"><div class="pj-site-dots"><span></span><span></span><span></span></div></div>
-          <div class="pj-site-body">
-            <div>
-              <h3>WHRHS Debate Team</h3>
-              <p>Tournament schedule + roster</p>
-            </div>
-            <span class="ab-tag">Open →</span>
-          </div>
-        </a>
-        <a href="https://example.com" target="_blank" rel="noopener noreferrer" class="pj-site">
-          <div class="pj-site-preview" aria-hidden="true"><div class="pj-site-dots"><span></span><span></span><span></span></div></div>
-          <div class="pj-site-body">
-            <div>
-              <h3>Robotics Club</h3>
-              <p>Sponsor packet + match log</p>
-            </div>
-            <span class="ab-tag">Open →</span>
-          </div>
-        </a>
-        <a href="https://example.com" target="_blank" rel="noopener noreferrer" class="pj-site">
-          <div class="pj-site-preview" aria-hidden="true"><div class="pj-site-dots"><span></span><span></span><span></span></div></div>
-          <div class="pj-site-body">
-            <div>
-              <h3>Art Club Gallery</h3>
-              <p>Curated student portfolio</p>
-            </div>
-            <span class="ab-tag">Open →</span>
-          </div>
-        </a>
+      <p class="ab-eyebrow">/ 02 · Start here</p>
+      <h2 class="ab-h2" id="pj-hub-title" data-animation="textReveal">Ready to create?<br>Start here.</h2>
+      <p class="ab-lede" data-terminal-command="$ load_learning_resources()">Pick an engine, learn the basics, then ship it to the arcade. Everything here is free.</p>
+
+      <h3 class="pj-hub-sub">Game engines</h3>
+      <div class="pj-engine-grid" id="engineGrid" data-animation="children" data-child-animation="slideInLeft" data-stagger="0.1"></div>
+
+      <h3 class="pj-hub-sub">Learning resources</h3>
+      <div class="pj-learn-grid" id="learningGrid" data-animation="children" data-child-animation="fadeInUp" data-stagger="0.12"></div>
+    </div>
+  </section>
+
+  <!-- 4. SUBMISSION GUIDE -->
+  <section class="ab-section pj-submit" id="submit" aria-labelledby="pj-submit-title">
+    <div class="pj-accents" aria-hidden="true"><span></span><span></span></div>
+    <div class="ab-inner">
+      <p class="ab-eyebrow">/ 03 · Submit</p>
+      <h2 class="ab-h2" id="pj-submit-title" data-animation="textReveal">Got something<br><span class="ab-mark"><span>built?</span></span></h2>
+
+      <ol class="pj-steps" data-animation="children" data-child-animation="fadeInUp" data-stagger="0.1">
+        <li class="pj-step">
+          <span class="pj-step-num">01</span>
+          <h4>Create your game</h4>
+          <p>Build it in any engine above. Test it in a browser if it's headed for the arcade.</p>
+        </li>
+        <li class="pj-step">
+          <span class="pj-step-num">02</span>
+          <h4>Export &amp; zip</h4>
+          <p>Export a web build (Godot: Web, Unity: WebGL) and zip the folder with <code>index.html</code> at the root.</p>
+        </li>
+        <li class="pj-step">
+          <span class="pj-step-num">03</span>
+          <h4>Upload</h4>
+          <p>Hit Upload, add a title and engine tag, and choose your zip, or paste a link if it's hosted elsewhere.</p>
+        </li>
+        <li class="pj-step">
+          <span class="pj-step-num">04</span>
+          <h4>Pick a category</h4>
+          <p>Choose <strong>People's Game</strong> for solo work. <strong>Group Game</strong> is for exec board builds.</p>
+        </li>
+      </ol>
+
+      <div class="pj-submit-actions" data-animation="fadeInUp" data-delay="0.2">
+        <span class="ab-glow" data-animation="pulseGlow" data-delay="0.6"><button type="button" class="ab-btn ab-btn-black" onclick="toggleUploadModal(true)">Upload your game →</button></span>
+        <a href="resources.html" class="ab-btn ab-btn-ghost">Full guides in Resources</a>
       </div>
     </div>
   </section>
 
-  <!-- 4. OPEN SOURCE -->
-  <section class="ab-section pj-oss" id="open-source" aria-labelledby="pj-oss-title">
-    <div class="ab-inner">
-      <p class="ab-eyebrow">/ Sector 03 · Open Source</p>
-      <h2 class="ab-h2" id="pj-oss-title" data-animation="textReveal">Repos in<br>the open.</h2>
-      <div class="pj-repo-list" data-animation="children" data-stagger="0.1">
-        <a href="https://github.com/Krt135/WHRHS-CS-Club" target="_blank" rel="noopener noreferrer" class="pj-repo">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/><path d="M9 18c-4.51 2-5-2-7-2"/></svg>
-          <div>
-            <h3>whrhs‑cs/site</h3>
-            <p>This website. Made with Vite and Node.js</p>
-          </div>
-          <span class="pj-repo-link">View repo →</span>
-        </a>
-        <a href="https://github.com/whrhs-cs/hillshacks" target="_blank" rel="noopener noreferrer" class="pj-repo">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/><path d="M9 18c-4.51 2-5-2-7-2"/></svg>
-          <div>
-            <h3>whrhs‑cs/hillshacks</h3>
-            <p>Hackathon registration &amp; schedule app.</p>
-          </div>
-          <span class="pj-repo-link">View repo →</span>
-        </a>
-        <a href="https://github.com/whrhs-cs/lecture-notes" target="_blank" rel="noopener noreferrer" class="pj-repo">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/><path d="M9 18c-4.51 2-5-2-7-2"/></svg>
-          <div>
-            <h3>whrhs‑cs/lecture‑notes</h3>
-            <p>Markdown archive of every club lecture.</p>
-          </div>
-          <span class="pj-repo-link">View repo →</span>
-        </a>
-        <a href="https://github.com/whrhs-cs/competitive" target="_blank" rel="noopener noreferrer" class="pj-repo">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/><path d="M9 18c-4.51 2-5-2-7-2"/></svg>
-          <div>
-            <h3>whrhs‑cs/competitive</h3>
-            <p>Practice problems + member solutions.</p>
-          </div>
-          <span class="pj-repo-link">View repo →</span>
-        </a>
-      </div>
-    </div>
-  </section>
-
-  <!-- 5. CTA -->
-  <section class="ab-section pj-cta" aria-labelledby="pj-cta-title">
-    <div class="ab-inner">
-      <p class="ab-eyebrow">/ Members</p>
-      <h2 class="pj-cta-title" id="pj-cta-title" data-animation="textReveal">Got something<br><em>built?</em></h2>
-      <p class="ab-lede" data-animation="fadeInUp" data-delay="0.2">Zip your game folder with index.html at the root and push it to the arcade. It'll be playable here in seconds.</p>
-      <div class="pj-cta-actions" data-animation="fadeInUp" data-delay="0.3">
-        <span class="ab-glow" data-animation="pulseGlow" data-delay="0.6"><button type="button" class="ab-btn ab-btn-accent" onclick="toggleUploadModal(true)">Upload your game →</button></span>
-        <a href="resources.html" class="ab-btn ab-btn-ghost">Learn how in Resources</a>
-      </div>
-    </div>
-  </section>
 
 </main>
 

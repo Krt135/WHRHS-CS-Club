@@ -22,6 +22,8 @@ admin.initializeApp();
 
 setGlobalOptions({maxInstances: 10});
 
+exports.getClubStats = require("./getClubStats").getClubStats;
+
 const sendgridKey = defineSecret("SENDGRID_API_KEY");
 const fromEmail = defineString("SENDGRID_FROM_EMAIL", {
   description: "Verified SendGrid sender address for club emails",
