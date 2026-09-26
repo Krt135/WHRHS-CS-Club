@@ -1,6 +1,7 @@
 {
   "rules": {
     "users": {
+      ".indexOn": ["role"],
       ".read": "auth !== null && (root.child('users').child(auth.uid).child('role').val() === 'exec' || root.child('users').child(auth.uid).child('role').val() === 'admin')",
       "$uid": {
         ".read": "auth !== null",
@@ -9,7 +10,9 @@
     },
     "games": {
       ".read": "true",
-      ".write": "auth !== null"
+      "$gameId": {
+        ".write": "auth !== null && ((root.child('users').child(auth.uid).child('role').val() === 'exec' || root.child('users').child(auth.uid).child('role').val() === 'admin') || ((!data.exists() || data.child('authorUid').val() === auth.uid) && (!newData.exists() || (newData.child('authorUid').val() === auth.uid && newData.child('category').val() !== 'group'))))"
+      }
     },
     "projects": {
       ".read": "true",

@@ -83,6 +83,15 @@
                     <dd id="infoUid" style="font-size: 10px; color: var(--muted);">&mdash;</dd>
                 </dl>
 
+                <div class="email-prefs" id="email-preferences" hidden>
+                    <p class="eyebrow">/ Email preferences</p>
+                    <label class="pref-toggle">
+                        <input type="checkbox" id="prefNewGames">
+                        <span>Notify me of new group games</span>
+                    </label>
+                    <span class="help-text" id="prefStatus"></span>
+                </div>
+
                 <div
                     style="display: flex; flex-direction: column; gap: 12px; margin-top: 40px; align-items: flex-start;">
                     <a href="admin.html" class="font-mono btn btn-admin" id="adminBtn">Admin &middot; Approve members

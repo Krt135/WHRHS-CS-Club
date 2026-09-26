@@ -64,6 +64,33 @@ document.getElementById("signUpForm")?.addEventListener("submit", async (e) => {
   }
 });
 
+// ---------- FORGOT PASSWORD ----------
+const PASSWORD_RESET_URL = "https://us-central1-whrhs-cs-club.cloudfunctions.net/onPasswordReset";
+
+document.getElementById("forgotPasswordForm")?.addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  const email = document.getElementById("forgotPasswordEmail")?.value?.trim();
+  const submitBtn = e.target.querySelector("button[type=submit]");
+  if (!email) return;
+
+  submitBtn.disabled = true;
+
+  try {
+    const res = await fetch(PASSWORD_RESET_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email }),
+    });
+    const data = await res.json().catch(() => ({}));
+    showFeedback("forgotPasswordFeedback", data.message || data.error || "Something went wrong. Try again later.");
+  } catch (err) {
+    showFeedback("forgotPasswordFeedback", "Couldn't reach the server. Check your connection and try again.");
+  } finally {
+    submitBtn.disabled = false;
+  }
+});
+
 // ---------- GOOGLE ----------
 document.getElementById("googleSignInBtn")?.addEventListener("click", async () => {
   try {

@@ -26,6 +26,7 @@ async function saveProfile(user, displayName) {
         status: "pending", 
         photoURL: user.photoURL ?? "",
         createdAt: new Date().toISOString(),
+        emailPreferences: { newGames: true, announcements: true, events: true },
         gamesUploaded: [],
         eventsRegistered: []
     });

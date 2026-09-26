@@ -77,3 +77,8 @@ body {
     flex-direction: column;
     width: 100%;
 }
+/* ── EMAIL PREFERENCES ── */
+.email-prefs { margin-top: 40px; }
+.email-prefs .eyebrow { margin-bottom: 16px; }
+.pref-toggle { display: flex; align-items: center; gap: 12px; font-size: 12px; cursor: pointer; }
+.pref-toggle input[type="checkbox"] { width: 16px; height: 16px; margin: 0; accent-color: var(--primary); cursor: pointer; }
