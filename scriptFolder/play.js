@@ -1,5 +1,6 @@
 import { db } from "./firebase.js";
-import { ref as dbRef, get } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
+import { ref as dbRef, get } from "firebase/database";
+import { showSponsorSplash } from "./sponsor-splash.js";
 
 document.addEventListener("DOMContentLoaded", async () => {
     // 1. Grab target system coordinates out of routing query array
@@ -18,6 +19,10 @@ document.addEventListener("DOMContentLoaded", async () => {
         if (statusMessage) statusMessage.innerText = "Fatal: Execution aborted due to null ID parameters.";
         return;
     }
+
+    // Runs alongside the game load below; it never waits on or delays the game.
+    const splashAbort = new AbortController();
+    showSponsorSplash(document.querySelector(".play-viewport-container"), splashAbort.signal);
 
     try {
         // 2. Fetch specific records matching key signature directly out of Firebase tree
@@ -83,6 +88,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     } catch (error) {
         console.error(error);
+        splashAbort.abort();
         if (titleEl) titleEl.innerText = "Runtime Exception Detected";
         if (statusMessage) statusMessage.innerText = `Error Log: ${error.message}`;
     }

@@ -1,13 +1,15 @@
 import { auth, db } from "./firebase.js";
 import { onAuthStateChanged, signOut } from "firebase/auth";
-import { ref, get, onValue } from "firebase/database";
+import { ref, get } from "firebase/database";
+import { formatCurrency, watchFundraising } from "./sponsor-data.js";
 
 const homepageFundraisingAmount = document.getElementById("homepage-fundraising-amount");
+const homepageFundraisingGoal = document.getElementById("homepage-fundraising-goal");
 
 if (homepageFundraisingAmount) {
-    onValue(ref(db, "siteSettings/fundraisingProgress"), (snapshot) => {
-        const amount = Math.max(0, Math.min(1500, Number(snapshot.val()) || 605));
-        homepageFundraisingAmount.textContent = `$${amount.toLocaleString()}`;
+    watchFundraising(({ raised, goal }) => {
+        homepageFundraisingAmount.textContent = formatCurrency(raised);
+        if (homepageFundraisingGoal) homepageFundraisingGoal.textContent = formatCurrency(goal);
     });
 }
 

@@ -13,6 +13,7 @@
 <script type="module" src="scriptFolder/footer.js"></script>
 <script type="module" src="scriptFolder/projects.js"></script>
 <script type="module" src="scriptFolder/projects-hub.js"></script>
+<script type="module" src="scriptFolder/contribute.js"></script>
 <script>
   if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
     document.documentElement.classList.add('anim-pending');
@@ -165,6 +166,32 @@
   .pj-step p { color: #444; font-size: 0.92rem; line-height: 1.55; }
   .pj-step code { font-family: var(--ab-mono); font-size: 0.85em; background: var(--ab-paper); padding: 1px 5px; }
   .pj-submit-actions { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 36px; }
+
+  /* ── 4b. Help build this website (black) ── */
+  .pj-build { background: var(--ab-black); color: #fff; overflow: hidden; }
+  .pj-build .ab-eyebrow { color: var(--ab-accent); }
+  .pj-build .ab-mark { background: var(--ab-accent); color: var(--ab-ink); }
+  .pj-build .ab-lede { color: #bdbdbd; margin-top: 20px; }
+  .pj-build .pj-step { background: #151515; }
+  .pj-build .pj-step-num { color: var(--ab-accent); }
+  .pj-build .pj-step p { color: #bdbdbd; }
+  .pj-build .pj-step a { color: var(--ab-highlight); text-decoration: underline; text-underline-offset: 3px; }
+  .pj-build .pj-step a:hover { color: var(--ab-accent); }
+  .pj-build code { font-family: var(--ab-mono); font-size: 0.85em; background: var(--ab-black); padding: 1px 6px; color: #fff; }
+  .pj-build-note {
+    display: grid; gap: 8px;
+    margin-top: 28px; padding: 18px 22px;
+    background: repeating-linear-gradient(-60deg, #141414 0 14px, #101010 14px 28px);
+    border-left: 6px solid var(--ab-highlight);
+  }
+  .pj-build-note-label {
+    font-family: var(--ab-mono); font-size: 10px; font-weight: 700;
+    letter-spacing: 0.25em; text-transform: uppercase; color: var(--ab-highlight);
+  }
+  .pj-build-note p { color: #d0d0d0; line-height: 1.6; }
+  .pj-build-request { align-items: center; }
+  .pj-build-request [hidden] { display: none; }
+  .pj-build-pending { font-family: var(--ab-mono); font-size: 12px; color: #bdbdbd; max-width: 46ch; }
 
   /* ── 5. Arcade / Game Dev (black) ── */
   .pj-arcade { background: var(--ab-black); color: #fff; }
@@ -507,6 +534,52 @@
     </div>
   </section>
 
+  <!-- 5. HELP BUILD THIS WEBSITE -->
+  <section class="ab-section pj-build" id="build-the-site" aria-labelledby="pj-build-title">
+    <div class="pj-accents" aria-hidden="true"><span></span><span></span></div>
+    <div class="ab-inner">
+      <p class="ab-eyebrow">/ 04 · Build the site</p>
+      <h2 class="ab-h2" id="pj-build-title" data-animation="textReveal">Help build<br><span class="ab-mark"><span>this website.</span></span></h2>
+      <p class="ab-lede" data-terminal-command="$ git clone WHRHS-CS-Club">
+        The site you're on is a real, live project run by club members. Ship features and fixes, learn Vite, vanilla JS, and Firebase along the way, and put production work in your portfolio.
+      </p>
+
+      <ol class="pj-steps" data-animation="children" data-child-animation="fadeInUp" data-stagger="0.1">
+        <li class="pj-step">
+          <span class="pj-step-num">01</span>
+          <h4>View the repo</h4>
+          <p>The code is public on <a href="https://github.com/Krt135/WHRHS-CS-Club" target="_blank" rel="noopener noreferrer">GitHub</a>. Read through it and run it locally.</p>
+        </li>
+        <li class="pj-step">
+          <span class="pj-step-num">02</span>
+          <h4>Request access</h4>
+          <p>Hit <strong>Request collaborator access</strong> below and send your name, GitHub username, grade, and what you'd like to work on.</p>
+        </li>
+        <li class="pj-step">
+          <span class="pj-step-num">03</span>
+          <h4>Accept the invite</h4>
+          <p>Wait for a repo owner to invite you, then accept the invite on GitHub.</p>
+        </li>
+        <li class="pj-step">
+          <span class="pj-step-num">04</span>
+          <h4>Pick an issue</h4>
+          <p>Grab an open <a href="https://github.com/Krt135/WHRHS-CS-Club/issues" target="_blank" rel="noopener noreferrer">issue</a>, or ask in the club what needs doing.</p>
+        </li>
+      </ol>
+
+      <div class="pj-build-note" data-animation="fadeInUp" data-delay="0.1">
+        <span class="pj-build-note-label">Workflow</span>
+        <p>Don't push to <code>main</code>. Make a branch for each change (<code>git checkout -b fix-nav-spacing</code>), push it, and open a pull request so someone can review it before it goes live.</p>
+      </div>
+
+      <div class="pj-submit-actions pj-build-request" data-animation="fadeInUp" data-delay="0.2">
+        <a href="https://github.com/Krt135/WHRHS-CS-Club" class="ab-btn ab-btn-accent" target="_blank" rel="noopener noreferrer">View the repo on GitHub →</a>
+        <a id="requestAccessBtn" href="mailto:cs.whrhs.club@gmail.com" class="ab-btn pj-btn-line" hidden>Request collaborator access</a>
+        <a id="requestSignIn" href="login.html" class="ab-btn pj-btn-line">Sign in to request access →</a>
+        <p id="requestPending" class="pj-build-pending" hidden>Your account is waiting for exec approval. Once it's approved, you can request access here.</p>
+      </div>
+    </div>
+  </section>
 
 </main>
 

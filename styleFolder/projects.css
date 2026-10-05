@@ -389,6 +389,145 @@
     min-height: 250px; /* Prevents viewport from crashing completely on ultra-thin screens */
 }
 
+/* Diamond sponsor splash (scriptFolder/sponsor-splash.js), shown over the
+   viewport for ~3s while the game loads underneath. */
+.sponsor-splash {
+    position: absolute;
+    inset: 0;
+    z-index: 20;
+    display: grid;
+    place-items: center;
+    padding: clamp(14px, 4%, 40px);
+    background:
+        linear-gradient(to right, rgba(255,255,255,0.03) 1px, transparent 1px) 0 0 / 32px 32px,
+        linear-gradient(to bottom, rgba(255,255,255,0.03) 1px, transparent 1px) 0 0 / 32px 32px,
+        var(--background);
+    color: var(--foreground);
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    transition: opacity 0.25s ease;
+}
+.sponsor-splash.is-leaving { opacity: 0; }
+
+.sponsor-splash-inner {
+    display: flex;
+    flex-direction: column;
+    gap: clamp(8px, 2.5vh, 20px);
+    width: min(100%, 760px);
+    max-height: 100%;
+}
+
+.sponsor-splash-cmd {
+    font-size: clamp(0.7rem, 1.6vw, 0.9rem);
+    color: var(--muted-fg);
+    white-space: nowrap;
+}
+.sponsor-splash-prompt { color: var(--primary); }
+.sponsor-splash-typed {
+    display: inline-block;
+    vertical-align: bottom;
+    overflow: hidden;
+    animation: splash-type 0.6s steps(24, end) both;
+}
+.sponsor-splash-cursor {
+    display: inline-block;
+    width: 0.6em;
+    height: 1.1em;
+    margin-left: 2px;
+    vertical-align: text-bottom;
+    background: var(--primary);
+    animation: splash-blink 0.8s steps(1) infinite;
+}
+
+.sponsor-splash-title {
+    font-family: 'Space Grotesk', system-ui, sans-serif;
+    font-size: clamp(1.2rem, 4.5vw, 2.6rem);
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    line-height: 1;
+    text-transform: uppercase;
+    color: var(--primary);
+    animation: splash-rise 0.4s ease-out 0.5s both;
+}
+
+.sponsor-splash-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: clamp(8px, 2vw, 16px);
+    min-height: 0;
+    overflow-y: auto;
+    list-style: none;
+}
+.sponsor-splash-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: clamp(8px, 1.6vw, 14px) clamp(10px, 2vw, 18px);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--primary);
+    font-size: clamp(0.8rem, 1.8vw, 1rem);
+    font-weight: 700;
+    animation: splash-rise 0.35s ease-out both;
+    animation-delay: calc(0.8s + var(--i) * 0.12s);
+}
+.sponsor-splash-item img {
+    max-height: clamp(24px, 7vh, 52px);
+    max-width: 120px;
+    object-fit: contain;
+    background: #fff;
+    padding: 4px;
+}
+
+.sponsor-splash-foot {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+.sponsor-splash-timer {
+    flex: 1;
+    height: 4px;
+    background: var(--border);
+    overflow: hidden;
+}
+.sponsor-splash-timer span {
+    display: block;
+    height: 100%;
+    background: var(--primary);
+    transform-origin: left;
+    animation: splash-timer var(--splash-ms, 3000ms) linear both;
+}
+.sponsor-splash-skip {
+    padding: 0.4rem 0.9rem;
+    border: 1px solid var(--primary);
+    border-radius: var(--radius-sm);
+    background: transparent;
+    color: var(--primary);
+    font: inherit;
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    cursor: pointer;
+}
+.sponsor-splash-skip:hover,
+.sponsor-splash-skip:focus-visible {
+    background: var(--primary);
+    color: var(--primary-fg);
+}
+
+@keyframes splash-type { from { max-width: 0; } to { max-width: 24ch; } }
+@keyframes splash-blink { 50% { opacity: 0; } }
+@keyframes splash-rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+@keyframes splash-timer { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+
+@media (prefers-reduced-motion: reduce) {
+    .sponsor-splash { transition: none; }
+    .sponsor-splash-typed,
+    .sponsor-splash-cursor,
+    .sponsor-splash-title,
+    .sponsor-splash-item { animation: none; }
+    .sponsor-splash-timer { visibility: hidden; }
+}
+
 
 /* ==========================================================================
    MODAL CLASSES (Extracted from projects.html inline styles)

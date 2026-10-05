@@ -13,6 +13,7 @@
 <script type="module" src="scriptFolder/header.js" defer></script>
 <script type="module" src="scriptFolder/footer.js" defer></script>
 <script type="module" src="scriptFolder/events.js" defer></script>
+<script type="module" src="scriptFolder/battlecode.js" defer></script>
 <script>
   if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
     document.documentElement.classList.add('anim-pending');
@@ -123,7 +124,49 @@
   .ev-slot-event { font-size: 1.15rem; font-weight: 600; letter-spacing: -0.01em; }
   .ev-slot.is-key .ev-slot-time { color: var(--ab-highlight); }
 
-  /* ── 5. Competitive programming (charcoal) ── */
+  /* ── 5. Battlecode (black) ── */
+  .ev-bc { background: var(--ab-black); color: #fff; overflow: hidden; }
+  .ev-bc .ab-eyebrow { color: var(--ab-accent); }
+  .ev-bc .ab-lede { color: #bdbdbd; margin: 20px 0 32px; }
+  .ev-bc-accents { position: absolute; inset: 0; pointer-events: none; }
+  .ev-bc-accents span { position: absolute; transform: skewX(-20deg); }
+  .ev-bc-accents span:first-child { width: 12vw; height: 34%; right: -5vw; bottom: 0; background: var(--ab-accent); opacity: 0.9; }
+  .ev-bc-accents span:last-child { width: 1.4vw; height: 40%; right: 9vw; bottom: 6%; background: var(--ab-highlight); }
+  .ev-bc-grid { display: grid; gap: clamp(40px, 6vw, 72px); align-items: start; }
+  .ev-bc-panel {
+    padding: clamp(24px, 4vw, 36px);
+    background: #151515;
+    border-top: 6px solid var(--ab-accent);
+  }
+  .ev-bc-team h3 { font-size: clamp(1.5rem, 2.6vw, 2rem); font-weight: 700; letter-spacing: -0.02em; text-transform: uppercase; line-height: 1.05; }
+  .ev-bc-team p { margin-top: 12px; color: #b8b8b8; }
+  .ev-bc-details { display: grid; gap: 4px; margin-top: 28px; }
+  .bc-detail {
+    display: grid; grid-template-columns: 112px 1fr; align-items: baseline; gap: 16px;
+    padding: 14px 18px;
+    background: var(--ab-black);
+  }
+  .bc-detail dt, .ev-bc-join-label {
+    font-family: var(--ab-mono); font-size: 10px; font-weight: 700;
+    letter-spacing: 0.22em; text-transform: uppercase; color: #8a8a8a;
+  }
+  .bc-detail dd { margin: 0; font-weight: 600; justify-self: start; }
+  .ev-bc-join {
+    display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 16px;
+    margin-top: 24px; padding-top: 20px;
+    border-top: 1px dashed #333;
+  }
+  .ev-bc-join-label { color: var(--ab-highlight); }
+  .ev-bc-join strong { font-weight: 600; }
+  /* Values still set to "TBA" in scriptFolder/battlecode.js */
+  .ev-bc .is-tba {
+    display: inline-block; padding: 2px 10px;
+    border: 1px dashed currentColor;
+    font-family: var(--ab-mono); font-size: 12px; font-weight: 700; letter-spacing: 0.18em;
+    color: var(--ab-highlight);
+  }
+
+  /* ── 6. Competitive programming (charcoal) ── */
   .ev-comp { background: var(--ab-surface); color: #fff; }
   .ev-comp .ab-eyebrow { color: var(--ab-highlight); }
   .ev-comp .ab-lede { color: #c9d3d3; margin-top: 20px; }
@@ -213,6 +256,9 @@
 
   /* ── Breakpoints ── */
   @media (max-width: 767px) {
+    .ev-bc-accents span:first-child { width: 26vw; height: 80px; right: -12vw; }
+    .ev-bc-accents span:last-child { display: none; }
+    .bc-detail { grid-template-columns: 88px 1fr; padding: 12px 14px; gap: 12px; }
     .ev-slot { grid-template-columns: 72px 1fr; padding: 16px 18px; gap: 14px; }
     .ev-slot:hover { padding-left: 22px; }
     .comp-table-header { display: none; }
@@ -226,6 +272,7 @@
     .ev-overview-grid { grid-template-columns: 1fr 1fr; }
     .ev-track-grid { grid-template-columns: repeat(3, 1fr); }
     .ev-schedule-grid { grid-template-columns: 1fr 1.6fr; align-items: start; }
+    .ev-bc-grid { grid-template-columns: 1fr 1fr; }
   }
 </style>
 </head>
@@ -254,6 +301,7 @@
       <div class="ab-hero-actions" data-animation="fadeInUp" data-trigger="load" data-delay="0.45">
         <a href="#schedule" class="ab-btn ab-btn-black">See the schedule →</a>
         <a href="#competitive-programming" class="ab-btn ab-btn-ghost">Competitive programming</a>
+        <a href="#battlecode" class="ab-btn ab-btn-ghost">MIT Battlecode</a>
       </div>
     </div>
     <span class="ab-hero-tag" aria-hidden="true">Flagship event</span>
@@ -323,7 +371,31 @@
     </div>
   </section>
 
-  <!-- 5. COMPETITIVE PROGRAMMING -->
+  <!-- 5. BATTLECODE (details live in scriptFolder/battlecode.js) -->
+  <section class="ab-section ev-bc" id="battlecode" aria-labelledby="ev-bc-title">
+    <div class="ev-bc-accents" aria-hidden="true"><span></span><span></span></div>
+    <div class="ab-inner ev-bc-grid">
+      <div>
+        <p class="ab-eyebrow">/ MIT Battlecode</p>
+        <h2 class="ab-h2" id="ev-bc-title" data-animation="textReveal">Write the bots.<br>Let them fight.</h2>
+        <p class="ab-lede" data-terminal-command="$ ./run_match --team=whrhs">
+          Battlecode is a team-based programming competition run by MIT. Teams write bots that play an AI strategy game, then send them into matches against other teams’ bots.
+        </p>
+        <a id="bcOfficialLink" href="https://battlecode.org" class="ab-btn ab-btn-accent" target="_blank" rel="noopener noreferrer" data-animation="fadeInUp" data-delay="0.3">Official Battlecode site →</a>
+      </div>
+      <div class="ev-bc-panel" data-animation="slideInRight" data-delay="0.15">
+        <div class="ev-bc-team">
+          <span class="ev-track-label">Our team</span>
+          <h3>WHRHS is competing.</h3>
+          <p>The WHRHS CS Club is participating in MIT Battlecode. Team details are below.</p>
+        </div>
+        <dl class="ev-bc-details" id="bcDetails"></dl>
+        <p class="ev-bc-join"><span class="ev-bc-join-label">How to join our team</span> <strong id="bcJoin"></strong></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6. COMPETITIVE PROGRAMMING -->
   <section class="ab-section ev-comp" id="competitive-programming" aria-labelledby="ev-comp-title">
     <div class="ab-inner">
       <div class="ev-comp-head">

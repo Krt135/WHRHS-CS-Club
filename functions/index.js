@@ -11,8 +11,9 @@
 
 const crypto = require("crypto");
 const {setGlobalOptions} = require("firebase-functions");
-const {onRequest} = require("firebase-functions/https");
-const {onValueCreated} = require("firebase-functions/database");
+const {onRequest, onCall, HttpsError} = require("firebase-functions/https");
+const {onValueCreated, onValueWritten} =
+  require("firebase-functions/database");
 const {defineSecret, defineString} = require("firebase-functions/params");
 const logger = require("firebase-functions/logger");
 const admin = require("firebase-admin");
@@ -381,3 +382,47 @@ exports.onPasswordReset = onRequest(
       }
     },
 );
+
+// ---------- d) ROLE -> AUTH TOKEN CLAIM ----------
+// Storage rules can't read the Realtime Database, so admin-only uploads
+// (sponsor logos) check a `role` custom claim mirrored from users/{uid}/role.
+
+/**
+ * Copies a user's database role onto their auth token.
+ * @param {string} uid User id.
+ * @param {*} role Value of users/{uid}/role (null when removed).
+ * @return {Promise<?string>} The role now on the token.
+ */
+async function syncRoleClaim(uid, role) {
+  let user;
+  try {
+    user = await admin.auth().getUser(uid);
+  } catch (err) {
+    if (err.code === "auth/user-not-found") return null;
+    throw err;
+  }
+
+  const next = typeof role === "string" ? role : null;
+  const claims = {...(user.customClaims || {})};
+  if ((claims.role || null) === next) return next;
+
+  if (next) claims.role = next;
+  else delete claims.role;
+  await admin.auth().setCustomUserClaims(uid, claims);
+  logger.info("Role claim updated", {uid, role: next});
+  return next;
+}
+
+exports.onRoleChange = onValueWritten("/users/{uid}/role", (event) =>
+  syncRoleClaim(event.params.uid, event.data.after.val()));
+
+// Roles set before onRoleChange was deployed never fired it, so the admin
+// panel calls this to make sure the caller's claim is current.
+exports.refreshRoleClaim = onCall(async (request) => {
+  if (!request.auth) {
+    throw new HttpsError("unauthenticated", "Sign in first.");
+  }
+  const uid = request.auth.uid;
+  const role = (await admin.database().ref(`users/${uid}/role`).get()).val();
+  return {role: await syncRoleClaim(uid, role)};
+});

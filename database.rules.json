@@ -36,6 +36,35 @@
         ".write": "auth !== null && (root.child('users').child(auth.uid).child('role').val() === 'exec' || root.child('users').child(auth.uid).child('role').val() === 'admin')"
       }
     },
+    "sponsors": {
+      ".indexOn": ["active"],
+      ".read": "(query.orderByChild === 'active' && query.equalTo === true) || (auth !== null && root.child('users').child(auth.uid).child('role').val() === 'admin')",
+      "$sponsorId": {
+        ".write": "auth !== null && root.child('users').child(auth.uid).child('role').val() === 'admin'",
+        ".validate": "newData.hasChildren(['name', 'tier', 'amount', 'active', 'createdAt'])",
+        "name": { ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 100" },
+        "tier": { ".validate": "newData.val() === 'diamond' || newData.val() === 'platinum' || newData.val() === 'gold' || newData.val() === 'silver'" },
+        "amount": { ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 1000000" },
+        "active": { ".validate": "newData.isBoolean()" },
+        "websiteUrl": { ".validate": "newData.isString() && newData.val().length <= 2048 && (newData.val() === '' || newData.val().beginsWith('https://') || newData.val().beginsWith('http://'))" },
+        "logoUrl": { ".validate": "newData.isString() && newData.val().length <= 2048 && (newData.val() === '' || newData.val().beginsWith('https://'))" },
+        "logoPath": { ".validate": "newData.isString() && (newData.val() === '' || newData.val().beginsWith('sponsor-logos/'))" },
+        "createdAt": { ".validate": "newData.isNumber()" },
+        "updatedAt": { ".validate": "newData.isNumber()" },
+        "$other": { ".validate": false }
+      }
+    },
+    "fundraising": {
+      ".read": true,
+      "$campaign": {
+        ".write": "auth !== null && root.child('users').child(auth.uid).child('role').val() === 'admin'",
+        ".validate": "newData.hasChildren(['goal'])",
+        "goal": { ".validate": "newData.isNumber() && newData.val() > 0 && newData.val() <= 1000000" },
+        "otherRaised": { ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 1000000" },
+        "updatedAt": { ".validate": "newData.isNumber()" },
+        "$other": { ".validate": false }
+      }
+    },
     "mentions": {
       ".write": "auth != null",
       ".read": false

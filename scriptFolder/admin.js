@@ -4,6 +4,7 @@ import { auth, db } from "./firebase.js";
 // 2. Import only the modular method functions you actually call in this file
 import { onAuthStateChanged } from "firebase/auth";
 import { ref, onValue, update, remove, get, set } from "firebase/database";
+import { mountSponsorsTab } from "./admin-sponsors.js";
 
 let currentTab = 'approvals';
 let unsubscribe = null;
@@ -20,6 +21,8 @@ onAuthStateChanged(auth, async (user) => {
         alert("ACCESS DENIED: Exec Board authorization required.");
         window.location.href = "account.html";
     } else {
+        // Sponsors and fundraising are admin-only (execs can't write them).
+        document.getElementById('sponsors-tab').hidden = userData.role !== 'admin';
         setupTabs();
         loadData();
     }
@@ -63,6 +66,8 @@ function loadData() {
             content.innerHTML = `<div class="empty-state">Could not load users. Check that Firebase rules allow exec/admin accounts to read the users list.</div>`;
             console.error("Unable to load admin users list:", error);
         });
+    } else if (currentTab === 'sponsors') {
+        unsubscribe = mountSponsorsTab(content);
     } else if (currentTab === 'moderation') {
         unsubscribe = onValue(ref(db, 'deleted_posts'), (snapshot) => {
             const data = snapshot.val();

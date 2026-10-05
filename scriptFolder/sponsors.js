@@ -1,76 +1,109 @@
-import { auth, db } from './firebase.js';
-import { onAuthStateChanged } from 'firebase/auth';
-import { get, onValue, ref, set } from 'firebase/database';
-
-const FUNDRAISING_GOAL = 1500;
-const FUNDRAISING_PATH = 'siteSettings/fundraisingProgress';
+import {
+  escapeHTML,
+  formatCurrency,
+  groupByTier,
+  safeUrl,
+  watchActiveSponsors,
+  watchFundraising,
+} from './sponsor-data.js';
 
 document.addEventListener('DOMContentLoaded', () => {
   const amount = document.querySelector('#fundraising-amount');
+  const goal = document.querySelector('#fundraising-goal');
   const progressBar = document.querySelector('#progress-bar');
   const progressFill = progressBar.querySelector('span');
   const progressLabel = document.querySelector('#progress-label');
-  const execControl = document.querySelector('#exec-progress-control');
-  const slider = document.querySelector('#fundraising-slider');
-  const sliderOutput = document.querySelector('#fundraising-slider-output');
-  const saveProgress = document.querySelector('#save-fundraising-progress');
-  const saveStatus = document.querySelector('#fundraising-save-status');
+  const statFundsRaised = document.querySelector('#stat-funds-raised');
+  const board = document.querySelector('#sponsor-board');
   const tierSelect = document.querySelector('#tier-interest');
   const contactSection = document.querySelector('#contact');
   const form = document.querySelector('#sponsor-form');
   const status = document.querySelector('#form-status');
 
-  const formatCurrency = (value) => `$${value.toLocaleString()}`;
-  const renderProgress = (rawValue) => {
-    const value = Math.max(0, Math.min(FUNDRAISING_GOAL, Number(rawValue) || 0));
-    const percent = Math.round((value / FUNDRAISING_GOAL) * 100);
-    amount.textContent = formatCurrency(value);
-    progressFill.style.width = `${percent}%`;
-    progressBar.setAttribute('aria-valuenow', String(value));
+  const renderProgress = ({ goal: goalValue, raised, percent }) => {
+    amount.textContent = formatCurrency(raised);
+    goal.textContent = `/ ${formatCurrency(goalValue)} goal`;
+    progressFill.style.width = `${Math.min(100, percent)}%`;
+    progressBar.setAttribute('aria-valuemax', String(goalValue));
+    progressBar.setAttribute('aria-valuenow', String(Math.min(raised, goalValue)));
+    progressBar.setAttribute('aria-valuetext', `${formatCurrency(raised)} of ${formatCurrency(goalValue)} (${percent}%)`);
+    progressBar.removeAttribute('aria-busy');
     progressLabel.textContent = `${percent}% to goal`;
-    slider.value = String(value);
-    sliderOutput.textContent = formatCurrency(value);
+    statFundsRaised.textContent = formatCurrency(raised);
   };
 
-  onValue(ref(db, FUNDRAISING_PATH), (snapshot) => {
-    renderProgress(snapshot.exists() ? snapshot.val() : 605);
+  watchFundraising(renderProgress, (error) => {
+    console.error('Unable to load fundraising progress:', error);
+    progressLabel.textContent = 'Progress unavailable right now';
   });
 
-  onAuthStateChanged(auth, async (user) => {
-    if (!user) return;
-    try {
-      const userSnapshot = await get(ref(db, `users/${user.uid}`));
-      const role = userSnapshot.val()?.role;
-      if (role === 'exec' || role === 'admin') execControl.hidden = false;
-    } catch (error) {
-      console.error('Unable to check executive-board access:', error);
+  const renderSponsorLink = (sponsor, className, inner) => {
+    const href = safeUrl(sponsor.websiteUrl);
+    return href
+      ? `<a class="${className}" href="${escapeHTML(href)}" target="_blank" rel="sponsored noopener noreferrer">${inner}</a>`
+      : `<span class="${className}">${inner}</span>`;
+  };
+
+  const renderLogoTile = (sponsor) => {
+    const name = escapeHTML(sponsor.name);
+    const logo = safeUrl(sponsor.logoUrl);
+    const inner = logo
+      ? `<img src="${escapeHTML(logo)}" alt="${name}" loading="lazy"><span class="board-logo-name" aria-hidden="true">${name}</span>`
+      : `<span class="board-logo-text">${name}</span>`;
+    return `<li>${renderSponsorLink(sponsor, 'board-logo', inner)}</li>`;
+  };
+
+  const renderNameChip = (sponsor) => `<li>${renderSponsorLink(sponsor, '', escapeHTML(sponsor.name))}</li>`;
+
+  const renderTier = (tier) => {
+    const count = tier.sponsors.length;
+    let body;
+    if (!count) {
+      body = `
+        <div class="board-empty">
+          <code>ls sponsors/${tier.id} → 0 results</code>
+          <button type="button" data-tier="${tier.label} — $${tier.price}">Be the first ${tier.label} sponsor →</button>
+        </div>`;
+    } else if (tier.showLogo) {
+      body = `<ul class="board-logos">${tier.sponsors.map(renderLogoTile).join('')}</ul>`;
+    } else {
+      body = `<ul class="board-names">${tier.sponsors.map(renderNameChip).join('')}</ul>`;
     }
+
+    return `
+      <section class="board-tier" data-board-tier="${tier.id}" aria-label="${tier.label} sponsors">
+        <div class="board-tier-head">
+          <h3>${tier.label}</h3>
+          <span class="board-tier-count">${String(count).padStart(2, '0')} sponsor${count === 1 ? '' : 's'}</span>
+        </div>
+        ${body}
+      </section>`;
+  };
+
+  // A broken logo falls back to the sponsor's name. Error events don't bubble,
+  // so listen in the capture phase.
+  board.addEventListener('error', (event) => {
+    const img = event.target;
+    if (!(img instanceof HTMLImageElement)) return;
+    const label = img.parentElement.querySelector('.board-logo-name');
+    label?.classList.replace('board-logo-name', 'board-logo-text');
+    label?.removeAttribute('aria-hidden');
+    img.remove();
+  }, true);
+
+  watchActiveSponsors((sponsors) => {
+    board.innerHTML = groupByTier(sponsors).map(renderTier).join('');
+  }, (error) => {
+    console.error('Unable to load the Sponsorship Board:', error);
+    board.innerHTML = '<p class="board-status">Couldn’t load the board right now. Try refreshing.</p>';
   });
 
-  slider.addEventListener('input', () => {
-    sliderOutput.textContent = formatCurrency(Number(slider.value));
-  });
-
-  saveProgress.addEventListener('click', async () => {
-    const value = Number(slider.value);
-    saveProgress.disabled = true;
-    saveStatus.textContent = 'Saving…';
-    try {
-      await set(ref(db, FUNDRAISING_PATH), value);
-      saveStatus.textContent = 'Progress saved.';
-    } catch (error) {
-      console.error('Unable to save fundraising progress:', error);
-      saveStatus.textContent = 'Could not save progress. Check Firebase permissions.';
-    } finally {
-      saveProgress.disabled = false;
-    }
-  });
-
-  document.querySelectorAll('[data-tier]').forEach((button) => {
-    button.addEventListener('click', () => {
-      tierSelect.value = button.dataset.tier;
-      contactSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    });
+  // Delegated so the board's "Be the first…" buttons work too.
+  document.addEventListener('click', (event) => {
+    const button = event.target.closest('button[data-tier]');
+    if (!button) return;
+    tierSelect.value = button.dataset.tier;
+    contactSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
   });
 
   form.addEventListener('submit', (event) => {
