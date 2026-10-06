@@ -26,9 +26,166 @@
       ".read": "true",
       ".write": "auth !== null && (root.child('users').child(auth.uid).child('role').val() === 'exec' || root.child('users').child(auth.uid).child('role').val() === 'admin')"
     },
+    "lessons": {
+      ".read": true,
+      "$lessonId": {
+        ".write": "auth !== null && ((!data.exists() && newData.exists() && (root.child('users').child(auth.uid).child('status').val() === 'approved' || root.child('users').child(auth.uid).child('role').val() === 'exec' || root.child('users').child(auth.uid).child('role').val() === 'admin') && (newData.child('authorId').val() === auth.uid || (root.child('users').child(auth.uid).child('role').val() === 'exec' || root.child('users').child(auth.uid).child('role').val() === 'admin'))) || (data.exists() && !newData.exists() && (data.child('authorId').val() === auth.uid || root.child('users').child(auth.uid).child('role').val() === 'admin')))",
+        ".validate": "newData.hasChildren(['format', 'authorId', 'authorName', 'createdAt', 'body'])",
+        "format": {
+          ".validate": "newData.val() === 'rich-v1'"
+        },
+        "id": {
+          ".validate": "newData.val() === $lessonId"
+        },
+        "authorId": {
+          ".validate": "newData.isString()"
+        },
+        "authorName": {
+          ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 60"
+        },
+        "createdAt": {
+          ".validate": "newData.isNumber() && newData.val() <= now"
+        },
+        "body": {
+          ".write": "auth !== null && data.exists() && newData.exists() && root.child('lessons').child($lessonId).child('authorId').val() === auth.uid",
+          ".validate": "newData.hasChildren(['title', 'topic', 'level', 'icon', 'contentHtml', 'contentText', 'updatedAt'])",
+          "title": {
+            ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 120"
+          },
+          "topic": {
+            ".validate": "newData.val() === 'gamedev' || newData.val() === 'webdev' || newData.val() === 'cp' || newData.val() === 'python' || newData.val() === 'javascript' || newData.val() === 'unity' || newData.val() === 'career'"
+          },
+          "level": {
+            ".validate": "newData.val() === 'Beginner' || newData.val() === 'Intermediate' || newData.val() === 'Advanced'"
+          },
+          "icon": {
+            ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 16"
+          },
+          "desc": {
+            ".validate": "newData.isString() && newData.val().length <= 200"
+          },
+          "concepts": {
+            "$i": {
+              ".validate": "$i.matches(/^(1?[0-9])$/) && newData.isString() && newData.val().length >= 1 && newData.val().length <= 120"
+            }
+          },
+          "contentHtml": {
+            ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 100000"
+          },
+          "contentText": {
+            ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 50000"
+          },
+          "quiz": {
+            "$q": {
+              ".validate": "$q.matches(/^(1?[0-9])$/) && newData.hasChildren(['q', 'opts', 'correct'])",
+              "q": {
+                ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 300"
+              },
+              "opts": {
+                "$o": {
+                  ".validate": "$o.matches(/^[0-3]$/) && newData.isString() && newData.val().length <= 200"
+                }
+              },
+              "correct": {
+                ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 3"
+              },
+              "exp": {
+                ".validate": "newData.isString() && newData.val().length <= 500"
+              },
+              "$other": {
+                ".validate": false
+              }
+            }
+          },
+          "cover": {
+            ".validate": "newData.hasChildren(['url', 'path'])",
+            "url": {
+              ".validate": "newData.isString() && newData.val().length <= 2048 && newData.val().beginsWith('https://firebasestorage.googleapis.com/v0/b/whrhs-cs-club.firebasestorage.app/o/lesson-images%2F')"
+            },
+            "path": {
+              ".validate": "newData.isString() && newData.val().length <= 300 && newData.val().beginsWith('lesson-images/' + newData.parent().parent().parent().child('authorId').val() + '/')"
+            },
+            "$other": {
+              ".validate": false
+            }
+          },
+          "attachments": {
+            "$i": {
+              ".validate": "$i.matches(/^[0-9]$/) && newData.hasChildren(['name', 'url', 'path', 'size'])",
+              "name": {
+                ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 120"
+              },
+              "url": {
+                ".validate": "newData.isString() && newData.val().length <= 2048 && newData.val().beginsWith('https://firebasestorage.googleapis.com/v0/b/whrhs-cs-club.firebasestorage.app/o/lesson-files%2F')"
+              },
+              "path": {
+                ".validate": "newData.isString() && newData.val().length <= 300 && newData.val().beginsWith('lesson-files/' + newData.parent().parent().parent().parent().child('authorId').val() + '/')"
+              },
+              "size": {
+                ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 10485760"
+              },
+              "$other": {
+                ".validate": false
+              }
+            }
+          },
+          "updatedAt": {
+            ".validate": "newData.isNumber() && newData.val() <= now"
+          },
+          "$other": {
+            ".validate": false
+          }
+        },
+        "userLikes": {
+          "$uid": {
+            ".write": "auth !== null && auth.uid === $uid && (root.child('users').child(auth.uid).child('status').val() === 'approved' || root.child('users').child(auth.uid).child('role').val() === 'exec' || root.child('users').child(auth.uid).child('role').val() === 'admin')",
+            ".validate": "newData.val() === true && !newData.parent().parent().child('userDislikes').child($uid).exists()"
+          }
+        },
+        "userDislikes": {
+          "$uid": {
+            ".write": "auth !== null && auth.uid === $uid && (root.child('users').child(auth.uid).child('status').val() === 'approved' || root.child('users').child(auth.uid).child('role').val() === 'exec' || root.child('users').child(auth.uid).child('role').val() === 'admin')",
+            ".validate": "newData.val() === true && !newData.parent().parent().child('userLikes').child($uid).exists()"
+          }
+        },
+        "comments": {
+          "$commentId": {
+            ".write": "auth !== null && ((!data.exists() && newData.exists() && (root.child('users').child(auth.uid).child('status').val() === 'approved' || root.child('users').child(auth.uid).child('role').val() === 'exec' || root.child('users').child(auth.uid).child('role').val() === 'admin') && newData.child('authorId').val() === auth.uid) || (data.exists() && !newData.exists() && (data.child('authorId').val() === auth.uid || root.child('users').child(auth.uid).child('role').val() === 'admin')))",
+            ".validate": "newData.hasChildren(['authorId', 'authorName', 'text', 'createdAt'])",
+            "authorId": {
+              ".validate": "newData.isString()"
+            },
+            "authorName": {
+              ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 60"
+            },
+            "text": {
+              ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 1000"
+            },
+            "createdAt": {
+              ".validate": "newData.isNumber() && newData.val() <= now"
+            },
+            "userLikes": {
+              "$uid": {
+                ".write": "auth !== null && auth.uid === $uid && (root.child('users').child(auth.uid).child('status').val() === 'approved' || root.child('users').child(auth.uid).child('role').val() === 'exec' || root.child('users').child(auth.uid).child('role').val() === 'admin')",
+                ".validate": "newData.val() === true"
+              }
+            },
+            "$other": {
+              ".validate": false
+            }
+          }
+        },
+        "$other": {
+          ".validate": false
+        }
+      }
+    },
     "deleted_posts": {
       ".read": "auth !== null && (root.child('users').child(auth.uid).child('role').val() === 'exec' || root.child('users').child(auth.uid).child('role').val() === 'admin')",
-      ".write": "auth !== null && (root.child('users').child(auth.uid).child('role').val() === 'exec' || root.child('users').child(auth.uid).child('role').val() === 'admin')"
+      ".write": "auth !== null && (root.child('users').child(auth.uid).child('role').val() === 'exec' || root.child('users').child(auth.uid).child('role').val() === 'admin')",
+      "$postId": {
+        ".write": "auth !== null && !data.exists() && newData.child('_deletedFrom').val() === 'lessons' && newData.child('_originalId').val() === $postId && newData.child('_deletedById').val() === auth.uid && newData.child('authorId').val() === auth.uid && root.child('lessons').child($postId).child('authorId').val() === auth.uid"
+      }
     },
     "siteSettings": {
       "fundraisingProgress": {

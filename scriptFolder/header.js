@@ -1,24 +1,10 @@
-import { initializeApp, getApps, getApp } from "firebase/app";
-import { getAuth, onAuthStateChanged } from "firebase/auth";
+import { onAuthStateChanged } from "firebase/auth";
+import { auth } from "./firebase.js";
 import { staggerIn, hoverLift, openPanel, closePanel } from "./animations.js";
 import "../styleFolder/site-header.css";
 import "../styleFolder/themes.css";
 import "./init-terminal-animations.js";
 import "./announcement-bar.js";
-
-const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-  authDomain: "whrhs-cs-club.firebaseapp.com",
-  databaseURL: "https://whrhs-cs-club-default-rtdb.firebaseio.com",
-  projectId: "whrhs-cs-club",
-  storageBucket: "whrhs-cs-club.firebasestorage.app",
-  messagingSenderId: "110216471172",
-  appId: "1:110216471172:web:53ed19da91c397420258d1",
-  measurementId: "G-ZYQZXSNML0",
-};
-
-const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
-const auth = getAuth(app);
 
 function getProfileInitial(user) {
   const source =

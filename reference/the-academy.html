@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Academy — The Economic Forum</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Crimson+Pro:wght@300;400;600&family=Space+Mono:wght@400;700&display=swap"
+    rel="stylesheet">
+  <!-- Quill Snow base styles — must come before style.css so our overrides in style.css win -->
+  <link rel="stylesheet" href="https://cdn.quilljs.com/1.3.7/quill.snow.css">
+  <link rel="stylesheet" href="styleFolder/style.css">
+  <link rel="stylesheet" href="styleFolder/academy.css">
+  <link rel="icon" type="image/png" href="images/TEF-favicon.png">
+  <!-- Quill JS: no defer so window.Quill exists before the deferred module script runs -->
+  <script src="https://cdn.quilljs.com/1.3.7/quill.min.js"></script>
+  <script src="scriptFolder/footer.js" defer></script>
+  <script type="module" src="scriptFolder/sidebar.js" defer></script>
+  <script type="module" src="scriptFolder/academy.js" defer></script>
+  <script type="module" src="scriptFolder/announcement.js"></script>
+</head>
+
+<body>
+
+  <!-- SIDEBAR -->
+  <tef-sidebar active-page="academy"></tef-sidebar>
+
+  <main class="main">
+    <tef-announcement></tef-announcement>
+
+    <!-- ── LIST VIEW ── -->
+    <div class="view active" id="viewList">
+
+      <div class="page-header">
+        <h1>The Academy</h1>
+        <p class="subtitle">Simplified educational resources for younger students and the community. Learn economics,
+          made accessible.</p>
+        <div class="header-rule"></div>
+      </div>
+
+      <div class="list-content">
+        <div class="toolbar">
+          <button class="btn-create" onclick="window.openModal('createModal')">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+              <line x1="12" y1="5" x2="12" y2="19" />
+              <line x1="5" y1="12" x2="19" y2="12" />
+            </svg>
+            Create Lesson
+          </button>
+          <select class="sort-select" onchange="window.setSortMode(this.value)">
+            <option value="newest">NEWEST FIRST</option>
+            <option value="oldest">OLDEST FIRST</option>
+            <option value="popular">MOST LIKED</option>
+          </select>
+        </div>
+
+        <div class="search-wrap">
+          <span class="search-icon">
+            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <circle cx="11" cy="11" r="8" />
+              <line x1="21" y1="21" x2="16.65" y2="16.65" />
+            </svg>
+          </span>
+          <input class="search-input" id="searchInput" type="text"
+            placeholder="Search lessons by title, topic, or level..." oninput="window.renderList()">
+        </div>
+
+        <div class="filter-bar">
+          <span class="filter-label">TOPIC:</span>
+          <button class="filter-chip active" onclick="window.setTopicFilter(this,'all')">All</button>
+          <button class="filter-chip" onclick="window.setTopicFilter(this,'macro')">Macro</button>
+          <button class="filter-chip" onclick="window.setTopicFilter(this,'micro')">Micro</button>
+          <button class="filter-chip" onclick="window.setTopicFilter(this,'trade')">Trade</button>
+          <button class="filter-chip" onclick="window.setTopicFilter(this,'money')">Money</button>
+          <button class="filter-chip" onclick="window.setTopicFilter(this,'markets')">Markets</button>
+          <button class="filter-chip" onclick="window.setTopicFilter(this,'policy')">Policy</button>
+          &nbsp;
+        </div>
+
+        <div class="filter-bar">
+          <span class="filter-label">LEVEL:</span>
+          <button class="level-chip all active" onclick="window.setLevelFilter(this,'all')">All Levels</button>
+          <button class="level-chip beginner" onclick="window.setLevelFilter(this,'Beginner')">Beginner</button>
+          <button class="level-chip intermediate"
+            onclick="window.setLevelFilter(this,'Intermediate')">Intermediate</button>
+          <button class="level-chip advanced" onclick="window.setLevelFilter(this,'Advanced')">Advanced</button>
+        </div>
+
+        <div class="lessons-grid" id="lessonsList"></div>
+      </div>
+    </div>
+
+    <!-- ── LESSON VIEW ── -->
+    <div class="view" id="viewLesson">
+      <div class="lesson-topbar">
+        <button class="back-btn" onclick="window.showList()">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <polyline points="15 18 9 12 15 6" />
+          </svg>
+          Back to The Academy
+        </button>
+        <div class="topbar-actions" id="lessonTopActions"></div>
+      </div>
+      <div class="lesson-body" id="lessonBody"></div>
+    </div>
+
+    <tef-footer></tef-footer>
+  </main>
+
+  <!-- ── CREATE LESSON MODAL ── -->
+  <div class="modal-overlay" id="createModal">
+    <div class="modal">
+      <button class="modal-close" onclick="window.closeModal('createModal')">×</button>
+      <div class="modal-title">Create Lesson</div>
+
+      <div class="form-group">
+        <label class="form-label">Lesson Title</label>
+        <input class="form-input" id="cTitle" type="text" placeholder="e.g. What is Inflation?">
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+        <div class="form-group">
+          <label class="form-label">Topic</label>
+          <select class="form-select" id="cTopic">
+            <option value="macro">Macro</option>
+            <option value="micro">Micro</option>
+            <option value="trade">Trade</option>
+            <option value="money">Money</option>
+            <option value="markets">Markets</option>
+            <option value="policy">Policy</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Difficulty Level</label>
+          <select class="form-select" id="cLevel">
+            <option value="Beginner">Beginner</option>
+            <option value="Intermediate">Intermediate</option>
+            <option value="Advanced">Advanced</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Emoji Icon</label>
+        <input class="form-input" id="cIcon" type="text" placeholder="e.g. 📈 💵 🏦 🌍" maxlength="4"
+          style="font-size:22px;width:80px">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Short Description (shown on card)</label>
+        <input class="form-input" id="cDesc" type="text" placeholder="A one-sentence summary of this lesson.">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Key Concepts (one per line)</label>
+        <textarea class="form-textarea" id="cConcepts" style="min-height:80px" placeholder="Supply and demand
+Price levels
+Consumer spending"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Cover Image (Optional)</label>
+        <div onclick="document.getElementById('cImage').click()"
+          style="cursor:pointer; padding:10px 14px; border:1px dashed #c9b896; border-radius:6px; font-size:13px; display:flex; align-items:center; gap:8px; color:#8a7355; width:fit-content;">
+          <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path
+              d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48" />
+          </svg>
+          Attach cover image
+        </div>
+        <input type="file" id="cImage" style="display:none;" accept="image/*" onchange="window.handleCoverFile(this, 'c')">
+        <div id="cImgPreviewContainer" style="display:none; margin-top:10px;"></div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Attached Files (Optional)</label>
+        <div onclick="document.getElementById('cFile').click()"
+          style="cursor:pointer; padding:10px 14px; border:1px dashed #c9b896; border-radius:6px; font-size:13px; display:flex; align-items:center; gap:8px; color:#8a7355; width:fit-content;">
+          <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path
+              d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48" />
+          </svg>
+          Attach files (ZIP, PDF, DOCX)
+        </div>
+        <input type="file" id="cFile" multiple style="display:none;" onchange="window.handleMultipleFiles(this, 'c', 'doc')">
+        <div id="cDocPreviewContainer" style="display:none; flex-wrap:wrap; gap:8px; margin-top:10px;"></div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Lesson Content</label>
+        <!-- Quill mounts here -->
+        <div id="cEditor"></div>
+        <div class="wc" id="cWC">0 words</div>
+      </div>
+
+      <div class="form-group">
+        <div class="quiz-builder">
+          <div class="quiz-builder-title">📝 COMPREHENSION QUIZ (OPTIONAL)</div>
+          <div id="quizBuilder"></div>
+          <button class="add-q-btn" onclick="window.addQuizQuestion()">
+            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+              <line x1="12" y1="5" x2="12" y2="19" />
+              <line x1="5" y1="12" x2="19" y2="12" />
+            </svg>
+            Add Question
+          </button>
+        </div>
+      </div>
+
+      <button class="btn-full" onclick="window.publishLesson()">Publish Lesson</button>
+    </div>
+  </div>
+
+  <!-- ── EDIT MODAL ── -->
+  <div class="modal-overlay" id="editModal">
+    <div class="modal">
+      <button class="modal-close" onclick="window.closeModal('editModal')">×</button>
+      <div class="modal-title">Edit Lesson</div>
+
+      <div class="form-group">
+        <label class="form-label">Title</label>
+        <input class="form-input" id="eTitle" type="text">
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+        <div class="form-group">
+          <label class="form-label">Topic</label>
+          <select class="form-select" id="eTopic">
+            <option value="macro">Macro</option>
+            <option value="micro">Micro</option>
+            <option value="trade">Trade</option>
+            <option value="money">Money</option>
+            <option value="markets">Markets</option>
+            <option value="policy">Policy</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Level</label>
+          <select class="form-select" id="eLevel">
+            <option value="Beginner">Beginner</option>
+            <option value="Intermediate">Intermediate</option>
+            <option value="Advanced">Advanced</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Emoji Icon</label>
+        <input class="form-input" id="eIcon" type="text" maxlength="4" style="font-size:22px;width:80px">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Short Description</label>
+        <input class="form-input" id="eDesc" type="text">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Key Concepts (one per line)</label>
+        <textarea class="form-textarea" id="eConcepts" style="min-height:80px"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Cover Image</label>
+        <div onclick="document.getElementById('eImage').click()"
+          style="cursor:pointer; padding:10px 14px; border:1px dashed #c9b896; border-radius:6px; font-size:13px; display:flex; align-items:center; gap:8px; color:#8a7355; width:fit-content;">
+          <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path
+              d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48" />
+          </svg>
+          Replace cover image
+        </div>
+        <input type="file" id="eImage" style="display:none;" accept="image/*" onchange="window.handleCoverFile(this, 'e')">
+        <div id="eImgPreviewContainer" style="display:none; margin-top:10px;"></div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Attached Files</label>
+        <div onclick="document.getElementById('eFile').click()"
+          style="cursor:pointer; padding:10px 14px; border:1px dashed #c9b896; border-radius:6px; font-size:13px; display:flex; align-items:center; gap:8px; color:#8a7355; width:fit-content;">
+          <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path
+              d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48" />
+          </svg>
+          Attach new files
+        </div>
+        <input type="file" id="eFile" multiple style="display:none;" onchange="window.handleMultipleFiles(this, 'e', 'doc')">
+        <div id="eDocPreviewContainer" style="display:none; flex-wrap:wrap; gap:8px; margin-top:10px;"></div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Content</label>
+        <!-- Quill mounts here -->
+        <div id="eEditor"></div>
+        <div class="wc" id="eWC">0 words</div>
+      </div>
+
+      <button class="btn-full" onclick="window.saveEdit()">Save Changes</button>
+    </div>
+  </div>
+
+  <!-- ── CONFIRM DELETE ── -->
+  <div class="modal-overlay" id="confirmModal">
+    <div class="modal confirm-modal">
+      <div class="confirm-icon">🗑️</div>
+      <div class="confirm-title">Delete this lesson?</div>
+      <div class="confirm-desc">This will permanently remove the lesson and all comments. This cannot be undone.</div>
+      <div class="confirm-btns">
+        <button class="btn-cancel" onclick="window.closeModal('confirmModal')">Cancel</button>
+        <button class="btn-conf-del" onclick="window.deleteLesson()">Yes, Delete</button>
+      </div>
+    </div>
+  </div>
+
+</body>
+
+</html>

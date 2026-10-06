@@ -1,21 +1,6 @@
-import { initializeApp, getApps, getApp } from "firebase/app"; 
-import { getAuth, onAuthStateChanged, updateProfile, signOut, updateEmail } from "firebase/auth";
-import { getDatabase, ref, set, get, update } from "firebase/database"; 
-
-// 1. Firebase Config
-const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-  authDomain: "whrhs-cs-club.firebaseapp.com",
-  databaseURL: "https://whrhs-cs-club-default-rtdb.firebaseio.com",
-  projectId: "whrhs-cs-club",
-  storageBucket: "whrhs-cs-club.firebasestorage.app",
-  messagingSenderId: "110216471172",
-  appId: "1:110216471172:web:53ed19da91c397420258d1"
-};
-
-const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
-const auth = getAuth(app);
-const db = getDatabase(app);
+import { onAuthStateChanged, updateProfile, signOut, updateEmail } from "firebase/auth";
+import { ref, set, get, update } from "firebase/database";
+import { auth, db } from "./firebase.js";
 
 // 2. Grab HTML Elements
 const largeAvatar = document.getElementById("largeAvatar");

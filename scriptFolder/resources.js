@@ -1,10 +1,5 @@
-import { initializeApp } from "firebase/app";
-import {
-    getAuth,
-    onAuthStateChanged,
-} from "firebase/auth";
+import { onAuthStateChanged } from "firebase/auth";
 import { 
-    getDatabase, 
     ref, 
     push, 
     onValue,
@@ -13,21 +8,8 @@ import {
     serverTimestamp 
 } from "firebase/database";
 import { createScrollTrigger, fadeInUp } from "./animations.js";
+import { auth, db } from "./firebase.js";
 
-const firebaseConfig = {
-    apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-    authDomain: "whrhs-cs-club.firebaseapp.com",
-    databaseURL: "https://whrhs-cs-club-default-rtdb.firebaseio.com",
-    projectId: "whrhs-cs-club",
-    storageBucket: "whrhs-cs-club.firebasestorage.app",
-    messagingSenderId: "110216471172",
-    appId: "1:110216471172:web:53ed19da91c397420258d1",
-    measurementId: "G-ZYQZXSNML0"
-};
-
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getDatabase(app);
 
 // ==========================================================================
 // ESSAY TEXT PARSERS
@@ -94,44 +76,6 @@ window.addEventListener("click", (e) => {
 });
 
 // ==========================================================================
-// 3. 🌟 FORMAT SLIDER TOGGLE IMPLEMENTATION
-// ==========================================================================
-const formatVideoRadio = document.getElementById("format-video");
-const formatTextRadio = document.getElementById("format-text");
-
-const dynamicContentLabel = document.getElementById("dynamic-content-label");
-const inputLecUrl = document.getElementById("lec-url");
-const inputTextarea = document.getElementById("lec-text");
-
-function handleFormatToggle() {
-    if (formatVideoRadio && formatVideoRadio.checked) {
-        // Show URL track input area, hide text area canvas block
-        dynamicContentLabel.textContent = "SLIDES / VIDEO URL";
-        inputLecUrl.style.display = "block";
-        inputLecUrl.required = true;
-
-        inputTextarea.style.display = "none";
-        inputTextarea.required = false;
-        inputTextarea.value = ""; // Clear values safely
-    } else if (formatTextRadio && formatTextRadio.checked) {
-        // Hide URL track input, show essay block editor layout
-        dynamicContentLabel.textContent = "WRITTEN LESSON CONTENT";
-        inputLecUrl.style.display = "none";
-        inputLecUrl.required = false;
-        inputLecUrl.value = "";
-
-        inputTextarea.style.display = "block";
-        inputTextarea.required = true;
-    }
-}
-
-// Attach event listeners to slider radio selectors
-if (formatVideoRadio && formatTextRadio) {
-    formatVideoRadio.addEventListener("change", handleFormatToggle);
-    formatTextRadio.addEventListener("change", handleFormatToggle);
-}
-
-// ==========================================================================
 // 4. FILTER BUTTON INTERACTIONS
 // ==========================================================================
 const filterButtons = document.querySelectorAll(".filter-btn");
@@ -147,15 +91,16 @@ if (formAddLecture) {
     formAddLecture.addEventListener("submit", async (e) => {
         e.preventDefault();
         
-        const isVideo = document.getElementById("format-video").checked;
+        // New written lessons go through the Member lessons editor
+        // (lessons.js); this form only adds video/slide links now.
         const newLecture = {
             type: "lecture",
             title: document.getElementById("lec-title").value,
             tag: document.getElementById("lec-tag").value,
             meta: document.getElementById("lec-meta").value,
             authorUid: auth.currentUser ? auth.currentUser.uid : "", // 🌟 ADDED: Links resource row to profile cards
-            format: isVideo ? "video" : "text",
-            content: isVideo ? document.getElementById("lec-url").value : document.getElementById("lec-text").value,
+            format: "video",
+            content: document.getElementById("lec-url").value,
             createdAt: serverTimestamp()
         };
 
@@ -165,7 +110,6 @@ if (formAddLecture) {
             
             lectureModal.style.display = "none";
             formAddLecture.reset();
-            handleFormatToggle(); // Resets the input/textarea visibility perfectly
         } catch (error) {
             console.error("Error saving lecture:", error);
         }

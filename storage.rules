@@ -10,6 +10,35 @@ service firebase.storage {
                    && request.resource.size < 100 * 1024 * 1024;
     }
 
+    // Lesson cover images (Resources page). Public to read; each signed-in
+    // user writes only their own folder. Raster images only (no SVG, which
+    // can carry script). Which uploads end up attached to a lesson is
+    // enforced by the database rules (approved members only).
+    match /lesson-images/{uid}/{fileName} {
+      allow read: if true;
+      allow create: if request.auth != null
+                    && request.auth.uid == uid
+                    && fileName.matches('^[0-9]{10,16}_[A-Za-z0-9._-]{1,100}$')
+                    && fileName.lower().matches('.*[.](png|jpe?g|gif|webp)$')
+                    && request.resource.size < 5 * 1024 * 1024
+                    && request.resource.contentType.matches('image/(png|jpeg|gif|webp)');
+      allow delete: if request.auth != null && request.auth.uid == uid;
+    }
+
+    // Lesson attachments. Code and text files are stored as text/plain and
+    // served as downloads, so nothing uploaded here renders as a page.
+    // HTML, SVG and JavaScript/TypeScript are not on the allowlist.
+    match /lesson-files/{uid}/{fileName} {
+      allow read: if true;
+      allow create: if request.auth != null
+                    && request.auth.uid == uid
+                    && fileName.matches('^[0-9]{10,16}_[A-Za-z0-9._-]{1,100}$')
+                    && fileName.lower().matches('.*[.](zip|pdf|docx|pptx|txt|md|csv|json|py|java|c|cpp|h|hpp|cs|go|rs|rb|kt|swift|ipynb)$')
+                    && request.resource.size < 10 * 1024 * 1024
+                    && request.resource.contentType.matches('application/(zip|pdf|vnd[.]openxmlformats-officedocument[.](wordprocessingml[.]document|presentationml[.]presentation))|text/plain');
+      allow delete: if request.auth != null && request.auth.uid == uid;
+    }
+
     // Sponsor logos: public, admin-only. Storage rules can't read the
     // Realtime Database, so `role` is a custom claim mirrored from
     // users/{uid}/role by the onRoleChange Cloud Function.

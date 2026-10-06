@@ -12,6 +12,7 @@
 <script type="module" src="scriptFolder/header.js"></script>
 <script type="module" src="scriptFolder/footer.js"></script>
 <script type="module" src="scriptFolder/resources.js"></script>
+<script type="module" src="scriptFolder/lessons.js"></script>
 <script>
   if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
     document.documentElement.classList.add('anim-pending');
@@ -296,22 +297,64 @@
         Learning <span class="ab-mark"><span>hub.</span></span>
       </h1>
       <p class="ab-lede" data-animation="fadeInUp" data-trigger="load" data-delay="0.35">
-        Every lecture we've recorded and every link we trust — in one searchable library.
-        Members add to it after every meeting.
+        Lessons written by members, every lecture we've recorded, and every link we trust,
+        all in one place. Members add to it after every meeting.
       </p>
       <div class="ab-hero-actions" data-animation="fadeInUp" data-trigger="load" data-delay="0.5">
-        <a href="#library" class="ab-btn ab-btn-black">Browse the library →</a>
+        <a href="#lessons" class="ab-btn ab-btn-black">Read lessons →</a>
+        <a href="#library" class="ab-btn ab-btn-ghost">Browse the library</a>
       </div>
     </div>
     <span class="ab-hero-tag" aria-hidden="true">Learn · Build · Share</span>
   </section>
 
-  <!-- 2. LIBRARY -->
+  <!-- 2. MEMBER LESSONS (scriptFolder/lessons.js) -->
+  <section class="ab-section ls-section" id="lessons" aria-labelledby="ls-title">
+    <div class="ab-inner">
+      <div id="ls-list-view">
+        <p class="ab-eyebrow">/ Member lessons</p>
+        <h2 class="ab-h2" id="ls-title" data-animation="textReveal">Lessons<br>by members.</h2>
+        <p class="ab-lede">Written by club members, for club members. Pick a topic and level, or write one yourself.</p>
+
+        <div class="ls-toolbar" data-animation="fadeInUp" data-delay="0.2">
+          <div class="ls-toolbar-top">
+            <div class="ls-search">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+              <input type="search" id="ls-search" placeholder="Search lessons by title, topic, level or author…" autocomplete="off" aria-label="Search lessons">
+              <span class="ls-count" id="ls-count" aria-live="polite">—</span>
+            </div>
+            <select id="ls-sort" class="ls-select" aria-label="Sort lessons">
+              <option value="newest">Newest first</option>
+              <option value="oldest">Oldest first</option>
+              <option value="popular">Most liked</option>
+            </select>
+            <div id="ls-create-slot"></div>
+          </div>
+          <div class="ls-chips" id="ls-topic-chips" role="group" aria-label="Filter by topic"></div>
+          <div class="ls-chips" id="ls-level-chips" role="group" aria-label="Filter by level"></div>
+        </div>
+
+        <div class="ls-grid" id="ls-grid">
+          <div class="ls-empty">Loading lessons…</div>
+        </div>
+      </div>
+
+      <div id="ls-lesson-view" hidden>
+        <div class="ls-lesson-top">
+          <button type="button" class="ls-back" id="ls-back">← Back to lessons</button>
+          <div class="ls-lesson-actions" id="ls-lesson-actions"></div>
+        </div>
+        <article class="ls-lesson" id="ls-lesson"></article>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3. LIBRARY -->
   <section class="ab-section rs-library" id="library" aria-labelledby="rs-library-title">
     <div class="ab-inner">
       <p class="ab-eyebrow">/ The library</p>
       <h2 class="ab-h2" id="rs-library-title" data-animation="textReveal">Lectures<br>&amp; links.</h2>
-      <p class="ab-lede" data-terminal-command="$ compile_resources.sh">Written lessons open right here. Videos, slides, and links open in a new tab.</p>
+      <p class="ab-lede" data-terminal-command="$ compile_resources.sh">Recorded lectures, slides, and links open in a new tab. Older written lessons open right here.</p>
 
       <div class="rs-toolbar" data-animation="fadeInUp" data-delay="0.3">
         <div class="rs-search">
@@ -338,7 +381,7 @@
     </div>
   </section>
 
-  <!-- 3. CTA -->
+  <!-- 4. CTA -->
   <section class="ab-section rs-cta" aria-labelledby="rs-cta-title">
     <div class="ab-inner">
       <p class="ab-eyebrow">/ Next step</p>
@@ -374,19 +417,10 @@
           <input type="text" id="lec-meta" placeholder="S. Liu · 24 min" required>
         </div>
       </div>
-      <div class="input-group toggle-group">
-        <label>Format</label>
-        <div class="format-slider" role="radiogroup" aria-label="Format">
-          <input type="radio" id="format-video" name="lec-format" value="video" checked>
-          <label for="format-video">Video link</label>
-          <input type="radio" id="format-text" name="lec-format" value="text">
-          <label for="format-text">Written essay</label>
-        </div>
-      </div>
-      <div class="input-group" id="dynamic-content-area">
-        <label id="dynamic-content-label" for="lec-url">Slides / Video URL</label>
-        <input type="url" id="lec-url">
-        <textarea id="lec-text" rows="6" placeholder="Write your lesson text here..." style="display: none;" aria-labelledby="dynamic-content-label"></textarea>
+      <div class="input-group">
+        <label for="lec-url">Slides / Video URL</label>
+        <input type="url" id="lec-url" placeholder="https://" required>
+        <span class="ls-hint">Written lessons now live in Member lessons above (+ Create lesson).</span>
       </div>
       <div class="modal-actions">
         <button type="button" class="btn-cancel ab-btn ab-btn-ghost">Cancel</button>
@@ -433,6 +467,21 @@
   <div class="lesson-modal">
     <button type="button" class="modal-close" aria-label="Close lesson" onclick="window.closeModal('lessonModal')">×</button>
     <div id="lessonBody"></div>
+  </div>
+</div>
+
+<div class="modal-overlay ls-overlay" id="lsConfirmModal" role="alertdialog" aria-modal="true" aria-labelledby="lsConfirmTitle" aria-describedby="lsConfirmDesc">
+  <div class="rs-modal ls-confirm">
+    <div class="rs-modal-head">
+      <h3 id="lsConfirmTitle">Delete <em>lesson?</em></h3>
+      <button type="button" class="ls-close" data-ls-close aria-label="Close">&times;</button>
+    </div>
+    <p id="lsConfirmDesc">The lesson and its comments move to the admin moderation tab, where an admin can restore them.</p>
+    <p class="ls-error" id="ls-confirm-error" role="alert" hidden></p>
+    <div class="modal-actions">
+      <button type="button" class="ab-btn ab-btn-ghost" data-ls-close>Cancel</button>
+      <button type="button" class="ab-btn ls-btn-danger" id="ls-confirm-yes">Yes, delete</button>
+    </div>
   </div>
 </div>
 

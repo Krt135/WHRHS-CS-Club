@@ -211,10 +211,10 @@ function renderModeration(list, container) {
 
 function renderDeletedPost(post) {
     const source = escapeHTML(post._sourceLabel || post._deletedFrom || 'Unknown');
-    const title = escapeHTML(post.title || post.name || 'Untitled');
+    const title = escapeHTML(post.title || post.body?.title || post.name || 'Untitled');
     const author = escapeHTML(post._deletedBy || 'Unknown exec');
     const deletedAt = post._deletedAt ? new Date(post._deletedAt).toLocaleString() : 'Unknown time';
-    const preview = post.content || post.result || post.url || post.meta || '';
+    const preview = post.content || post.body?.desc || post.result || post.url || post.meta || '';
 
     return `
         <div class="deleted-post">
