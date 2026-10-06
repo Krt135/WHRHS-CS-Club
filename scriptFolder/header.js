@@ -4,6 +4,7 @@ import { staggerIn, hoverLift, openPanel, closePanel } from "./animations.js";
 import "../styleFolder/site-header.css";
 import "../styleFolder/themes.css";
 import "./init-terminal-animations.js";
+import "./announcement-bar.js";
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,

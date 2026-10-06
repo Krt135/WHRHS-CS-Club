@@ -1,5 +1,6 @@
 import { initUI } from "./ui-auth.js";
 import { signUp, signIn, signInWithGoogle, initAuthRedirect } from "./auth.js";
+import "./announcement-bar.js";
 
 initUI();
 initAuthRedirect();

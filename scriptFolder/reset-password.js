@@ -1,5 +1,6 @@
 import { verifyPasswordResetCode, confirmPasswordReset } from "firebase/auth";
 import { auth } from "./firebase";
+import "./announcement-bar.js";
 
 const subtitle = document.getElementById("resetSubtitle");
 const form = document.getElementById("resetPasswordForm");

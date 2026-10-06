@@ -8,6 +8,7 @@
 const {onRequest} = require("firebase-functions/https");
 const logger = require("firebase-functions/logger");
 const admin = require("firebase-admin");
+const {isMember} = require("./stats");
 
 const CACHE_MS = 5 * 60 * 1000;
 const CLUB_TIME_ZONE = "America/New_York";
@@ -57,9 +58,9 @@ async function computeStats() {
     }
   });
 
-  // Approved accounts only; pending sign-ups aren't members yet.
+  // Same member definition as the home page's stats/public document.
   usersSnap.forEach((child) => {
-    if ((child.val() || {}).status === "approved") stats.activeMembers++;
+    if (isMember(child.val())) stats.activeMembers++;
   });
 
   return {...stats, updatedAt: Date.now()};

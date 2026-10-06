@@ -11,6 +11,7 @@
 <link rel="stylesheet" href="styleFolder/brand.css">
 <script type="module" src="scriptFolder/header.js" defer></script>
 <script type="module" src="scriptFolder/footer.js" defer></script>
+<script type="module" src="scriptFolder/public-stats.js" defer></script>
 <script>
   if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
     document.documentElement.classList.add('anim-pending');
@@ -175,9 +176,9 @@
   <section class="ab-section ab-stats" aria-label="Club by the numbers">
     <div class="ab-inner">
       <div class="ab-stats-grid" data-animation="children">
-        <div class="ab-stat"><div class="ab-stat-num">40+</div><div class="ab-stat-label">Members</div></div>
-        <div class="ab-stat"><div class="ab-stat-num">12</div><div class="ab-stat-label">Active projects</div></div>
-        <div class="ab-stat"><div class="ab-stat-num">27</div><div class="ab-stat-label">Repos shipped</div></div>
+        <div class="ab-stat"><div class="ab-stat-num" data-public-stat="membersCount" data-suffix="+">—</div><div class="ab-stat-label">Members</div></div>
+        <div class="ab-stat"><div class="ab-stat-num" data-public-stat="activeProjectsCount">—</div><div class="ab-stat-label">Active projects</div></div>
+        <div class="ab-stat"><div class="ab-stat-num" data-public-stat="activeSponsorsCount">—</div><div class="ab-stat-label">Active sponsors</div></div>
         <div class="ab-stat"><div class="ab-stat-num">50</div><div class="ab-stat-label">HillsHacks students</div></div>
       </div>
     </div>
@@ -201,7 +202,7 @@
         <article class="ab-value">
           <span class="ab-value-num ab-para"><span>/01</span></span>
           <h3>Build real things</h3>
-          <p>Games, tools, and live websites for other WHRHS clubs. Every project ends up in front of actual users.</p>
+          <p>Games and tools for everyone to use and enjoy. Every project ends up in front of actual users.</p>
         </article>
         <article class="ab-value">
           <span class="ab-value-num ab-para"><span>/02</span></span>
@@ -228,34 +229,34 @@
         <article class="ab-member">
           <div class="ab-avatar" aria-hidden="true">P</div>
           <div>
-            <div class="ab-member-role">President</div>
-            <div class="ab-member-name">Name TBA</div>
+            <div class="ab-member-role">President - Tech Lead</div>
+            <div class="ab-member-name">Kartikeya Pant</div>
           </div>
-          <p>Sets the club's direction and leads weekly meetings and project planning.</p>
+          <p>Sets the club's direction, leads weekly meetings and teaches new members.</p>
         </article>
         <article class="ab-member">
           <div class="ab-avatar" aria-hidden="true">VP</div>
           <div>
-            <div class="ab-member-role">Vice President</div>
-            <div class="ab-member-name">Name TBA</div>
+            <div class="ab-member-role">President - Admin Lead</div>
+            <div class="ab-member-name">Krishna Singh</div>
           </div>
-          <p>Runs the project pipeline and pairs new members with teams.</p>
+          <p>Runs the events and manages the club's administrative tasks.</p>
         </article>
         <article class="ab-member">
           <div class="ab-avatar" aria-hidden="true">T</div>
           <div>
             <div class="ab-member-role">Treasurer</div>
-            <div class="ab-member-name">Name TBA</div>
+            <div class="ab-member-name">Akshaj Kumar</div>
           </div>
-          <p>Manages sponsorships and the HillsHacks budget.</p>
+          <p>Manages sponsorships and the our club's finances.</p>
         </article>
         <article class="ab-member">
           <div class="ab-avatar" aria-hidden="true">S</div>
           <div>
-            <div class="ab-member-role">Secretary</div>
-            <div class="ab-member-name">Name TBA</div>
+            <div class="ab-member-role">HillsHacks Lead</div>
+            <div class="ab-member-name">Keaton Lee</div>
           </div>
-          <p>Keeps the resource library, meeting notes, and club announcements up to date.</p>
+          <p>Leads the organization and execution of HillsHacks.</p>
         </article>
       </div>
     </div>
@@ -276,7 +277,7 @@
         <article class="ab-do-item">
           <span class="ab-do-idx">/02</span>
           <h3>Web Dev</h3>
-          <p>Live sites we design and build for other WHRHS clubs — including this one.</p>
+          <p>Already a member? Join our web development team and help us work on the site.</p>
           <div class="ab-do-tags"><span class="ab-tag">HTML/CSS</span><span class="ab-tag">JavaScript</span><span class="ab-tag">Firebase</span></div>
         </article>
         <article class="ab-do-item">

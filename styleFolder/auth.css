@@ -5,13 +5,15 @@
   color: var(--foreground);
   font-family: 'Space Grotesk', sans-serif;
   display: flex;
-  justify-content: center;
+  flex-direction: column;
   align-items: center;
   min-height: 100vh;
   margin: 0;
 }
 
+/* Auto margins keep the card centered with the announcement bar above it */
 .auth-container {
+  margin: auto 0;
   width: 100%;
   max-width: 420px;
   padding: 24px;

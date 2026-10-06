@@ -12,6 +12,7 @@
 <script type="module" src="scriptFolder/header.js" defer></script>
 <script type="module" src="scriptFolder/footer.js" defer></script>
 <script type="module" src="scriptFolder/index.js" defer></script>
+<script type="module" src="scriptFolder/public-stats.js" defer></script>
 <script>
   if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
     document.documentElement.classList.add('anim-pending');
@@ -249,10 +250,10 @@
     </div>
     <div class="ab-inner">
       <div class="hm-stats-grid" data-animation="children">
-        <div class="hm-stat"><div class="hm-stat-num">40+</div><div class="hm-stat-label">Members</div></div>
-        <div class="hm-stat"><div class="hm-stat-num">12</div><div class="hm-stat-label">Active projects</div></div>
+        <div class="hm-stat"><div class="hm-stat-num" data-public-stat="membersCount" data-suffix="+">—</div><div class="hm-stat-label">Members</div></div>
+        <div class="hm-stat"><div class="hm-stat-num" data-public-stat="activeProjectsCount">—</div><div class="hm-stat-label">Active projects</div></div>
         <div class="hm-stat"><div class="hm-stat-num">50</div><div class="hm-stat-label">HillsHacks students</div></div>
-        <div class="hm-stat"><div class="hm-stat-num">27</div><div class="hm-stat-label">Repos shipped</div></div>
+        <div class="hm-stat"><div class="hm-stat-num" data-public-stat="activeSponsorsCount">—</div><div class="hm-stat-label">Active sponsors</div></div>
       </div>
     </div>
   </section>
@@ -279,7 +280,7 @@
           </div>
           <span class="sector-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m18 16 4-4-4-4"/><path d="m6 8-4 4 4 4"/><path d="m14.5 4-5 16"/></svg></span>
           <div class="sector-title">Web Dev</div>
-          <div class="sector-desc">Live sites we built for other WHRHS clubs.</div>
+          <div class="sector-desc">Already a member? Join our web development team.</div>
         </a>
         <a href="events.html#hackathon-overview" class="sector-card">
           <div class="sector-card-top">

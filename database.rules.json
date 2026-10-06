@@ -65,6 +65,25 @@
         "$other": { ".validate": false }
       }
     },
+    "stats": {
+      ".write": false,
+      "public": { ".read": true }
+    },
+    "announcements": {
+      ".read": true,
+      "$announcementId": {
+        ".write": "auth !== null && root.child('users').child(auth.uid).child('role').val() === 'admin' && (!data.exists() || !newData.exists())",
+        ".validate": "newData.hasChildren(['message', 'type', 'createdAt', 'createdBy', 'emailSent'])",
+        "message": { ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 500" },
+        "type": { ".validate": "newData.val() === 'info' || newData.val() === 'urgent'" },
+        "linkText": { ".validate": "newData.isString() && newData.val().length <= 60" },
+        "url": { ".validate": "newData.isString() && newData.val().length <= 2048 && (newData.val().beginsWith('https://') || newData.val().beginsWith('http://') || newData.val().beginsWith('mailto:'))" },
+        "createdAt": { ".validate": "newData.val() === now" },
+        "createdBy": { ".validate": "newData.val() === auth.uid" },
+        "emailSent": { ".validate": "newData.val() === false" },
+        "$other": { ".validate": false }
+      }
+    },
     "mentions": {
       ".write": "auth != null",
       ".read": false

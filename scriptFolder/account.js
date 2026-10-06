@@ -39,6 +39,8 @@ const phoneInput = document.getElementById("phoneInput");
 
 const emailPrefsSection = document.getElementById("email-preferences");
 const prefNewGames = document.getElementById("prefNewGames");
+const prefNewGamesRow = document.getElementById("prefNewGamesRow");
+const prefAnnouncements = document.getElementById("prefAnnouncements");
 const prefStatus = document.getElementById("prefStatus");
 
 // 3. Auth Listener & Data Fetcher
@@ -109,14 +111,20 @@ onAuthStateChanged(auth, async (user) => {
                     infoDate.textContent = new Date(joined).toLocaleDateString();
                 }
 
+                // Every member can opt out of announcement emails
+                if (emailPrefsSection) {
+                    prefAnnouncements.checked = data.emailPreferences?.announcements !== false;
+                    emailPrefsSection.hidden = false;
+                }
+
                 // Show Admin panel privileges ONLY if you are an authorized Exec viewing your OWN profile
                 if (role === "exec" || role === "admin") {
                     if (adminBtn) adminBtn.style.display = "inline-flex";
 
                     // Group game notifications only go to execs/admins
-                    if (emailPrefsSection) {
+                    if (prefNewGamesRow) {
                         prefNewGames.checked = data.emailPreferences?.newGames !== false;
-                        emailPrefsSection.hidden = false;
+                        prefNewGamesRow.hidden = false;
                     }
                     if (emailInput) emailInput.disabled = false; 
             
@@ -263,25 +271,30 @@ saveBtn.addEventListener("click", async () => {
     }
 });
 
-// 6. Save email preference toggle as soon as it changes
-prefNewGames?.addEventListener("change", async () => {
-    const user = auth.currentUser;
-    if (!user) return;
+// 6. Save email preference toggles as soon as they change
+function bindEmailPref(input, key) {
+    input?.addEventListener("change", async () => {
+        const user = auth.currentUser;
+        if (!user) return;
 
-    prefNewGames.disabled = true;
-    prefStatus.textContent = "Saving...";
+        input.disabled = true;
+        prefStatus.textContent = "Saving...";
 
-    try {
-        await set(ref(db, `users/${user.uid}/emailPreferences/newGames`), prefNewGames.checked);
-        prefStatus.textContent = "Saved";
-    } catch (error) {
-        console.error("Error saving email preferences:", error);
-        prefNewGames.checked = !prefNewGames.checked;
-        prefStatus.textContent = "Couldn't save. Try again.";
-    } finally {
-        prefNewGames.disabled = false;
-    }
-});
+        try {
+            await set(ref(db, `users/${user.uid}/emailPreferences/${key}`), input.checked);
+            prefStatus.textContent = "Saved";
+        } catch (error) {
+            console.error("Error saving email preferences:", error);
+            input.checked = !input.checked;
+            prefStatus.textContent = "Couldn't save. Try again.";
+        } finally {
+            input.disabled = false;
+        }
+    });
+}
+
+bindEmailPref(prefNewGames, "newGames");
+bindEmailPref(prefAnnouncements, "announcements");
 
 // 7. Handle "Sign Out"
 signOutBtn.addEventListener("click", async () => {

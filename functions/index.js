@@ -7,6 +7,8 @@
  *   SENDGRID_FROM_EMAIL - verified SendGrid sender address (prompted on
  *                         first deploy, stored in functions/.env.<project>)
  *   SITE_URL            - public site origin used in email links
+ *   ANNOUNCEMENT_TEST_MODE - "true" sends announcement emails only to the
+ *                         admin who posted (for safe end-to-end testing)
  */
 
 const crypto = require("crypto");
@@ -25,6 +27,11 @@ setGlobalOptions({maxInstances: 10});
 
 exports.getClubStats = require("./getClubStats").getClubStats;
 
+const stats = require("./stats");
+exports.statsOnGameWrite = stats.statsOnGameWrite;
+exports.statsOnUserWrite = stats.statsOnUserWrite;
+exports.statsOnSponsorWrite = stats.statsOnSponsorWrite;
+
 const sendgridKey = defineSecret("SENDGRID_API_KEY");
 const fromEmail = defineString("SENDGRID_FROM_EMAIL", {
   description: "Verified SendGrid sender address for club emails",
@@ -32,6 +39,11 @@ const fromEmail = defineString("SENDGRID_FROM_EMAIL", {
 const siteUrl = defineString("SITE_URL", {
   default: "https://whrhs-cs-club.web.app",
   description: "Public site origin used in email links (no trailing slash)",
+});
+
+const announcementTestMode = defineString("ANNOUNCEMENT_TEST_MODE", {
+  default: "false",
+  description: "\"true\" sends announcement emails only to the posting admin",
 });
 
 const BRAND = {coral: "#FF6B4A", dark: "#1a1a1a"};
@@ -426,3 +438,141 @@ exports.refreshRoleClaim = onCall(async (request) => {
   const role = (await admin.database().ref(`users/${uid}/role`).get()).val();
   return {role: await syncRoleClaim(uid, role)};
 });
+
+// ---------- e) ADMIN ANNOUNCEMENT -> EMAIL MEMBERS ----------
+// The announcement itself is written by the admin's browser (database rules
+// enforce the admin role); this callable then emails it. Callable functions
+// verify the Firebase ID token for us, and we re-check the role here.
+
+const ANNOUNCEMENT_ID_RE = /^[-\w]{1,64}$/;
+const SAFE_URL_RE = /^(https?:\/\/|mailto:)/i;
+
+/**
+ * Collects the Auth email of every approved member, exec and admin who has
+ * not opted out of announcement emails.
+ * @return {Promise<Array<string>>} Unique recipient addresses.
+ */
+async function getAnnouncementRecipients() {
+  const usersSnap = await admin.database().ref("users").get();
+  const uids = [];
+  usersSnap.forEach((child) => {
+    const user = child.val() || {};
+    const isMember = user.status === "approved" ||
+      user.role === "exec" || user.role === "admin";
+    const prefs = user.emailPreferences || {};
+    if (isMember && prefs.announcements !== false) uids.push(child.key);
+  });
+
+  // Use the Auth address rather than the client-editable profile email, so
+  // nobody can point club mail at someone else's inbox.
+  const emails = new Set();
+  for (let i = 0; i < uids.length; i += 100) {
+    const result = await admin.auth().getUsers(
+        uids.slice(i, i + 100).map((uid) => ({uid})));
+    result.users.forEach((u) => {
+      if (!u.disabled && isValidEmail(u.email)) {
+        emails.add(u.email.toLowerCase());
+      }
+    });
+  }
+  return [...emails];
+}
+
+exports.sendAnnouncementEmail = onCall(
+    {secrets: [sendgridKey], timeoutSeconds: 300},
+    async (request) => {
+      if (!request.auth) {
+        throw new HttpsError("unauthenticated", "Sign in first.");
+      }
+      const callerUid = request.auth.uid;
+      const id = String((request.data && request.data.id) || "");
+      if (!ANNOUNCEMENT_ID_RE.test(id)) {
+        throw new HttpsError("invalid-argument", "Missing announcement id.");
+      }
+
+      const db = admin.database();
+      const role = (await db.ref(`users/${callerUid}/role`).get()).val();
+      if (role !== "admin") {
+        throw new HttpsError("permission-denied", "Admins only.");
+      }
+
+      const ann = (await db.ref(`announcements/${id}`).get()).val();
+      if (!ann || typeof ann.message !== "string") {
+        throw new HttpsError("not-found", "Announcement not found.");
+      }
+      if (ann.emailSent === true) {
+        throw new HttpsError("already-exists",
+            "This announcement was already emailed.");
+      }
+
+      // One email blast per announcement, even with retries/double clicks.
+      const claimRef = db.ref(`announcementEmails/${id}`);
+      const claim = await claimRef.transaction((current) => current ?
+        undefined : {by: callerUid, at: Date.now()});
+      if (!claim.committed) {
+        throw new HttpsError("already-exists",
+            "This announcement is already being emailed.");
+      }
+
+      const testMode = announcementTestMode.value() === "true";
+      let recipients;
+      try {
+        if (testMode) {
+          const caller = await admin.auth().getUser(callerUid);
+          recipients = isValidEmail(caller.email) ? [caller.email] : [];
+        } else {
+          recipients = await getAnnouncementRecipients();
+        }
+      } catch (err) {
+        await claimRef.remove();
+        logger.error("Announcement recipient lookup failed", {
+          id, code: err.code, message: err.message,
+        });
+        throw new HttpsError("internal", "Couldn't load the member list.");
+      }
+
+      const urgent = ann.type === "urgent";
+      const url = typeof ann.url === "string" && SAFE_URL_RE.test(ann.url) ?
+        ann.url : "";
+      const linkText = (typeof ann.linkText === "string" &&
+        ann.linkText.trim()) || "Learn more";
+      const preview = ann.message.length > 60 ?
+        `${ann.message.slice(0, 57).trimEnd()}...` : ann.message;
+
+      const html = renderEmail({
+        heading: urgent ? "Urgent club announcement" : "Club announcement",
+        bodyHtml: `<p style="white-space:pre-line;margin:0 0 16px;">` +
+          `${escapeHtml(ann.message)}</p>`,
+        cta: url ? {label: linkText, url: escapeHtml(url)} : null,
+      });
+      const subject = `${urgent ? "[URGENT] " : ""}WHRHS CS Club: ${preview}`;
+      const text = `${ann.message}${url ? `\n\n${linkText}: ${url}` : ""}` +
+        `\n\nManage email preferences: ${siteUrl.value()}` +
+        "/account.html#email-preferences";
+
+      // One message per recipient so addresses are never shared.
+      const sent = await sendEmails(recipients.map((to) => ({
+        to, subject, html, text,
+      })));
+
+      if (recipients.length && !sent) {
+        // Nothing went out; release the claim so the admin can retry.
+        await claimRef.remove();
+        throw new HttpsError("unavailable",
+            "SendGrid didn't accept any emails. Check the function logs.");
+      }
+
+      await claimRef.update({sent, recipients: recipients.length, testMode});
+      // Only flag announcements that still exist, so a delete mid-send can't
+      // leave a half-empty record behind.
+      await db.ref(`announcements/${id}`).transaction((current) => {
+        if (current) current.emailSent = true;
+        return current;
+      });
+
+      logger.info("Announcement email sent", {
+        id, recipients: recipients.length, sent, testMode,
+      });
+      return {sent, recipients: recipients.length, testMode};
+    },
+);

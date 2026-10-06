@@ -1,13 +1,12 @@
 // Projects page: club stats dashboard + "Start here" resource hub.
 // Cards render synchronously so global-animations.js (loaded after this) can
 // animate them; stats fill in once the getClubStats function responds.
-import { gsap } from "gsap";
+import { countUp, setCount } from "./count-up.js";
 import { ICONS, ENGINES, LEARNING } from "./resource-links.js";
 
 const STATS_URL = "https://us-central1-whrhs-cs-club.cloudfunctions.net/getClubStats";
 const REFRESH_MS = 5 * 60 * 1000;
 
-const reduceMotion = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 const isExternal = (url) => /^https?:\/\//.test(url);
 
 function linkAttrs(url) {
@@ -84,27 +83,15 @@ let latest = null;
 let revealed = false;
 let inView = false;
 
-function setNumber(el, value) {
-  el.textContent = Number.isFinite(value) ? Math.round(value).toLocaleString() : "—";
-}
-
 function applyStats(stats, { animate }) {
   statEls.forEach((el, i) => {
     const value = stats[el.dataset.stat];
-    if (!animate || reduceMotion()) {
-      setNumber(el, value);
+    if (!animate) {
+      setCount(el, value);
       return;
     }
     // Count up one card after another, once the hero strip has faded in.
-    const counter = { n: 0 };
-    gsap.to(counter, {
-      n: value,
-      duration: 1.1,
-      delay: 0.7 + i * 0.18,
-      ease: "power2.out",
-      onUpdate: () => setNumber(el, counter.n),
-      onComplete: () => setNumber(el, value),
-    });
+    countUp(el, value, { delay: 0.7 + i * 0.18 });
   });
 
   const total = stats.soloGames + stats.groupGames;
