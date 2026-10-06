@@ -31,7 +31,12 @@ function writeCache(stats) {
 async function loadStats() {
   const cached = readCache();
   try {
-    const fresh = (await get(ref(db, "stats/public"))).val() || {};
+    const snap = await get(ref(db, "stats/public"));
+    if (!snap.exists()) {
+      console.warn("stats/public is missing; run functions/scripts/backfill-stats.js. Using last known values.");
+      return cached;
+    }
+    const fresh = snap.val();
     const merged = { ...cached };
     for (const [key, value] of Object.entries(fresh)) {
       if (isCount(value)) merged[key] = value;

@@ -31,6 +31,7 @@ const stats = require("./stats");
 exports.statsOnGameWrite = stats.statsOnGameWrite;
 exports.statsOnUserWrite = stats.statsOnUserWrite;
 exports.statsOnSponsorWrite = stats.statsOnSponsorWrite;
+exports.statsDailyRefresh = stats.statsDailyRefresh;
 
 const sendgridKey = defineSecret("SENDGRID_API_KEY");
 const fromEmail = defineString("SENDGRID_FROM_EMAIL", {

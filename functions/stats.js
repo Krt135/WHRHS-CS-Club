@@ -5,10 +5,13 @@
  * users/ and the full sponsors/ list aren't publicly readable, so the counts
  * live in a small server-written document: stats/public. The triggers below
  * recompute every count from scratch (rather than +1/-1) whenever something
- * that affects them changes, so the numbers can't drift.
+ * that affects them changes, so the numbers can't drift. A daily refresh
+ * recreates the document if it's ever missing (e.g. a fresh deploy with no
+ * changes yet) and corrects any overlapping-trigger race.
  */
 
 const {onValueWritten} = require("firebase-functions/database");
+const {onSchedule} = require("firebase-functions/scheduler");
 const logger = require("firebase-functions/logger");
 const admin = require("firebase-admin");
 
@@ -101,6 +104,11 @@ exports.statsOnSponsorWrite = onValueWritten("/sponsors/{sponsorId}",
       }
       return refreshPublicStats("sponsor");
     });
+
+exports.statsDailyRefresh = onSchedule(
+    {schedule: "every day 03:00", timeZone: "America/New_York"},
+    () => refreshPublicStats("daily"),
+);
 
 exports.isMember = isMember;
 exports.computePublicStats = computePublicStats;
