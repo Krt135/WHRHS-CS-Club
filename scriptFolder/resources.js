@@ -30,398 +30,403 @@ function safeUrl(url) {
     }
 }
 
-// ==========================================================================
-// 2. MODAL INTERACTIVE MANAGEMENT
-// ==========================================================================
-const lectureModal = document.getElementById("lectureModal");
-const linkModal = document.getElementById("linkModal");
-const lessonModal = document.getElementById("lessonModal"); // Overlay viewer block target
+function initResourcesPage() {
+    // ==========================================================================
+    // 2. MODAL INTERACTIVE MANAGEMENT
+    // ==========================================================================
+    const lectureModal = document.getElementById("lectureModal");
+    const linkModal = document.getElementById("linkModal");
+    const lessonModal = document.getElementById("lessonModal"); // Overlay viewer block target
 
-const btnOpenLecture = document.getElementById("btn-open-lecture-modal");
-const btnOpenLink = document.getElementById("btn-open-link-modal");
+    const btnOpenLecture = document.getElementById("btn-open-lecture-modal");
+    const btnOpenLink = document.getElementById("btn-open-link-modal");
 
-// Setup Universal Close Buttons Logic
-const closeButtons = document.querySelectorAll(".close-modal, .btn-cancel");
+    // Setup Universal Close Buttons Logic
+    const closeButtons = document.querySelectorAll(".close-modal, .btn-cancel");
 
-// Open Lecture Modal
-if (btnOpenLecture) {
-    btnOpenLecture.addEventListener("click", () => {
-        lectureModal.style.display = "flex";
-    });
-}
+    // Open Lecture Modal
+    if (btnOpenLecture) {
+        btnOpenLecture.addEventListener("click", () => {
+            lectureModal.style.display = "flex";
+        });
+    }
 
-// Open Link Modal
-if (btnOpenLink) {
-    btnOpenLink.addEventListener("click", () => {
-        linkModal.style.display = "flex";
-    });
-}
+    // Open Link Modal
+    if (btnOpenLink) {
+        btnOpenLink.addEventListener("click", () => {
+            linkModal.style.display = "flex";
+        });
+    }
 
-// Close Modals Handling
-closeButtons.forEach((btn) => {
-    btn.addEventListener("click", (e) => {
-        // Prevents accidental form submissions inside action panels
-        e.preventDefault();
-        lectureModal.style.display = "none";
-        linkModal.style.display = "none";
-        if (lessonModal) lessonModal.classList.remove("open");
-    });
-});
-
-// Close when clicking outside the card backdrop overlay area
-window.addEventListener("click", (e) => {
-    if (e.target === lectureModal) lectureModal.style.display = "none";
-    if (e.target === linkModal) linkModal.style.display = "none";
-    if (e.target === lessonModal) lessonModal.classList.remove("open");
-});
-
-// ==========================================================================
-// 4. FILTER BUTTON INTERACTIONS
-// ==========================================================================
-const filterButtons = document.querySelectorAll(".filter-btn");
-
-const formAddLecture = document.getElementById("form-add-lecture");
-const formAddLink = document.getElementById("form-add-link");
-const resourceListContainer = document.getElementById("resource-list");
-const resultCountBadge = document.getElementById("result-count");
-
-let globalResources = []; // Stores the raw data so we can filter it instantly
-
-if (formAddLecture) {
-    formAddLecture.addEventListener("submit", async (e) => {
-        e.preventDefault();
-        
-        // New written lessons go through the Member lessons editor
-        // (lessons.js); this form only adds video/slide links now.
-        const newLecture = {
-            type: "lecture",
-            title: document.getElementById("lec-title").value,
-            tag: document.getElementById("lec-tag").value,
-            meta: document.getElementById("lec-meta").value,
-            authorUid: auth.currentUser ? auth.currentUser.uid : "", // 🌟 ADDED: Links resource row to profile cards
-            format: "video",
-            content: document.getElementById("lec-url").value,
-            createdAt: serverTimestamp()
-        };
-
-        try {
-            await push(ref(db, 'resources'), newLecture);
-            console.log("Lecture saved!");
-            
+    // Close Modals Handling
+    closeButtons.forEach((btn) => {
+        btn.addEventListener("click", (e) => {
+            // Prevents accidental form submissions inside action panels
+            e.preventDefault();
             lectureModal.style.display = "none";
-            formAddLecture.reset();
-        } catch (error) {
-            console.error("Error saving lecture:", error);
-        }
-    });
-}
-
-// 2. Submit Link
-if (formAddLink) {
-    formAddLink.addEventListener("submit", async (e) => {
-        e.preventDefault();
-        
-        const newLink = {
-            type: "link",
-            title: document.getElementById("link-title").value,
-            tag: document.getElementById("link-tag").value,
-            meta: document.getElementById("link-type").value,
-            url: document.getElementById("link-url").value,
-            authorUid: auth.currentUser ? auth.currentUser.uid : "", // 🌟 ADDED: Links web resource rows to profile cards
-            createdAt: serverTimestamp() // Smooth server synced time token
-        };
-
-        try {
-            await push(ref(db, 'resources'), newLink);
-            console.log("Link saved!");
-            
             linkModal.style.display = "none";
-            formAddLink.reset();
-        } catch (error) {
-            console.error("Error saving link:", error);
-        }
+            if (lessonModal) lessonModal.classList.remove("open");
+        });
     });
-}
 
-// ==========================================================================
-// 5. RENDERING STRATEGY
-// ==========================================================================
+    // Close when clicking outside the card backdrop overlay area
+    window.addEventListener("click", (e) => {
+        if (e.target === lectureModal) lectureModal.style.display = "none";
+        if (e.target === linkModal) linkModal.style.display = "none";
+        if (e.target === lessonModal) lessonModal.classList.remove("open");
+    });
 
-// Function to generate the HTML for a single row
-function createResourceHTML(item, index) {
-  let iconSvg = '';
-  let kind = '';
-  if (item.type === "link") {
-    kind = "Link";
-    iconSvg = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>`;
-  } else if (item.format === "video") {
-    kind = "Video lecture";
-    iconSvg = `<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="6 3 20 12 6 21 6 3"></polygon></svg>`;
-  } else {
-    kind = "Written lesson";
-    iconSvg = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>`;
-  }
+    // ==========================================================================
+    // 4. FILTER BUTTON INTERACTIONS
+    // ==========================================================================
+    const filterButtons = document.querySelectorAll(".filter-btn");
 
-  const indexDisplay = String(index + 1).padStart(2, '0');
-  const kindHtml = `<span class="res-kind">${kind}</span>`;
+    const formAddLecture = document.getElementById("form-add-lecture");
+    const formAddLink = document.getElementById("form-add-link");
+    const resourceListContainer = document.getElementById("resource-list");
+    const resultCountBadge = document.getElementById("result-count");
 
-  let titleHtml = '';
-  if (item.format === "text") {
-    titleHtml = `<button type="button" class="res-title btn-read-essay" title="Read lesson">${esc(item.title)}${kindHtml}</button>`;
-  } else {
-    titleHtml = `<a href="${esc(safeUrl(item.content || item.url))}" target="_blank" rel="noopener noreferrer" class="res-title">${esc(item.title)}${kindHtml}</a>`;
-  }
+    let globalResources = []; // Stores the raw data so we can filter it instantly
 
-  // Author badge links to the contributor's profile
-  const avatarLetter = (item.meta || '??').substring(0, 2).toUpperCase();
-  const bubbleHtml = item.authorUid
-    ? `<a class="res-author" href="account.html?user=${encodeURIComponent(item.authorUid)}" title="View ${esc(item.meta)}'s profile" aria-label="View ${esc(item.meta)}'s profile">${esc(avatarLetter)}</a>`
-    : "";
-
-  return `
-    <div class="resource-row" data-id="${esc(item.id)}" data-type="${esc(item.type)}">
-      <div class="res-index">${indexDisplay}</div>
-      <div class="res-icon">${iconSvg}</div>
-      ${titleHtml}
-      <div class="res-tag"><span class="ab-tag">${esc(item.tag)}</span></div>
-      <div class="res-meta">
-         ${bubbleHtml}
-         <span>${esc(item.meta)}</span>
-      </div>
-      <div class="res-action exec-only">
-        <button type="button" class="btn-delete-resource" title="Delete resource" aria-label="Delete ${esc(item.title)}">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
-        </button>
-      </div>
-    </div>
-  `;
-}
-
-// Function to inject data into the DOM. Rows animate in on load and filter
-// changes, but not on every search keystroke.
-function renderList(dataArray, { animate = true } = {}) {
-    if (dataArray.length === 0) {
-        resourceListContainer.innerHTML = `<div class="rs-empty">No resources found.</div>`;
-        resultCountBadge.textContent = "0 RESULTS";
-        return;
-    }
-
-    resourceListContainer.innerHTML = dataArray.map((item, index) => createResourceHTML(item, index)).join("");
-    resultCountBadge.textContent = `${dataArray.length} RESULT${dataArray.length !== 1 ? 'S' : ''}`;
-
-    if (animate) {
-        resourceListContainer.querySelectorAll(".resource-row").forEach((row, i) => {
-            createScrollTrigger(row, fadeInUp, { delay: Math.min(i, 8) * 0.05 });
-        });
-    }
-}
-
-// ==========================================================================
-// 6. 🌟 FULL SCREEN OVERLAY ENGINE (FIXED LOGIC)
-// ==========================================================================
-function showLesson(firebaseKey) {
-  // 1. Parse and build the data inside the window layout first
-  renderLesson(firebaseKey); 
-  
-  // 2. Open the overlay view modal cleanly
-  const modal = document.getElementById("lessonModal");
-  if (modal) {
-      modal.classList.add("open");
-  }
-}
-
-// 🌟 FIX: Bind the close function to the global window object so HTML can see it
-window.closeModal = function(modalId) {
-    const modal = document.getElementById(modalId);
-    if (modal) {
-        modal.classList.remove("open");
-    }
-};
-
-function renderLesson(firebaseKey) {
-  // FIX: Look inside the accurate data array tracked dynamically from Realtime Database
-  const l = globalResources.find(item => item.id === firebaseKey); 
-  if (!l) return;
-
-  function parseContent(raw) {
-    return (raw || "").split(/\n\n+/).map(para => {
-      para = para.trim();
-      // Handle === Headers ===
-      if (para.startsWith("=== ")) {
-        const h = para.replace(/^===\s*/, "").replace(/\s*===$/, "");
-        return `<h3 class="essay-heading">${esc(h)}</h3>`;
-      }
-      // Handle [EXAMPLE] Boxes [/EXAMPLE]
-      if (para.startsWith("[EXAMPLE]")) {
-        const inner = para.replace("[EXAMPLE]", "").replace("[/EXAMPLE]", "").trim();
-        return `<div class="essay-example-box"><strong>EXAMPLE</strong><br>${esc(inner)}</div>`;
-      }
-      // Standard paragraph
-      return `<p class="essay-paragraph">${esc(para)}</p>`;
-    }).join("");
-  }
-
-  const container = document.getElementById("lessonBody");
-  if (!container) return;
-  
-  container.innerHTML = `
-    <div class="lesson-content-wrapper">
-        <h1 class="essay-title">${esc(l.title)}</h1>
-        <div class="lesson-meta">Tag: ${esc(l.tag)} · Meta: ${esc(l.meta)}</div>
-        <div class="lesson-divider"></div>
-        <div class="lesson-text">
-            ${parseContent(l.content)}
-        </div>
-    </div>
-  `;
-}
-
-// ==========================================================================
-// 7. EVENT DELEGATION LISTENER
-// ==========================================================================
-resourceListContainer.addEventListener("click", async (e) => {
-    
-    // 1. Hand off execution to full-screen overlay routing layer
-    const readBtn = e.target.closest(".btn-read-essay");
-    if (readBtn) {
-        const row = readBtn.closest(".resource-row");
-        const resourceId = row.getAttribute("data-id");
-        
-        if (resourceId) {
-            showLesson(resourceId);
-        }
-        return; 
-    }
-
-    // 2. Check for Delete Button Click (Existing Logic)
-    const deleteBtn = e.target.closest(".btn-delete-resource");
-    if (!deleteBtn) return;
-
-    const row = deleteBtn.closest(".resource-row");
-    const resourceId = row.getAttribute("data-id");
-
-    if (!resourceId) return;
-
-    const confirmDelete = confirm("Move this resource to the moderation tab?");
-    if (!confirmDelete) return;
-
-    try {
-        const item = globalResources.find(resource => resource.id === resourceId);
-        if (!item) throw new Error("That resource could not be found.");
-
-        const { id, ...restoredData } = item;
-        const deletedRef = push(ref(db, "deleted_posts"));
-
-        await set(deletedRef, {
-            ...restoredData,
-            _deletedFrom: "resources",
-            _originalId: resourceId,
-            _sourceLabel: "Resources",
-            _deletedAt: Date.now(),
-            _deletedBy: auth.currentUser?.email || "Unknown exec",
-            _deletedById: auth.currentUser?.uid || null
-        });
-
-        await remove(ref(db, `resources/${resourceId}`));
-        console.log(`Resource ${resourceId} moved to moderation.`);
-    } catch (error) {
-        console.error("Error deleting resource from Firebase:", error);
-        alert("Failed to delete resource. Check your permissions.");
-    }
-});
-
-// ==========================================================================
-// EXEC / ADMIN ROLE VISIBILITY CONTROLLER
-// ==========================================================================
-onAuthStateChanged(auth, (user) => {
-    const execElements = document.querySelectorAll(".exec-only");
-
-    if (user) {
-        const userRoleRef = ref(db, `users/${user.uid}/role`);
-        
-        onValue(userRoleRef, (snapshot) => {
-            const role = snapshot.val();
+    if (formAddLecture) {
+        formAddLecture.addEventListener("submit", async (e) => {
+            e.preventDefault();
             
-            if (role === "exec" || role === "admin") {
-                execElements.forEach(el => el.style.display = "flex");
-                document.documentElement.classList.add("is-exec-user");
-            } else {
-                execElements.forEach(el => el.style.display = "none");
-                document.documentElement.classList.remove("is-exec-user");
+            // New written lessons go through the Member lessons editor
+            // (lessons.js); this form only adds video/slide links now.
+            const newLecture = {
+                type: "lecture",
+                title: document.getElementById("lec-title").value,
+                tag: document.getElementById("lec-tag").value,
+                meta: document.getElementById("lec-meta").value,
+                authorUid: auth.currentUser ? auth.currentUser.uid : "", // 🌟 ADDED: Links resource row to profile cards
+                format: "video",
+                content: document.getElementById("lec-url").value,
+                createdAt: serverTimestamp()
+            };
+
+            try {
+                await push(ref(db, 'resources'), newLecture);
+                console.log("Lecture saved!");
+                
+                lectureModal.style.display = "none";
+                formAddLecture.reset();
+            } catch (error) {
+                console.error("Error saving lecture:", error);
             }
         });
-    } else {
-        execElements.forEach(el => el.style.display = "none");
-        document.documentElement.classList.remove("is-exec-user");
     }
-});
 
-// --- FILTERING LOGIC ---
-function applyFilter(filterType) {
-    if (filterType === "all") {
-        renderList(globalResources);
-    } else {
-        const filtered = globalResources.filter(item => item.type === filterType);
-        renderList(filtered);
+    // 2. Submit Link
+    if (formAddLink) {
+        formAddLink.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            
+            const newLink = {
+                type: "link",
+                title: document.getElementById("link-title").value,
+                tag: document.getElementById("link-tag").value,
+                meta: document.getElementById("link-type").value,
+                url: document.getElementById("link-url").value,
+                authorUid: auth.currentUser ? auth.currentUser.uid : "", // 🌟 ADDED: Links web resource rows to profile cards
+                createdAt: serverTimestamp() // Smooth server synced time token
+            };
+
+            try {
+                await push(ref(db, 'resources'), newLink);
+                console.log("Link saved!");
+                
+                linkModal.style.display = "none";
+                formAddLink.reset();
+            } catch (error) {
+                console.error("Error saving link:", error);
+            }
+        });
     }
-}
 
-// ==========================================================================
-// LIVE SEARCH ENGINE FILTER
-// ==========================================================================
-const searchInput = document.getElementById("resource-search");
+    // ==========================================================================
+    // 5. RENDERING STRATEGY
+    // ==========================================================================
 
-function performSearchAndFilter({ animate = true } = {}) {
-    const activeFilterBtn = document.querySelector(".filter-btn.active");
-    const currentCategory = activeFilterBtn ? activeFilterBtn.getAttribute("data-filter") : "all";
-    const query = searchInput.value.toLowerCase().trim();
+    // Function to generate the HTML for a single row
+    function createResourceHTML(item, index) {
+      let iconSvg = '';
+      let kind = '';
+      if (item.type === "link") {
+        kind = "Link";
+        iconSvg = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>`;
+      } else if (item.format === "video") {
+        kind = "Video lecture";
+        iconSvg = `<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="6 3 20 12 6 21 6 3"></polygon></svg>`;
+      } else {
+        kind = "Written lesson";
+        iconSvg = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>`;
+      }
 
-    const filteredResults = globalResources.filter(item => {
-        const matchesCategory = (currentCategory === "all" || item.type === currentCategory);
+      const indexDisplay = String(index + 1).padStart(2, '0');
+      const kindHtml = `<span class="res-kind">${kind}</span>`;
+
+      let titleHtml = '';
+      if (item.format === "text") {
+        titleHtml = `<button type="button" class="res-title btn-read-essay" title="Read lesson">${esc(item.title)}${kindHtml}</button>`;
+      } else {
+        titleHtml = `<a href="${esc(safeUrl(item.content || item.url))}" target="_blank" rel="noopener noreferrer" class="res-title">${esc(item.title)}${kindHtml}</a>`;
+      }
+
+      // Author badge links to the contributor's profile
+      const avatarLetter = (item.meta || '??').substring(0, 2).toUpperCase();
+      const bubbleHtml = item.authorUid
+        ? `<a class="res-author" href="account.html?user=${encodeURIComponent(item.authorUid)}" title="View ${esc(item.meta)}'s profile" aria-label="View ${esc(item.meta)}'s profile">${esc(avatarLetter)}</a>`
+        : "";
+
+      return `
+        <div class="resource-row" data-id="${esc(item.id)}" data-type="${esc(item.type)}">
+          <div class="res-index">${indexDisplay}</div>
+          <div class="res-icon">${iconSvg}</div>
+          ${titleHtml}
+          <div class="res-tag"><span class="ab-tag">${esc(item.tag)}</span></div>
+          <div class="res-meta">
+             ${bubbleHtml}
+             <span>${esc(item.meta)}</span>
+          </div>
+          <div class="res-action exec-only">
+            <button type="button" class="btn-delete-resource" title="Delete resource" aria-label="Delete ${esc(item.title)}">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+            </button>
+          </div>
+        </div>
+      `;
+    }
+
+    // Function to inject data into the DOM. Rows animate in on load and filter
+    // changes, but not on every search keystroke.
+    function renderList(dataArray, { animate = true } = {}) {
+        if (dataArray.length === 0) {
+            resourceListContainer.innerHTML = `<div class="rs-empty">No resources found.</div>`;
+            resultCountBadge.textContent = "0 RESULTS";
+            return;
+        }
+
+        resourceListContainer.innerHTML = dataArray.map((item, index) => createResourceHTML(item, index)).join("");
+        resultCountBadge.textContent = `${dataArray.length} RESULT${dataArray.length !== 1 ? 'S' : ''}`;
+
+        if (animate) {
+            resourceListContainer.querySelectorAll(".resource-row").forEach((row, i) => {
+                createScrollTrigger(row, fadeInUp, { delay: Math.min(i, 8) * 0.05 });
+            });
+        }
+    }
+
+    // ==========================================================================
+    // 6. 🌟 FULL SCREEN OVERLAY ENGINE (FIXED LOGIC)
+    // ==========================================================================
+    function showLesson(firebaseKey) {
+      // 1. Parse and build the data inside the window layout first
+      renderLesson(firebaseKey); 
+      
+      // 2. Open the overlay view modal cleanly
+      const modal = document.getElementById("lessonModal");
+      if (modal) {
+          modal.classList.add("open");
+      }
+    }
+
+    // 🌟 FIX: Bind the close function to the global window object so HTML can see it
+    window.closeModal = function(modalId) {
+        const modal = document.getElementById(modalId);
+        if (modal) {
+            modal.classList.remove("open");
+        }
+    };
+
+    function renderLesson(firebaseKey) {
+      // FIX: Look inside the accurate data array tracked dynamically from Realtime Database
+      const l = globalResources.find(item => item.id === firebaseKey); 
+      if (!l) return;
+
+      function parseContent(raw) {
+        return (raw || "").split(/\n\n+/).map(para => {
+          para = para.trim();
+          // Handle === Headers ===
+          if (para.startsWith("=== ")) {
+            const h = para.replace(/^===\s*/, "").replace(/\s*===$/, "");
+            return `<h3 class="essay-heading">${esc(h)}</h3>`;
+          }
+          // Handle [EXAMPLE] Boxes [/EXAMPLE]
+          if (para.startsWith("[EXAMPLE]")) {
+            const inner = para.replace("[EXAMPLE]", "").replace("[/EXAMPLE]", "").trim();
+            return `<div class="essay-example-box"><strong>EXAMPLE</strong><br>${esc(inner)}</div>`;
+          }
+          // Standard paragraph
+          return `<p class="essay-paragraph">${esc(para)}</p>`;
+        }).join("");
+      }
+
+      const container = document.getElementById("lessonBody");
+      if (!container) return;
+      
+      container.innerHTML = `
+        <div class="lesson-content-wrapper">
+            <h1 class="essay-title">${esc(l.title)}</h1>
+            <div class="lesson-meta">Tag: ${esc(l.tag)} · Meta: ${esc(l.meta)}</div>
+            <div class="lesson-divider"></div>
+            <div class="lesson-text">
+                ${parseContent(l.content)}
+            </div>
+        </div>
+      `;
+    }
+
+    // ==========================================================================
+    // 7. EVENT DELEGATION LISTENER
+    // ==========================================================================
+    resourceListContainer.addEventListener("click", async (e) => {
         
-        const itemTitle = (item.title || "").toLowerCase();
-        const itemTag = (item.tag || "").toLowerCase();
-        const itemMeta = (item.meta || "").toLowerCase();
-        
-        const matchesSearch = itemTitle.includes(query) || 
-                              itemTag.includes(query) || 
-                              itemMeta.includes(query);
+        // 1. Hand off execution to full-screen overlay routing layer
+        const readBtn = e.target.closest(".btn-read-essay");
+        if (readBtn) {
+            const row = readBtn.closest(".resource-row");
+            const resourceId = row.getAttribute("data-id");
+            
+            if (resourceId) {
+                showLesson(resourceId);
+            }
+            return; 
+        }
 
-        return matchesCategory && matchesSearch;
+        // 2. Check for Delete Button Click (Existing Logic)
+        const deleteBtn = e.target.closest(".btn-delete-resource");
+        if (!deleteBtn) return;
+
+        const row = deleteBtn.closest(".resource-row");
+        const resourceId = row.getAttribute("data-id");
+
+        if (!resourceId) return;
+
+        const confirmDelete = confirm("Move this resource to the moderation tab?");
+        if (!confirmDelete) return;
+
+        try {
+            const item = globalResources.find(resource => resource.id === resourceId);
+            if (!item) throw new Error("That resource could not be found.");
+
+            const { id, ...restoredData } = item;
+            const deletedRef = push(ref(db, "deleted_posts"));
+
+            await set(deletedRef, {
+                ...restoredData,
+                _deletedFrom: "resources",
+                _originalId: resourceId,
+                _sourceLabel: "Resources",
+                _deletedAt: Date.now(),
+                _deletedBy: auth.currentUser?.email || "Unknown exec",
+                _deletedById: auth.currentUser?.uid || null
+            });
+
+            await remove(ref(db, `resources/${resourceId}`));
+            console.log(`Resource ${resourceId} moved to moderation.`);
+        } catch (error) {
+            console.error("Error deleting resource from Firebase:", error);
+            alert("Failed to delete resource. Check your permissions.");
+        }
     });
 
-    renderList(filteredResults, { animate });
-}
+    // ==========================================================================
+    // EXEC / ADMIN ROLE VISIBILITY CONTROLLER
+    // ==========================================================================
+    onAuthStateChanged(auth, (user) => {
+        const execElements = document.querySelectorAll(".exec-only");
 
-if (searchInput) {
-    searchInput.addEventListener("input", () => performSearchAndFilter({ animate: false }));
-}
-
-filterButtons.forEach((btn) => {
-    btn.addEventListener("click", () => {
-        document.querySelector(".filter-btn.active")?.classList.remove("active");
-        btn.classList.add("active");
-        performSearchAndFilter();
+        if (user) {
+            const userRoleRef = ref(db, `users/${user.uid}/role`);
+            
+            onValue(userRoleRef, (snapshot) => {
+                const role = snapshot.val();
+                
+                if (role === "exec" || role === "admin") {
+                    execElements.forEach(el => el.style.display = "flex");
+                    document.documentElement.classList.add("is-exec-user");
+                } else {
+                    execElements.forEach(el => el.style.display = "none");
+                    document.documentElement.classList.remove("is-exec-user");
+                }
+            });
+        } else {
+            execElements.forEach(el => el.style.display = "none");
+            document.documentElement.classList.remove("is-exec-user");
+        }
     });
-});
 
-// --- LIVE FIREBASE LISTENER ---
-const resourcesRef = ref(db, 'resources');
-
-onValue(resourcesRef, (snapshot) => {
-    const data = snapshot.val();
-    
-    if (data) {
-        globalResources = Object.keys(data).map(key => ({
-            id: key, 
-            ...data[key]
-        }));
-        
-        renderList(globalResources);
-    } else {
-        resourceListContainer.innerHTML = `
-            <div class="rs-empty">No resources yet.<small>Check back later or add one above.</small></div>
-        `;
-        resultCountBadge.textContent = "0 RESULTS";
+    // --- FILTERING LOGIC ---
+    function applyFilter(filterType) {
+        if (filterType === "all") {
+            renderList(globalResources);
+        } else {
+            const filtered = globalResources.filter(item => item.type === filterType);
+            renderList(filtered);
+        }
     }
-});
+
+    // ==========================================================================
+    // LIVE SEARCH ENGINE FILTER
+    // ==========================================================================
+    const searchInput = document.getElementById("resource-search");
+
+    function performSearchAndFilter({ animate = true } = {}) {
+        const activeFilterBtn = document.querySelector(".filter-btn.active");
+        const currentCategory = activeFilterBtn ? activeFilterBtn.getAttribute("data-filter") : "all";
+        const query = searchInput.value.toLowerCase().trim();
+
+        const filteredResults = globalResources.filter(item => {
+            const matchesCategory = (currentCategory === "all" || item.type === currentCategory);
+            
+            const itemTitle = (item.title || "").toLowerCase();
+            const itemTag = (item.tag || "").toLowerCase();
+            const itemMeta = (item.meta || "").toLowerCase();
+            
+            const matchesSearch = itemTitle.includes(query) || 
+                                  itemTag.includes(query) || 
+                                  itemMeta.includes(query);
+
+            return matchesCategory && matchesSearch;
+        });
+
+        renderList(filteredResults, { animate });
+    }
+
+    if (searchInput) {
+        searchInput.addEventListener("input", () => performSearchAndFilter({ animate: false }));
+    }
+
+    filterButtons.forEach((btn) => {
+        btn.addEventListener("click", () => {
+            document.querySelector(".filter-btn.active")?.classList.remove("active");
+            btn.classList.add("active");
+            performSearchAndFilter();
+        });
+    });
+
+    // --- LIVE FIREBASE LISTENER ---
+    const resourcesRef = ref(db, 'resources');
+
+    onValue(resourcesRef, (snapshot) => {
+        const data = snapshot.val();
+        
+        if (data) {
+            globalResources = Object.keys(data).map(key => ({
+                id: key, 
+                ...data[key]
+            }));
+            
+            renderList(globalResources);
+        } else {
+            resourceListContainer.innerHTML = `
+                <div class="rs-empty">No resources yet.<small>Check back later or add one above.</small></div>
+            `;
+            resultCountBadge.textContent = "0 RESULTS";
+        }
+    });
+}
+
+// Page code only runs on resources.html; the module may be evaluated elsewhere.
+if (document.getElementById("resource-list")) initResourcesPage();
