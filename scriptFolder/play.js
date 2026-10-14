@@ -1,6 +1,7 @@
 import { db } from "./firebase.js";
 import { ref as dbRef, get } from "firebase/database";
 import { showSponsorSplash } from "./sponsor-splash.js";
+import { arcadeGameUrl, fetchArcadeStatus, CHECKING_MESSAGE, LOCK_MESSAGE, UNREACHABLE_MESSAGE } from "./arcade-lock.js";
 
 document.addEventListener("DOMContentLoaded", async () => {
     // 1. Grab target system coordinates out of routing query array
@@ -13,6 +14,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     const viewport = document.getElementById("arcadeViewport");
     const statusScreen = document.getElementById("engineStatusScreen");
     const statusMessage = document.getElementById("statusMessage");
+    const statusSpinner = statusScreen?.querySelector(".play-status-spinner");
 
     if (!gameId) {
         if (titleEl) titleEl.innerText = "Error: Missing Project Link Pointer";
@@ -20,16 +22,25 @@ document.addEventListener("DOMContentLoaded", async () => {
         return;
     }
 
-    // Runs alongside the game load below; it never waits on or delays the game.
-    const splashAbort = new AbortController();
-    showSponsorSplash(document.querySelector(".play-viewport-container"), splashAbort.signal);
+    // Leaves the status screen up over an empty viewport with a message.
+    const showBlocked = (message) => {
+        if (statusSpinner) statusSpinner.hidden = true;
+        if (statusMessage) statusMessage.innerText = message;
+        if (engineTagEl) engineTagEl.innerText = "ARCADE LOCKED";
+    };
 
     try {
-        // 2. Fetch specific records matching key signature directly out of Firebase tree
-        statusMessage.innerText = "Querying live database architecture...";
-        
-        // 🌟 FIXED PATH: Changed from 'projects/' to 'games/' to match your database schema
-        const projectSnap = await get(dbRef(db, `games/${gameId}`));
+        // 2. Ask the server whether the Arcade is open while the game's
+        // details load. The server refuses the game files when it's locked;
+        // this check just explains why instead of showing a broken frame.
+        statusMessage.innerText = CHECKING_MESSAGE;
+        const [status, projectSnap] = await Promise.all([
+            fetchArcadeStatus().catch((err) => {
+                console.error("Arcade status unavailable:", err);
+                return null;
+            }),
+            get(dbRef(db, `games/${gameId}`)),
+        ]);
 
         if (!projectSnap.exists()) {
             throw new Error("Target cluster data array has expired or does not exist.");
@@ -42,53 +53,22 @@ document.addEventListener("DOMContentLoaded", async () => {
         authorEl.innerText = `Published by: ${projectData.authorName || "Anonymous Member"}`;
         engineTagEl.innerText = `${projectData.engine || "HTML5 Web Engine"} // ${projectData.category === "group" ? "Group Build" : "Solo Project"}`;
 
-        // 4. Inject verified tracking asset destination endpoint URL directly into secure frame element
-        statusMessage.innerText = "Connecting secure asset stream path...";
-        
-        if (projectData.embedUrl) {
-            // Fetch raw HTML text manually so a <base> tag can be injected for relative asset paths
-            fetch(projectData.embedUrl)
-                .then(response => {
-                    if (!response.ok) throw new Error("Failed to download game assets.");
-                    return response.text();
-                })
-                .then(htmlContent => {
-                    // Extract the clean base directory path of the deployed folder assets
-                    const baseDir = projectData.embedUrl.substring(0, projectData.embedUrl.lastIndexOf('/')) + '/';
-                    
-                    // Inject a <base> tag so relative paths (like script src="game.js") trace correctly
-                    let injectedHtml = htmlContent;
-                    if (htmlContent.includes('<head>')) {
-                        injectedHtml = htmlContent.replace('<head>', `<head><base href="${baseDir}">`);
-                    } else if (htmlContent.includes('<HEAD>')) {
-                        injectedHtml = htmlContent.replace('<HEAD>', `<HEAD><base href="${baseDir}">`);
-                    } else {
-                        injectedHtml = `<base href="${baseDir}">` + htmlContent;
-                    }
-                    
-                    // Open and write directly to the iframe context stream
-                    const iframeDoc = viewport.contentWindow.document || viewport.contentDocument;
-                    iframeDoc.open();
-                    iframeDoc.write(injectedHtml);
-                    iframeDoc.close();
+        if (!status) return showBlocked(UNREACHABLE_MESSAGE);
+        if (!status.open) return showBlocked(LOCK_MESSAGE);
 
-                    // Instantly drop the loading screen curtain now that the code assets are written
-                    if (statusScreen) statusScreen.style.display = "none";
-                })
-                .catch(err => {
-                    console.error("Arcade Content Injection Fallback Triggered:", err);
-                    
-                    // Failover logic: if the direct fetch is blocked, default back to standard src mapping
-                    viewport.addEventListener("load", () => {
-                        if (statusScreen) statusScreen.style.display = "none";
-                    });
-                    viewport.src = projectData.embedUrl;
-                });
-        }
+        // 4. Load the game. Uploaded builds come from the arcade function
+        // (its own origin, lock checked on every file); external links load
+        // as-is, since another site can't be locked from here.
+        statusMessage.innerText = "Connecting secure asset stream path...";
+        showSponsorSplash(document.querySelector(".play-viewport-container"));
+
+        viewport.addEventListener("load", () => {
+            if (statusScreen) statusScreen.style.display = "none";
+        }, { once: true });
+        viewport.src = projectData.type === "game" ? arcadeGameUrl(gameId) : projectData.embedUrl;
 
     } catch (error) {
         console.error(error);
-        splashAbort.abort();
         if (titleEl) titleEl.innerText = "Runtime Exception Detected";
         if (statusMessage) statusMessage.innerText = `Error Log: ${error.message}`;
     }

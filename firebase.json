@@ -15,7 +15,16 @@
       "**/.*",
       "**/node_modules/**"
     ],
-    "cleanUrls": true
+    "cleanUrls": true,
+    "rewrites": [
+      {
+        "source": "/api/arcade/status",
+        "function": {
+          "functionId": "arcade",
+          "region": "us-central1"
+        }
+      }
+    ]
   },
   "functions": [
     {

@@ -192,6 +192,14 @@
   .pj-build-request { align-items: center; }
   .pj-build-request [hidden] { display: none; }
   .pj-build-pending { font-family: var(--ab-mono); font-size: 12px; color: #bdbdbd; max-width: 46ch; }
+  /* Full-width row so the fallback buttons wrap underneath it; shown only with the request button. */
+  .pj-request-hint {
+    flex-basis: 100%; min-width: 0; margin: -4px 0;
+    font-family: var(--ab-mono); font-size: 12px; line-height: 1.5; color: #9a9a9a;
+    overflow-wrap: anywhere;
+  }
+  .pj-request-hint-arrow { color: var(--ab-accent); }
+  #requestAccessBtn[hidden] + .pj-request-hint { display: none; }
 
   /* ── 5. Arcade / Game Dev (black) ── */
   .pj-arcade { background: var(--ab-black); color: #fff; }
@@ -305,6 +313,21 @@
     font-family: var(--ab-mono); font-size: 11px; font-weight: 700;
     letter-spacing: 0.15em; text-transform: uppercase; color: var(--ab-accent);
   }
+
+  /* ── Arcade lock (school hours) ── */
+  .pj-arcade-lock {
+    margin: 0 0 20px;
+    padding: 16px 20px;
+    border-left: 4px solid var(--ab-accent);
+    background: #151515; color: #e6e6e6;
+    font-size: 0.95rem; line-height: 1.5;
+  }
+  .pj-arcade-lock[hidden] { display: none; }
+  .pj-game.is-locked .pj-game-link { cursor: not-allowed; }
+  .pj-game.is-locked .pj-game-preview,
+  .pj-game.is-locked .pj-game-body { opacity: 0.45; }
+  .pj-game.is-locked:hover { translate: none; background: #151515; }
+  .pj-game.is-locked .pj-game-play { color: #8a8a8a; }
 
   /* ── Upload modal ── */
   .upload-modal-overlay {
@@ -476,6 +499,8 @@
         </button>
       </div>
 
+      <p id="arcadeLockNotice" class="pj-arcade-lock" role="status" hidden></p>
+
       <div id="gameGridContainer" class="pj-game-grid" aria-live="polite">
         <div class="pj-empty">Loading the arcade…</div>
       </div>
@@ -575,6 +600,7 @@
       <div class="pj-submit-actions pj-build-request" data-animation="fadeInUp" data-delay="0.2">
         <a href="https://github.com/Krt135/WHRHS-CS-Club" class="ab-btn ab-btn-accent" target="_blank" rel="noopener noreferrer">View the repo on GitHub →</a>
         <a id="requestAccessBtn" href="mailto:cs.whrhs.club@gmail.com" class="ab-btn pj-btn-line" hidden>Request collaborator access</a>
+        <p class="pj-request-hint"><span class="pj-request-hint-arrow" aria-hidden="true">↓</span> If the button above doesn't work on your PC, try one of the options below instead. <span class="pj-request-hint-arrow" aria-hidden="true">↓</span></p>
         <a id="requestGmailBtn" href="https://mail.google.com/" class="ab-btn pj-btn-line" target="_blank" rel="noopener" hidden>Open in Gmail</a>
         <button id="requestCopyBtn" type="button" class="ab-btn pj-btn-line" hidden>Copy email address</button>
         <a id="requestSignIn" href="login.html" class="ab-btn pj-btn-line">Sign in to request access →</a>

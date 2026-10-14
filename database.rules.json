@@ -244,6 +244,14 @@
     "mentions": {
       ".write": "auth != null",
       ".read": false
+    },
+    "arcadeOverride": {
+      ".read": false,
+      ".write": false
+    },
+    "arcadeOverrideAttempts": {
+      ".read": false,
+      ".write": false
     }
   }
 }

@@ -4,6 +4,7 @@ import { ref as dbRef, onValue, update, remove, get, set, push } from "firebase/
 import { ref, uploadBytes } from "firebase/storage";
 import { createScrollTrigger, scaleUp } from "./animations.js";
 import { registerTerminal } from "./init-terminal-animations.js";
+import { fetchArcadeStatus, LOCK_MESSAGE, UNREACHABLE_MESSAGE } from "./arcade-lock.js";
 
 import * as fflate from "https://cdn.jsdelivr.net/npm/fflate@0.8.2/+esm";
 
@@ -13,7 +14,11 @@ let allGames = [];
 
 let activeEngine = null; 
 let hasPlayedCardTerminals = false;
-let activeCategory = 'people'; 
+let activeCategory = 'people';
+
+// Play links stay disabled until the server says the Arcade is open.
+let arcadePlayable = false;
+const ARCADE_STATUS_REFRESH_MS = 60 * 1000;
 
 const gameGridContainer = document.getElementById("gameGridContainer");
 const filterPeopleBtn = document.getElementById("filter-people");
@@ -102,10 +107,11 @@ function renderGames() {
         const deleteBtnHTML = canDelete
             ? `<button type="button" class="pj-game-delete" data-delete-id="${escapeHTML(game.id)}">Delete</button>`
             : "";
+        const linkAttrs = arcadePlayable ? `href="${playUrl}"` : `aria-disabled="true"`;
 
         return `
-            <article class="pj-game" data-engine="${escapeHTML(game.engine || 'Other')}">
-                <a class="pj-game-link" href="${playUrl}">
+            <article class="pj-game${arcadePlayable ? '' : ' is-locked'}" data-engine="${escapeHTML(game.engine || 'Other')}">
+                <a class="pj-game-link" ${linkAttrs}>
                     <div class="pj-game-preview"><span class="pj-game-engine">${escapeHTML(ENGINE_LABELS[game.engine] || game.engine || 'Web')}</span></div>
                     <div class="pj-game-body">
                         <h3>${escapeHTML(game.title)}</h3>
@@ -116,7 +122,7 @@ function renderGames() {
                     <a class="pj-game-author" href="account.html?user=${encodeURIComponent(game.authorUid || '')}"
                        title="View ${escapeHTML(author)}'s profile" aria-label="View ${escapeHTML(author)}'s profile">${escapeHTML(author.substring(0, 2).toUpperCase())}</a>
                     ${deleteBtnHTML}
-                    <a class="pj-game-play" href="${playUrl}" tabindex="-1" aria-hidden="true">Play →</a>
+                    <a class="pj-game-play" ${linkAttrs} tabindex="-1" aria-hidden="true">${arcadePlayable ? 'Play →' : 'Locked'}</a>
                 </div>
             </article>
         `;
@@ -140,6 +146,40 @@ function renderGames() {
 }
 
 const ENGINE_LABELS = { JSCanvas: 'JS Canvas' };
+
+// ─── 2b. ARCADE LOCK ──────────────────────────────────────────────
+// The server enforces the lock on the game files; this just keeps the cards
+// and notice in step with it. Re-renders only when open/locked flips, so the
+// card animations don't replay every minute.
+const arcadeLockNotice = document.getElementById("arcadeLockNotice");
+
+async function refreshArcadeStatus() {
+    let playable = false;
+    let message = UNREACHABLE_MESSAGE;
+    try {
+        const status = await fetchArcadeStatus();
+        playable = status.open;
+        message = LOCK_MESSAGE;
+    } catch (err) {
+        console.error("Arcade status unavailable:", err);
+    }
+
+    if (arcadeLockNotice) {
+        arcadeLockNotice.textContent = playable ? "" : message;
+        arcadeLockNotice.hidden = playable;
+    }
+    if (playable !== arcadePlayable) {
+        arcadePlayable = playable;
+        renderGames();
+    }
+}
+
+if (gameGridContainer) {
+    refreshArcadeStatus();
+    setInterval(() => {
+        if (document.visibilityState === "visible") refreshArcadeStatus();
+    }, ARCADE_STATUS_REFRESH_MS);
+}
 
 function escapeHTML(value) {
     return String(value ?? "").replace(/[&<>"']/g, ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch]));
