@@ -36,8 +36,8 @@
 
         <div class="play-viewport-container">
             <div id="engineStatusScreen" style="position: absolute; inset: 0; background: var(--background); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 10; font-family: monospace; color: var(--muted-fg); gap: 1rem;">
-                <div style="width: 30px; height: 30px; border: 2px solid var(--border); border-top-color: var(--primary); border-radius: 50%; animation: spin 0.8s linear infinite;"></div>
-                <p id="statusMessage">Booting system matrix...</p>
+                <div class="play-status-spinner" style="width: 30px; height: 30px; border: 2px solid var(--border); border-top-color: var(--primary); border-radius: 50%; animation: spin 0.8s linear infinite;"></div>
+                <p id="statusMessage" role="status" style="max-width: 36rem; padding: 0 1.5rem; text-align: center; line-height: 1.5;">Booting system matrix...</p>
             </div>
 
             <iframe 

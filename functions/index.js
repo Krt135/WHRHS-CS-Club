@@ -33,6 +33,10 @@ exports.statsOnUserWrite = stats.statsOnUserWrite;
 exports.statsOnSponsorWrite = stats.statsOnSponsorWrite;
 exports.statsDailyRefresh = stats.statsDailyRefresh;
 
+const arcade = require("./arcade");
+exports.arcade = arcade.arcade;
+exports.setArcadeOverride = arcade.setArcadeOverride;
+
 const sendgridKey = defineSecret("SENDGRID_API_KEY");
 const fromEmail = defineString("SENDGRID_FROM_EMAIL", {
   description: "Verified SendGrid sender address for club emails",
