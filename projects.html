@@ -329,6 +329,9 @@
   .pj-game.is-locked .pj-game-body { opacity: 0.45; }
   .pj-game.is-locked:hover { translate: none; background: #151515; }
   .pj-game.is-locked .pj-game-play { color: #8a8a8a; }
+  .pj-game.is-pending .pj-game-link { cursor: default; }
+  .pj-game.is-pending .pj-game-preview { opacity: 0.6; }
+  .pj-game.is-pending .pj-game-play { color: var(--ab-highlight); }
 
   /* ── Upload modal ── */
   .upload-modal-overlay {
@@ -386,6 +389,11 @@
   .upload-modal-actions .ab-btn-ghost { --ab-ink: #fff; }
   .upload-modal-actions .ab-btn-ghost:hover { color: var(--ab-black); }
   .upload-modal-actions .ab-btn:disabled { opacity: 0.5; cursor: wait; transform: none; }
+  .upload-modal-hint { margin: -8px 0 20px; color: #9a9a9a; font-size: 0.85rem; line-height: 1.5; }
+  .upload-modal-progress { display: block; width: 100%; height: 8px; margin-top: 8px; accent-color: var(--ab-accent); }
+  .upload-modal-progress[hidden] { display: none; }
+  .download-notice-list { margin: 0 0 8px 1.1em; color: #e6e6e6; line-height: 1.6; }
+  .download-notice-list li + li { margin-top: 6px; }
 
   /* ── Page-specific reduced motion (shared rules in brand.css) ── */
   @media (prefers-reduced-motion: reduce) {
@@ -646,6 +654,7 @@
     <select id="projFormat" class="upload-modal-input">
       <option value="webgl">Upload WebGL build (zip)</option>
       <option value="external">External link (GitHub Pages, etc.)</option>
+      <option value="download">Windows download (zip)</option>
     </select>
 
     <div id="gameUploadGroup" data-format-group="webgl">
@@ -658,11 +667,39 @@
       <input type="url" id="projExternalUrl" class="upload-modal-input" placeholder="https://username.github.io/game" />
     </div>
 
+    <div id="downloadUploadGroup" data-format-group="download" hidden>
+      <label class="upload-modal-label" for="projDownloadZip">Zip your entire Windows export folder (the .exe plus its data folder / .pck)</label>
+      <input type="file" id="projDownloadZip" class="upload-modal-file" accept=".zip,application/zip,application/x-zip-compressed" />
+      <p class="upload-modal-hint">One .zip, up to 500 MB. A bare .exe won't run without its data, so it isn't accepted. An exec reviews every download build before it appears in the Arcade.</p>
+      <label class="upload-modal-label" for="projPlatform">Platform</label>
+      <select id="projPlatform" class="upload-modal-input" required>
+        <option value="windows">Windows</option>
+      </select>
+    </div>
+
     <div id="uploadStatus" class="upload-modal-status" role="status"></div>
+    <progress id="uploadProgress" class="upload-modal-progress" max="100" value="0" hidden></progress>
 
     <div class="upload-modal-actions">
       <button type="button" class="ab-btn ab-btn-ghost" onclick="toggleUploadModal(false)">Cancel</button>
       <button type="button" id="submitUploadBtn" class="ab-btn ab-btn-accent">Deploy →</button>
+    </div>
+  </div>
+</div>
+
+<div id="downloadNotice" class="upload-modal-overlay" role="dialog" aria-modal="true" aria-labelledby="downloadNoticeTitle">
+  <div class="upload-modal-card">
+    <h3 class="upload-modal-title" id="downloadNoticeTitle">Before you <em>download.</em></h3>
+    <ul class="download-notice-list">
+      <li>This game is for <strong>Windows only</strong>.</li>
+      <li>Extract the <strong>whole zip</strong> before running the .exe. It won't start from inside the zip.</li>
+      <li>Windows may show a SmartScreen "unknown publisher" warning, because club games aren't code-signed.</li>
+      <li>Only run games from people you trust.</li>
+      <li>School computers may block downloads or running .exe files.</li>
+    </ul>
+    <div class="upload-modal-actions">
+      <button type="button" class="ab-btn ab-btn-ghost" id="downloadNoticeCancel">Cancel</button>
+      <button type="button" class="ab-btn ab-btn-accent" id="downloadNoticeConfirm">Download →</button>
     </div>
   </div>
 </div>

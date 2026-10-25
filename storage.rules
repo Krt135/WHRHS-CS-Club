@@ -12,6 +12,24 @@ service firebase.storage {
                    && request.resource.size < 100 * 1024 * 1024;
     }
 
+    // Windows download builds: one zip per game, uploaded once by its
+    // author. Nobody reads them directly; the `arcade` function hands out
+    // a 5-minute signed URL only for approved games while the Arcade is open.
+    // No update or delete from clients, so an approved build can't be
+    // swapped afterwards; the cleanUpDownloadBuild function deletes it when
+    // the game is permanently removed from moderation.
+    match /downloads/{uid}/{gameId}/build.zip {
+      allow read: if false;
+      // resource == null: only when no build exists yet.
+      allow create: if request.auth != null
+                    && request.auth.uid == uid
+                    && resource == null
+                    && gameId.matches('^[-A-Za-z0-9_]{1,128}$')
+                    && request.resource.size <= 500 * 1024 * 1024
+                    && (request.resource.contentType == 'application/zip'
+                        || request.resource.contentType == 'application/x-zip-compressed');
+    }
+
     // Lesson cover images (Resources page). Public to read; each signed-in
     // user writes only their own folder. Raster images only (no SVG, which
     // can carry script). Which uploads end up attached to a lesson is

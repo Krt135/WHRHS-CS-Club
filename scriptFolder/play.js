@@ -54,6 +54,13 @@ document.addEventListener("DOMContentLoaded", async () => {
         authorEl.innerText = `Published by: ${projectData.authorName || "Anonymous Member"}`;
         engineTagEl.innerText = `${engineLabel(projectData.engine)} // ${projectData.category === "group" ? "Group Build" : "Solo Project"}`;
 
+        // Windows download builds aren't playable in the browser.
+        if (gameFormat(projectData) === "download") {
+            if (statusSpinner) statusSpinner.hidden = true;
+            statusMessage.innerText = "This game is a Windows download. Get it from the Arcade on the Projects page.";
+            return;
+        }
+
         if (!status) return showBlocked(UNREACHABLE_MESSAGE);
         if (!status.open) return showBlocked(LOCK_MESSAGE);
 

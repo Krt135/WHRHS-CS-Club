@@ -10,10 +10,20 @@
  * request. Games are served from the Cloud Functions domain, not the site's,
  * so uploaded game code never runs on the same origin as member logins.
  *
+ * Windows download builds live in downloads/{uid}/{gameId}/build.zip, also
+ * private. They are too large to stream through a function, so /download
+ * answers with a short-lived signed URL, and only while the Arcade is open.
+ *
  * Routes on the `arcade` function:
  *   GET /status              - {open, reason, overrideUntil, serverTime}
  *                              (also at /api/arcade/status via Hosting)
  *   GET /game/{gameId}/{path} - a file from the game's build, or 423 Locked
+ *   GET /download/{gameId}   - 302 to a 5-minute signed URL for an approved
+ *                              download build, or 423 Locked / 404
+ *   GET /download/{gameId}?review=1 with "Authorization: Bearer <ID token>"
+ *                            - exec/admin only: {url} for a build in any
+ *                              review status, so it can be checked before
+ *                              approval. Also 423 while locked.
  *
  * Secrets:
  *   ARCADE_OVERRIDE_HASH - hex SHA-256 of the override code. Set it with
@@ -22,6 +32,7 @@
 
 const crypto = require("crypto");
 const {onRequest, onCall, HttpsError} = require("firebase-functions/https");
+const {onValueDeleted} = require("firebase-functions/database");
 const {defineSecret} = require("firebase-functions/params");
 const logger = require("firebase-functions/logger");
 const admin = require("firebase-admin");
@@ -36,6 +47,7 @@ const MAX_ATTEMPTS = 5;
 const ATTEMPT_WINDOW_MS = 60 * 60 * 1000;
 const MAX_CODE_LENGTH = 200;
 const ID_RE = /^[-\w]{1,128}$/;
+const DOWNLOAD_URL_TTL_MS = 5 * 60 * 1000;
 
 const LOCK_MESSAGE = "The Arcade is restricted during school hours and " +
   "cannot be played right now. It unlocks at 2:15 PM on school days.";
@@ -206,13 +218,114 @@ function parseGamePath(rest) {
 }
 
 /**
+ * Storage path of a download game's build. Built from the record's author
+ * and id, never from anything the client sends.
+ * @param {string} authorUid Game author.
+ * @param {string} gameId Game id.
+ * @return {string} Object path in the default bucket.
+ */
+function downloadPath(authorUid, gameId) {
+  return `downloads/${authorUid}/${gameId}/build.zip`;
+}
+
+/**
+ * File name for a downloaded build: the title reduced to letters, digits,
+ * dots, dashes and underscores, so it is safe inside Content-Disposition.
+ * @param {*} title Game title from the record.
+ * @return {string} e.g. "Loaded-Dice-windows.zip".
+ */
+function downloadFilename(title) {
+  const safe = String(title || "")
+      .replace(/[^A-Za-z0-9._-]+/g, "-")
+      .replace(/-{2,}/g, "-")
+      .replace(/^[-.]+|[-.]+$/g, "")
+      .slice(0, 60)
+      .replace(/[-.]+$/, "");
+  return `${safe || "game"}-windows.zip`;
+}
+
+/**
  * Builds the request handler. Data access is injected so tests can run it
  * without Firebase.
  * @param {Object} deps now(fake), getOverrideUntil(), getGame(id),
- *   openFile(storagePath) -> ?{metadata, createReadStream()}.
+ *   openFile(storagePath) -> ?{metadata, createReadStream()},
+ *   signDownload(storagePath, filename, ttlMs) -> ?url (null when the
+ *   object is missing), verifyIdToken(token) -> {uid}, getRole(uid).
  * @return {function(Object, Object): Promise<void>} Express-style handler.
  */
 function createArcadeHandler(deps) {
+  /**
+   * The exec/admin making a review request, from the Bearer ID token.
+   * @param {Object} req Request.
+   * @return {Promise<number>} 0 when allowed, else the HTTP status to send.
+   */
+  async function reviewerError(req) {
+    const header = (req.get && req.get("Authorization")) || "";
+    const match = /^Bearer (\S+)$/.exec(header);
+    if (!match) return 401;
+    let uid;
+    try {
+      uid = (await deps.verifyIdToken(match[1])).uid;
+    } catch (err) {
+      return 401;
+    }
+    const role = await deps.getRole(uid);
+    return role === "exec" || role === "admin" ? 0 : 403;
+  }
+
+  /**
+   * GET /download/{gameId}. The lock has already been checked.
+   * @param {Object} req Request.
+   * @param {Object} res Response.
+   * @param {string} gameId Requested id (unvalidated).
+   * @return {Promise<void>}
+   */
+  async function sendDownload(req, res, gameId) {
+    if (!ID_RE.test(gameId)) {
+      res.status(404).json({error: "Not found"});
+      return;
+    }
+    const review = req.query && req.query.review === "1";
+    try {
+      if (review) {
+        const code = await reviewerError(req);
+        if (code) {
+          res.status(code).json({error: code === 401 ?
+            "Sign in first." : "Exec board only."});
+          return;
+        }
+      }
+
+      const game = await deps.getGame(gameId);
+      // Only download builds, and only approved ones unless an exec is
+      // reviewing. Pending and rejected builds look the same as missing.
+      if (!game || game.format !== "download" ||
+          !ID_RE.test(game.authorUid || "") ||
+          (!review && game.status !== "approved")) {
+        res.status(404).json({error: "Not found"});
+        return;
+      }
+
+      const url = await deps.signDownload(
+          downloadPath(game.authorUid, gameId),
+          downloadFilename(game.title), DOWNLOAD_URL_TTL_MS);
+      if (!url) {
+        res.status(404).json({error: "Not found"});
+        return;
+      }
+
+      logger.info("Arcade download issued", {gameId, review});
+      if (review) res.status(200).json({url});
+      else res.redirect(302, url);
+    } catch (err) {
+      // `message` would collide with the log entry's own message field.
+      logger.error("Arcade download request failed", {
+        gameId, error: err.message,
+      });
+      res.status(500).json({error: "Server error"});
+    }
+  }
+
   return async (req, res) => {
     res.set("Cache-Control", "private, no-store");
     res.set("X-Content-Type-Options", "nosniff");
@@ -240,15 +353,21 @@ function createArcadeHandler(deps) {
       return;
     }
 
-    if (!path.startsWith("/game/")) {
+    const isDownload = path.startsWith("/download/");
+    if (!path.startsWith("/game/") && !isDownload) {
       res.status(404).json({error: "Not found"});
       return;
     }
 
     // Check the lock before touching the game, so a locked request never
-    // reads or returns any part of it.
+    // reads or returns any part of it (or a link to it).
     if (!status.open) {
       res.status(423).type("html").send(LOCK_PAGE);
+      return;
+    }
+
+    if (isDownload) {
+      await sendDownload(req, res, path.slice("/download/".length));
       return;
     }
 
@@ -350,10 +469,68 @@ const handler = createArcadeHandler({
       createReadStream: () => file.createReadStream({decompress: false}),
     };
   },
+  signDownload: async (storagePath, filename, ttlMs) => {
+    const file = admin.storage().bucket().file(storagePath);
+    const [exists] = await file.exists();
+    if (!exists) return null;
+    // Signing uses the function's service account (IAM signBlob), so it
+    // needs roles/iam.serviceAccountTokenCreator on itself. See README.
+    const [url] = await file.getSignedUrl({
+      version: "v4",
+      action: "read",
+      // The real clock, not the lock's (which the emulator can fake).
+      expires: Date.now() + ttlMs,
+      responseDisposition: `attachment; filename="${filename}"`,
+    });
+    return url;
+  },
+  verifyIdToken: (token) => admin.auth().verifyIdToken(token),
+  getRole: async (uid) =>
+    (await admin.database().ref(`users/${uid}/role`).get()).val(),
 });
 
 exports.arcade = onRequest(
     {cors: true, timeoutSeconds: 120, memory: "256MiB"}, handler);
+
+// ---------- TRIGGER: DOWNLOAD BUILD CLEANUP ----------
+
+/**
+ * Deletes a Windows download build once its game is permanently deleted
+ * from moderation (deleted_posts/{id} removed). Clients can't delete
+ * downloads/ themselves (storage.rules), so this is the only way a build
+ * goes away. Restoring a game also removes its deleted_posts node, but
+ * writes games/{id} back first, so a game that exists again is skipped.
+ * @param {Object} post The deleted deleted_posts/{id} value.
+ * @param {Object} deps gameExists(id), deleteFile(storagePath).
+ * @return {Promise<?string>} The deleted path, or null when skipped.
+ */
+async function cleanUpDownload(post, deps) {
+  if (!post || post._deletedFrom !== "games" ||
+      post.format !== "download") {
+    return null;
+  }
+  const gameId = post._originalId;
+  if (!ID_RE.test(gameId || "") || !ID_RE.test(post.authorUid || "")) {
+    return null;
+  }
+  if (await deps.gameExists(gameId)) return null;
+  const storagePath = downloadPath(post.authorUid, gameId);
+  await deps.deleteFile(storagePath);
+  return storagePath;
+}
+
+exports.cleanUpDownloadBuild = onValueDeleted("/deleted_posts/{postId}",
+    async (event) => {
+      const storagePath = await cleanUpDownload(event.data.val(), {
+        gameExists: async (id) =>
+          (await admin.database().ref(`games/${id}`).get()).exists(),
+        deleteFile: (p) => admin.storage().bucket().file(p)
+            .delete({ignoreNotFound: true}),
+      });
+      if (storagePath) {
+        logger.info("Download build deleted", {storagePath});
+      }
+    });
 
 // ---------- CALLABLE: EXEC OVERRIDE ----------
 
@@ -420,3 +597,5 @@ exports.arcadeStatus = arcadeStatus;
 exports.codeMatches = codeMatches;
 exports.parseGamePath = parseGamePath;
 exports.createArcadeHandler = createArcadeHandler;
+exports.downloadFilename = downloadFilename;
+exports.cleanUpDownload = cleanUpDownload;

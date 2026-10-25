@@ -11,7 +11,9 @@ const {
   LOCK_MESSAGE,
   arcadeStatus,
   codeMatches,
+  cleanUpDownload,
   createArcadeHandler,
+  downloadFilename,
   isSchoolHours,
   nextClubMidnight,
   parseGamePath,
@@ -134,7 +136,22 @@ const GAME_BYTES = Buffer.from("SECRET-GAME-BYTES-wasm-payload");
 const GAMES = {
   dice: {type: "game", authorUid: "uid123"},
   link: {type: "web", authorUid: "uid123", embedUrl: "https://x.github.io"},
+  winOk: {format: "download", type: "download", status: "approved",
+    title: "Loaded Dice: Deluxe!", authorUid: "uid123"},
+  winPending: {format: "download", type: "download", status: "pending",
+    title: "Pending", authorUid: "uid123"},
+  winRejected: {format: "download", type: "download", status: "rejected",
+    title: "Rejected", authorUid: "uid123"},
+  winMissing: {format: "download", status: "approved", authorUid: "uid123"},
+  // A WebGL record with a forged status is still not a download.
+  webglApproved: {type: "game", status: "approved", authorUid: "uid123"},
 };
+const ZIPS = new Set(["downloads/uid123/winOk/build.zip",
+  "downloads/uid123/winPending/build.zip",
+  "downloads/uid123/winRejected/build.zip",
+  "downloads/uid123/webglApproved/build.zip"]);
+const TOKENS = {"exec-token": "execUid", "member-token": "memberUid"};
+const ROLES = {execUid: "exec", memberUid: "member"};
 const FILES = {
   "games/uid123/dice/index.html":
     {contentType: "text/html; charset=utf-8", size: 13, body: "<html></html>"},
@@ -201,7 +218,7 @@ class FakeResponse extends PassThrough {
 }
 
 const makeHandler = (nowIso, overrideUntil = null) => {
-  const calls = {openFile: 0, getGame: 0};
+  const calls = {openFile: 0, getGame: 0, sign: [], verify: 0};
   const handler = createArcadeHandler({
     now: () => at(nowIso),
     getOverrideUntil: async () => overrideUntil,
@@ -214,14 +231,27 @@ const makeHandler = (nowIso, overrideUntil = null) => {
       if (!f) return null;
       return {metadata: f, createReadStream: () => Readable.from([f.body])};
     },
+    signDownload: async (path, filename, ttlMs) => {
+      calls.sign.push({path, filename, ttlMs});
+      if (!ZIPS.has(path)) return null;
+      return `https://signed.example/${path}?ttl=${ttlMs}`;
+    },
+    verifyIdToken: async (token) => {
+      calls.verify++;
+      if (!TOKENS[token]) throw new Error("bad token");
+      return {uid: TOKENS[token]};
+    },
+    getRole: async (uid) => ROLES[uid] || null,
   });
   return {handler, calls};
 };
 
-const request = async (handler, path, method = "GET") => {
+const request = async (handler, path, method = "GET", opts = {}) => {
   const res = new FakeResponse();
   const done = new Promise((resolve) => res.on("finish", resolve));
-  await handler({method, path, query: {}}, res);
+  const headers = opts.headers || {};
+  await handler({method, path, query: opts.query || {},
+    get: (name) => headers[name]}, res);
   res.resume();
   await done;
   return res;
@@ -308,4 +338,112 @@ test("status failure locks instead of serving", async () => {
   const res = await request(handler, "/game/dice/index.html");
   assert.equal(res.statusCode, 500);
   assert.ok(!res.body.includes(GAME_BYTES));
+});
+
+// ---------- Windows downloads ----------
+
+const reviewAs = (token) => ({query: {review: "1"},
+  headers: token ? {Authorization: `Bearer ${token}`} : {}});
+
+test("locked downloads return 423, no URL and no lookups", async () => {
+  for (const opts of [{}, reviewAs("exec-token")]) {
+    for (const method of ["GET", "HEAD"]) {
+      const {handler, calls} = makeHandler(LOCKED);
+      const res = await request(handler, "/download/winOk", method, opts);
+      assert.equal(res.statusCode, 423);
+      assert.equal(res.headers.location, undefined);
+      assert.ok(res.body.toString().includes(LOCK_MESSAGE));
+      assert.ok(!res.body.toString().includes("downloads/"));
+      assert.equal(calls.getGame, 0);
+      assert.equal(calls.sign.length, 0);
+      assert.equal(calls.verify, 0);
+    }
+  }
+});
+
+test("approved download redirects to a 5-minute attachment URL", async () => {
+  const {handler, calls} = makeHandler(OPEN);
+  const res = await request(handler, "/download/winOk");
+  assert.equal(res.statusCode, 302);
+  assert.ok(res.headers.location.startsWith(
+      "https://signed.example/downloads/uid123/winOk/build.zip"));
+  assert.equal(res.headers["cache-control"], "private, no-store");
+  assert.deepEqual(calls.sign, [{
+    path: "downloads/uid123/winOk/build.zip",
+    filename: "Loaded-Dice-Deluxe-windows.zip",
+    ttlMs: 5 * 60 * 1000,
+  }]);
+});
+
+test("override unlocks downloads during school hours", async () => {
+  const {handler} = makeHandler(LOCKED, nextClubMidnight(at(LOCKED)));
+  assert.equal((await request(handler, "/download/winOk")).statusCode, 302);
+});
+
+test("pending, rejected, missing and non-download games are 404", async () => {
+  for (const id of ["winPending", "winRejected", "winMissing", "nope",
+    "dice", "link", "webglApproved", "bad%2Fid", ""]) {
+    const {handler} = makeHandler(OPEN);
+    const res = await request(handler, `/download/${id}`);
+    assert.equal(res.statusCode, 404, id);
+    assert.equal(res.headers.location, undefined, id);
+  }
+});
+
+test("exec review returns JSON for pending builds", async () => {
+  for (const id of ["winPending", "winOk", "winRejected"]) {
+    const {handler} = makeHandler(OPEN);
+    const res = await request(handler, `/download/${id}`, "GET",
+        reviewAs("exec-token"));
+    assert.equal(res.statusCode, 200, id);
+    const body = JSON.parse(res.body);
+    assert.ok(body.url.startsWith(
+        `https://signed.example/downloads/uid123/${id}/build.zip`));
+  }
+});
+
+test("review needs a valid token from an exec or admin", async () => {
+  const cases = [[null, 401], ["garbage", 401], ["member-token", 403]];
+  for (const [token, code] of cases) {
+    const {handler, calls} = makeHandler(OPEN);
+    const res = await request(handler, "/download/winPending", "GET",
+        reviewAs(token));
+    assert.equal(res.statusCode, code, String(token));
+    assert.ok(!res.body.toString().includes("signed.example"));
+    assert.equal(calls.sign.length, 0);
+  }
+  // Review still 404s for things that aren't download builds.
+  const {handler} = makeHandler(OPEN);
+  const res = await request(handler, "/download/dice", "GET",
+      reviewAs("exec-token"));
+  assert.equal(res.statusCode, 404);
+});
+
+test("download file names are sanitized", () => {
+  assert.equal(downloadFilename("Loaded Dice"), "Loaded-Dice-windows.zip");
+  assert.equal(downloadFilename("a\"b\r\nc/../d"), "a-b-c-..-d-windows.zip");
+  assert.equal(downloadFilename(""), "game-windows.zip");
+  assert.equal(downloadFilename("???"), "game-windows.zip");
+  assert.equal(downloadFilename("x".repeat(200)).length,
+      60 + "-windows.zip".length);
+});
+
+test("permanent delete removes the build; restore does not", async () => {
+  const post = {_deletedFrom: "games", _originalId: "winOk",
+    format: "download", authorUid: "uid123"};
+  const deleted = [];
+  const deps = (exists) => ({
+    gameExists: async () => exists,
+    deleteFile: async (p) => deleted.push(p),
+  });
+  assert.equal(await cleanUpDownload(post, deps(false)),
+      "downloads/uid123/winOk/build.zip");
+  assert.equal(await cleanUpDownload(post, deps(true)), null);
+  assert.equal(await cleanUpDownload({...post, format: "webgl"},
+      deps(false)), null);
+  assert.equal(await cleanUpDownload({...post, _deletedFrom: "lessons"},
+      deps(false)), null);
+  assert.equal(await cleanUpDownload({...post, authorUid: "../x"},
+      deps(false)), null);
+  assert.deepEqual(deleted, ["downloads/uid123/winOk/build.zip"]);
 });

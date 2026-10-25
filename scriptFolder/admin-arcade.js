@@ -3,9 +3,17 @@
 // The setArcadeOverride function checks the caller's role and the code's
 // SHA-256 hash on the server (functions/arcade.js); nothing about the code
 // lives in this file.
-import { auth } from "./firebase.js";
+//
+// It also lists pending Windows download builds. Execs download one for
+// review through the arcade function (role checked there, lock still
+// applies), then approve or reject it. The database rules only let
+// exec/admin change a game's status.
+import { auth, db } from "./firebase.js";
 import { getFunctions, httpsCallable } from "firebase/functions";
-import { fetchArcadeStatus, CHECKING_MESSAGE, UNREACHABLE_MESSAGE } from "./arcade-lock.js";
+import { equalTo, onValue, orderByChild, query, ref, update } from "firebase/database";
+import { arcadeDownloadUrl, fetchArcadeStatus, CHECKING_MESSAGE, UNREACHABLE_MESSAGE } from "./arcade-lock.js";
+import { formatFileSize } from "./arcade-games.js";
+import { escapeHTML } from "./sponsor-data.js";
 
 const OVERRIDE_ACTIVE_MESSAGE = "Arcade override active until 12:00 AM tonight.";
 
@@ -30,6 +38,12 @@ export function mountArcadeTab(container) {
                     </div>
                     <p class="admin-form-status" id="arcadeOverrideStatus" aria-live="polite"></p>
                 </form>
+            </section>
+            <section class="admin-panel">
+                <h2 class="member-section-title">ARCADE · PENDING WINDOWS DOWNLOADS</h2>
+                <p class="admin-summary">Scan with Windows Defender/VirusTotal before approving.</p>
+                <p class="admin-form-status" id="arcadePendingStatus" aria-live="polite"></p>
+                <div id="arcadePendingList"><p class="admin-summary">Loading...</p></div>
             </section>
         </div>
     `;
@@ -83,6 +97,90 @@ export function mountArcadeTab(container) {
         run({ action: "clear" }, "Ending override...", "Override ended.");
     });
 
+    // ---------- PENDING DOWNLOADS ----------
+
+    const pendingList = container.querySelector("#arcadePendingList");
+    const pendingStatus = container.querySelector("#arcadePendingStatus");
+
+    const renderPending = (games) => {
+        if (!games.length) {
+            pendingList.innerHTML = `<p class="admin-summary">No download builds are waiting for review.</p>`;
+            return;
+        }
+        pendingList.innerHTML = games.map((game) => `
+            <div class="admin-list-item">
+                <div class="member-details">
+                    <div class="member-name">${escapeHTML(game.title || "Untitled")}</div>
+                    <div class="member-email">By ${escapeHTML(game.authorName || "Unknown")} · ${escapeHTML(game.platform || "windows")} · ${escapeHTML(formatFileSize(game.fileSize) || "size unknown")} · ${game.timestamp ? escapeHTML(new Date(game.timestamp).toLocaleString()) : ""}</div>
+                </div>
+                <div class="admin-actions">
+                    <button type="button" class="btn-neutral" data-review="${escapeHTML(game.id)}">DOWNLOAD TO REVIEW</button>
+                    <button type="button" class="btn-approve" data-approve="${escapeHTML(game.id)}">APPROVE</button>
+                    <button type="button" class="btn-deny" data-reject="${escapeHTML(game.id)}">REJECT</button>
+                </div>
+            </div>
+        `).join("");
+    };
+
+    const pendingQuery = query(ref(db, "games"), orderByChild("status"), equalTo("pending"));
+    const stopPending = onValue(pendingQuery, (snapshot) => {
+        const games = [];
+        snapshot.forEach((child) => {
+            const game = child.val();
+            if (game && game.format === "download") games.push({ ...game, id: child.key });
+        });
+        games.sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
+        renderPending(games);
+    }, (error) => {
+        console.error("Pending downloads unavailable:", error);
+        pendingList.innerHTML = `<p class="admin-summary">Could not load pending downloads.</p>`;
+    });
+
+    const review = async (gameId) => {
+        pendingStatus.textContent = "Getting a review link...";
+        try {
+            const token = await auth.currentUser.getIdToken();
+            const res = await fetch(arcadeDownloadUrl(gameId, true), {
+                headers: { Authorization: `Bearer ${token}` },
+                cache: "no-store",
+            });
+            if (res.status === 423) throw new Error("The Arcade is locked for school hours. Use the override above or try after 2:15 PM.");
+            if (!res.ok) throw new Error(`The server refused (HTTP ${res.status}).`);
+            const { url } = await res.json();
+            pendingStatus.textContent = "Download started. Scan it before running it.";
+            window.location.assign(url);
+        } catch (error) {
+            console.error("Review download failed:", error);
+            pendingStatus.textContent = error.message || "Could not get the build.";
+        }
+    };
+
+    const setStatus = async (gameId, status) => {
+        pendingStatus.textContent = "Saving...";
+        try {
+            await update(ref(db, `games/${gameId}`), { status });
+            pendingStatus.textContent = status === "approved"
+                ? "Approved. It now shows in the Arcade."
+                : "Rejected. The author sees it as rejected and can delete it.";
+        } catch (error) {
+            console.error("Status change failed:", error);
+            pendingStatus.textContent = "Could not save. Check that your account is exec or admin.";
+        }
+    };
+
+    pendingList.addEventListener("click", (e) => {
+        const btn = e.target.closest("button");
+        if (!btn) return;
+        if (btn.dataset.review) review(btn.dataset.review);
+        if (btn.dataset.approve && confirm("Approve this build? Anyone will be able to download it outside school hours.")) {
+            setStatus(btn.dataset.approve, "approved");
+        }
+        if (btn.dataset.reject && confirm("Reject this build?")) setStatus(btn.dataset.reject, "rejected");
+    });
+
     refresh();
-    return () => { mounted = false; };
+    return () => {
+        mounted = false;
+        stopPending();
+    };
 }

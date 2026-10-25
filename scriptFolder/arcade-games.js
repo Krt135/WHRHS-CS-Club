@@ -35,3 +35,14 @@ export function gameFormat(game) {
     if (game && FORMATS.has(game.format)) return game.format;
     return game && game.type === "game" ? "webgl" : "external";
 }
+
+// Windows download builds: also enforced in storage.rules and the
+// database rules.
+export const MAX_DOWNLOAD_BYTES = 500 * 1024 * 1024;
+
+export function formatFileSize(bytes) {
+    if (typeof bytes !== "number" || !(bytes > 0)) return "";
+    if (bytes < 1024 * 1024) return `${Math.max(1, Math.round(bytes / 1024))} KB`;
+    const mb = bytes / (1024 * 1024);
+    return `${mb < 10 ? mb.toFixed(1) : Math.round(mb)} MB`;
+}

@@ -28,3 +28,10 @@ export async function fetchArcadeStatus() {
 export function arcadeGameUrl(gameId) {
     return `${ARCADE_FUNCTION_URL}/game/${encodeURIComponent(gameId)}/index.html`;
 }
+
+// Windows download builds. The function checks the lock and approval, then
+// redirects to a short-lived signed URL; the Storage path never reaches the
+// page. review=true is the exec-only variant (needs an ID token, returns JSON).
+export function arcadeDownloadUrl(gameId, review = false) {
+    return `${ARCADE_FUNCTION_URL}/download/${encodeURIComponent(gameId)}${review ? "?review=1" : ""}`;
+}

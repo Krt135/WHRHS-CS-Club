@@ -1,11 +1,11 @@
 import { auth, db, storage } from "./firebase.js";
 import { onAuthStateChanged } from "firebase/auth";
 import { ref as dbRef, onValue, update, remove, get, set, push } from "firebase/database";
-import { ref, uploadBytes } from "firebase/storage";
+import { ref, uploadBytes, uploadBytesResumable } from "firebase/storage";
 import { createScrollTrigger, scaleUp } from "./animations.js";
 import { registerTerminal } from "./init-terminal-animations.js";
-import { fetchArcadeStatus, LOCK_MESSAGE, UNREACHABLE_MESSAGE } from "./arcade-lock.js";
-import { normalizeEngine, engineLabel } from "./arcade-games.js";
+import { fetchArcadeStatus, arcadeDownloadUrl, LOCK_MESSAGE, UNREACHABLE_MESSAGE } from "./arcade-lock.js";
+import { normalizeEngine, engineLabel, gameFormat, formatFileSize, MAX_DOWNLOAD_BYTES } from "./arcade-games.js";
 
 import * as fflate from "https://cdn.jsdelivr.net/npm/fflate@0.8.2/+esm";
 
@@ -91,6 +91,11 @@ function renderGames() {
     gameGridContainer.innerHTML = "";
 
     const filteredGames = allGames.filter(game => {
+        // Download builds stay hidden until an exec approves them, except
+        // from their own author. The server refuses unapproved downloads
+        // either way; this only keeps the grid tidy.
+        if (gameFormat(game) === "download" && game.status !== "approved"
+            && !(currentUser && currentUser.uid === game.authorUid)) return false;
         const matchesCategory = game.category === activeCategory;
         const matchesEngine = activeEngine ? normalizeEngine(game.engine) === activeEngine : true;
         return matchesCategory && matchesEngine;
@@ -108,10 +113,25 @@ function renderGames() {
         const deleteBtnHTML = canDelete
             ? `<button type="button" class="pj-game-delete" data-delete-id="${escapeHTML(game.id)}">Delete</button>`
             : "";
-        const linkAttrs = arcadePlayable ? `href="${playUrl}"` : `aria-disabled="true"`;
+        const isDownload = gameFormat(game) === "download";
+        const approved = !isDownload || game.status === "approved";
+        let linkAttrs = arcadePlayable ? `href="${playUrl}"` : `aria-disabled="true"`;
+        let actionLabel = arcadePlayable ? 'Play →' : 'Locked';
+        if (!approved) {
+            linkAttrs = `aria-disabled="true"`;
+            actionLabel = game.status === "rejected" ? 'Rejected by exec' : 'Pending exec review';
+        } else if (isDownload) {
+            // Opens the download notice first (see the click handler below).
+            linkAttrs = arcadePlayable
+                ? `href="${arcadeDownloadUrl(game.id)}" data-download-id="${escapeHTML(game.id)}"`
+                : `aria-disabled="true"`;
+            const size = formatFileSize(game.fileSize);
+            actionLabel = arcadePlayable ? `Download for Windows${size ? ` · ${size}` : ''} ↓` : 'Locked';
+        }
+        const stateClass = !approved ? ' is-pending' : (arcadePlayable ? '' : ' is-locked');
 
         return `
-            <article class="pj-game${arcadePlayable ? '' : ' is-locked'}" data-engine="${normalizeEngine(game.engine)}">
+            <article class="pj-game${stateClass}" data-engine="${normalizeEngine(game.engine)}">
                 <a class="pj-game-link" ${linkAttrs}>
                     <div class="pj-game-preview"><span class="pj-game-engine">${escapeHTML(engineLabel(game.engine))}</span></div>
                     <div class="pj-game-body">
@@ -123,7 +143,7 @@ function renderGames() {
                     <a class="pj-game-author" href="account.html?user=${encodeURIComponent(game.authorUid || '')}"
                        title="View ${escapeHTML(author)}'s profile" aria-label="View ${escapeHTML(author)}'s profile">${escapeHTML(author.substring(0, 2).toUpperCase())}</a>
                     ${deleteBtnHTML}
-                    <a class="pj-game-play" ${linkAttrs} tabindex="-1" aria-hidden="true">${arcadePlayable ? 'Play →' : 'Locked'}</a>
+                    <a class="pj-game-play" ${linkAttrs} tabindex="-1" aria-hidden="true">${actionLabel}</a>
                 </div>
             </article>
         `;
@@ -188,8 +208,45 @@ if (gameGridContainer) {
     gameGridContainer.addEventListener("click", (e) => {
         const deleteBtn = e.target.closest("[data-delete-id]");
         if (deleteBtn) window.deleteGame(deleteBtn.dataset.deleteId);
+
+        const downloadLink = e.target.closest("[data-download-id]");
+        if (downloadLink) {
+            e.preventDefault();
+            openDownloadNotice(downloadLink.dataset.downloadId);
+        }
     });
 }
+
+// ─── 2c. WINDOWS DOWNLOAD NOTICE ──────────────────────────────────
+// Shown before every download. The lock is enforced by the server (423
+// while locked); once a build is downloaded, nothing can lock it.
+const downloadNotice = document.getElementById("downloadNotice");
+let pendingDownloadId = null;
+
+function openDownloadNotice(gameId) {
+    if (!downloadNotice || !arcadePlayable) return;
+    pendingDownloadId = gameId;
+    downloadNotice.style.display = "flex";
+    document.getElementById("downloadNoticeConfirm")?.focus();
+}
+
+function closeDownloadNotice() {
+    pendingDownloadId = null;
+    if (downloadNotice) downloadNotice.style.display = "none";
+}
+
+document.getElementById("downloadNoticeCancel")?.addEventListener("click", closeDownloadNotice);
+document.getElementById("downloadNoticeConfirm")?.addEventListener("click", () => {
+    const gameId = pendingDownloadId;
+    closeDownloadNotice();
+    if (gameId) window.location.assign(arcadeDownloadUrl(gameId));
+});
+downloadNotice?.addEventListener("click", (e) => {
+    if (e.target === downloadNotice) closeDownloadNotice();
+});
+document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && pendingDownloadId) closeDownloadNotice();
+});
 
 // ─── 3. DELETE TO MODERATION PIPELINE ─────────────────────────────
 
@@ -261,6 +318,7 @@ if (submitUploadBtn) {
         const category = document.getElementById("projCategory").value;
         const engine = document.getElementById("projEngine").value;
         const format = projFormat.value;
+        const uploadProgress = document.getElementById("uploadProgress");
         
         if (!title) return alert("Please specify a project title.");
 
@@ -276,6 +334,7 @@ if (submitUploadBtn) {
 
             const projectKey = push(dbRef(db, 'games')).key;
             let finalEmbedUrl = "";
+            let downloadFields = {};
 
             if (format === "webgl") {
                 const zipFileInput = document.getElementById("projZipFile");
@@ -333,6 +392,37 @@ if (submitUploadBtn) {
 
                 if (!finalEmbedUrl) throw new Error("Validation failure: index.html was not found inside the zip file.");
 
+            } else if (format === "download") {
+                const file = document.getElementById("projDownloadZip").files[0];
+                const platform = document.getElementById("projPlatform").value;
+                if (!file) throw new Error("Please select your zipped Windows export folder.");
+                if (/\.exe$/i.test(file.name)) {
+                    throw new Error("Upload a .zip of the whole export folder, not the .exe by itself. The game won't run without its data folder / .pck.");
+                }
+                if (!/\.zip$/i.test(file.name)) throw new Error("Windows downloads must be a single .zip file.");
+                if (file.size === 0) throw new Error("That zip is empty.");
+                if (file.size > MAX_DOWNLOAD_BYTES) {
+                    throw new Error(`That zip is ${formatFileSize(file.size)}. The limit is 500 MB.`);
+                }
+                // Every zip starts with "PK" (0x50 0x4B).
+                const magic = new Uint8Array(await file.slice(0, 2).arrayBuffer());
+                if (magic[0] !== 0x50 || magic[1] !== 0x4B) throw new Error("That file isn't a valid .zip.");
+                if (platform !== "windows") throw new Error("Choose a platform.");
+
+                uploadProgress.value = 0;
+                uploadProgress.hidden = false;
+                await new Promise((resolve, reject) => {
+                    const task = uploadBytesResumable(
+                        ref(storage, `downloads/${currentUser.uid}/${projectKey}/build.zip`),
+                        file, { contentType: "application/zip" });
+                    task.on("state_changed", (snap) => {
+                        const pct = snap.totalBytes ? Math.round(snap.bytesTransferred / snap.totalBytes * 100) : 0;
+                        uploadProgress.value = pct;
+                        uploadStatus.innerText = `Uploading ${pct}% (${formatFileSize(snap.bytesTransferred)} of ${formatFileSize(snap.totalBytes)})...`;
+                    }, (err) => reject(new Error(`Firebase Storage Error: ${err.message}`)), resolve);
+                });
+                downloadFields = { platform, fileSize: file.size, status: "pending" };
+
             } else {
                 finalEmbedUrl = document.getElementById("projExternalUrl").value.trim();
                 if (!finalEmbedUrl) throw new Error("Please configure a routing URL link.");
@@ -347,23 +437,28 @@ if (submitUploadBtn) {
                 engine: engine,
                 format: format,
                 // `type` is what older code and the arcade function read.
-                type: format === "webgl" ? "game" : "web",
+                type: { webgl: "game", external: "web", download: "download" }[format],
+                ...downloadFields,
                 embedUrl: finalEmbedUrl,
                 authorUid: currentUser.uid,
                 authorName: currentUser.displayName || currentUser.email.split('@')[0],
                 timestamp: Date.now()
             });
 
-            uploadStatus.innerText = "Deployment compiled completely!";
+            uploadStatus.innerText = format === "download"
+                ? "Uploaded! An exec will review it before it appears in the Arcade."
+                : "Deployment compiled completely!";
             setTimeout(() => { 
                 if (typeof toggleUploadModal === "function") toggleUploadModal(false);
                 submitUploadBtn.disabled = false;
                 uploadStatus.innerText = "";
-            }, 1200);
+                uploadProgress.hidden = true;
+            }, format === "download" ? 3000 : 1200);
 
         } catch (error) {
             console.error(error);
             uploadStatus.innerText = `Error: ${error.message}`;
+            uploadProgress.hidden = true;
             submitUploadBtn.disabled = false;
         }
     });
