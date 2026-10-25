@@ -5,6 +5,7 @@ import { ref, uploadBytes } from "firebase/storage";
 import { createScrollTrigger, scaleUp } from "./animations.js";
 import { registerTerminal } from "./init-terminal-animations.js";
 import { fetchArcadeStatus, LOCK_MESSAGE, UNREACHABLE_MESSAGE } from "./arcade-lock.js";
+import { normalizeEngine, engineLabel } from "./arcade-games.js";
 
 import * as fflate from "https://cdn.jsdelivr.net/npm/fflate@0.8.2/+esm";
 
@@ -23,11 +24,11 @@ const ARCADE_STATUS_REFRESH_MS = 60 * 1000;
 const gameGridContainer = document.getElementById("gameGridContainer");
 const filterPeopleBtn = document.getElementById("filter-people");
 const filterGroupBtn = document.getElementById("filter-group");
-const engineTags = {
-    Unity: document.getElementById("tag-Unity"),
-    Pygame: document.getElementById("tag-Pygame"),
-    JSCanvas: document.getElementById("tag-JSCanvas")
-};
+// "Made with" chips, keyed by stored engine value (see arcade-games.js).
+const engineTags = {};
+document.querySelectorAll("[data-engine-filter]").forEach(btn => {
+    engineTags[btn.dataset.engineFilter] = btn;
+});
 
 // ─── 1. AUTHENTICATION & DATA FETCHING ────────────────────────────
 onAuthStateChanged(auth, async (user) => {
@@ -91,7 +92,7 @@ function renderGames() {
 
     const filteredGames = allGames.filter(game => {
         const matchesCategory = game.category === activeCategory;
-        const matchesEngine = activeEngine ? game.engine === activeEngine : true;
+        const matchesEngine = activeEngine ? normalizeEngine(game.engine) === activeEngine : true;
         return matchesCategory && matchesEngine;
     });
 
@@ -110,9 +111,9 @@ function renderGames() {
         const linkAttrs = arcadePlayable ? `href="${playUrl}"` : `aria-disabled="true"`;
 
         return `
-            <article class="pj-game${arcadePlayable ? '' : ' is-locked'}" data-engine="${escapeHTML(game.engine || 'Other')}">
+            <article class="pj-game${arcadePlayable ? '' : ' is-locked'}" data-engine="${normalizeEngine(game.engine)}">
                 <a class="pj-game-link" ${linkAttrs}>
-                    <div class="pj-game-preview"><span class="pj-game-engine">${escapeHTML(ENGINE_LABELS[game.engine] || game.engine || 'Web')}</span></div>
+                    <div class="pj-game-preview"><span class="pj-game-engine">${escapeHTML(engineLabel(game.engine))}</span></div>
                     <div class="pj-game-body">
                         <h3>${escapeHTML(game.title)}</h3>
                         <p>By ${escapeHTML(author)}</p>
@@ -144,8 +145,6 @@ function renderGames() {
         });
     }
 }
-
-const ENGINE_LABELS = { JSCanvas: 'JS Canvas' };
 
 // ─── 2b. ARCADE LOCK ──────────────────────────────────────────────
 // The server enforces the lock on the game files; this just keeps the cards

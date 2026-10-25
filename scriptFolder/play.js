@@ -2,6 +2,7 @@ import { db } from "./firebase.js";
 import { ref as dbRef, get } from "firebase/database";
 import { showSponsorSplash } from "./sponsor-splash.js";
 import { arcadeGameUrl, fetchArcadeStatus, CHECKING_MESSAGE, LOCK_MESSAGE, UNREACHABLE_MESSAGE } from "./arcade-lock.js";
+import { engineLabel } from "./arcade-games.js";
 
 document.addEventListener("DOMContentLoaded", async () => {
     // 1. Grab target system coordinates out of routing query array
@@ -51,7 +52,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         // 3. Update view templates with raw text details
         titleEl.innerText = projectData.title;
         authorEl.innerText = `Published by: ${projectData.authorName || "Anonymous Member"}`;
-        engineTagEl.innerText = `${projectData.engine || "HTML5 Web Engine"} // ${projectData.category === "group" ? "Group Build" : "Solo Project"}`;
+        engineTagEl.innerText = `${engineLabel(projectData.engine)} // ${projectData.category === "group" ? "Group Build" : "Solo Project"}`;
 
         if (!status) return showBlocked(UNREACHABLE_MESSAGE);
         if (!status.open) return showBlocked(LOCK_MESSAGE);

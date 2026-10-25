@@ -281,9 +281,10 @@
     letter-spacing: -0.03em; text-transform: uppercase; color: #fff;
     margin-right: 30%;
   }
-  .pj-game[data-engine="Pygame"] { --pj-accent: var(--ab-highlight); }
-  .pj-game[data-engine="JSCanvas"] { --pj-accent: #fff; }
-  .pj-game[data-engine="Other"] { --pj-accent: #7d9a9a; }
+  .pj-game[data-engine="pygame"] { --pj-accent: var(--ab-highlight); }
+  .pj-game[data-engine="phaser"] { --pj-accent: #fff; }
+  .pj-game[data-engine="godot"] { --pj-accent: #478cbf; }
+  .pj-game[data-engine="other"] { --pj-accent: #7d9a9a; }
   .pj-game-body { padding: 20px 20px 8px; }
   .pj-game-body h3 { font-size: 1.25rem; font-weight: 700; letter-spacing: -0.02em; line-height: 1.2; overflow-wrap: anywhere; }
   .pj-game-body p { color: #9a9a9a; font-size: 0.9rem; margin-top: 4px; }
@@ -488,9 +489,10 @@
         <div>
           <span class="pj-control-label" id="pj-engine-label">Made with —</span>
           <div class="pj-segment" id="engineFilters" role="group" aria-labelledby="pj-engine-label">
-            <button type="button" id="tag-Unity" class="pj-chip pj-chip-engine" aria-pressed="false">Unity</button>
-            <button type="button" id="tag-Pygame" class="pj-chip pj-chip-engine" aria-pressed="false">Pygame</button>
-            <button type="button" id="tag-JSCanvas" class="pj-chip pj-chip-engine" aria-pressed="false">JS Canvas</button>
+            <button type="button" data-engine-filter="unity" class="pj-chip pj-chip-engine" aria-pressed="false">Unity</button>
+            <button type="button" data-engine-filter="pygame" class="pj-chip pj-chip-engine" aria-pressed="false">Pygame</button>
+            <button type="button" data-engine-filter="phaser" class="pj-chip pj-chip-engine" aria-pressed="false">Phaser</button>
+            <button type="button" data-engine-filter="godot" class="pj-chip pj-chip-engine" aria-pressed="false">Godot</button>
           </div>
         </div>
         <button type="button" class="ab-btn ab-btn-accent" onclick="toggleUploadModal(true)">
@@ -631,10 +633,11 @@
       <div>
         <label class="upload-modal-label" for="projEngine">Engine / Tag</label>
         <select id="projEngine" class="upload-modal-input">
-          <option value="Unity">Unity WebGL</option>
-          <option value="Pygame">Pygame (WASM)</option>
-          <option value="JSCanvas">JS Canvas</option>
-          <option value="Other">Other / Web</option>
+          <option value="unity">Unity WebGL</option>
+          <option value="godot">Godot</option>
+          <option value="phaser">Phaser</option>
+          <option value="pygame">Pygame (WASM)</option>
+          <option value="other">Other / Web</option>
         </select>
       </div>
     </div>
