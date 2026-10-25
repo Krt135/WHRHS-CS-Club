@@ -407,6 +407,54 @@
     overflow-wrap: anywhere;
 }
 
+/* "Edit details" (owner, exec/admin) on play.html. */
+.play-edit-open { margin-top: 1rem; }
+.play-edit-open[hidden] { display: none; }
+.play-edit-dialog {
+    width: min(100% - 2rem, 40rem);
+    max-height: 90vh;
+    padding: 0;
+    border: 1px solid var(--border);
+    border-top: 3px solid var(--primary);
+    border-radius: var(--radius-sm);
+    background: var(--background);
+    color: var(--foreground);
+}
+.play-edit-dialog::backdrop { background: rgba(0, 0, 0, 0.75); }
+.play-edit-form { display: grid; gap: 1.25rem; padding: 1.5rem; }
+.play-edit-title { margin: 0; font-size: 1.5rem; font-weight: 600; letter-spacing: -0.02em; }
+.play-edit-field { display: grid; gap: 0.4rem; }
+.play-edit-field[hidden] { display: none; }
+.play-edit-field > label,
+.play-edit-check {
+    font-family: monospace;
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted-fg);
+}
+.play-edit-check[hidden] { display: none; }
+.play-edit-field textarea {
+    width: 100%;
+    resize: vertical;
+    padding: 0.6rem 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: transparent;
+    color: var(--foreground);
+    font: inherit;
+    line-height: 1.5;
+}
+.play-edit-field textarea:focus { outline: none; border-color: var(--primary); }
+.play-edit-count { justify-self: end; font-family: monospace; font-size: 0.7rem; color: var(--muted-fg); }
+.play-edit-cover { width: 100%; height: auto; aspect-ratio: 16 / 10; object-fit: cover; }
+.play-edit-cover[hidden] { display: none; }
+.play-edit-error, .play-edit-status { margin: 0; font-family: monospace; font-size: 0.8rem; }
+.play-edit-error { color: #ff8a73; }
+.play-edit-error:empty, .play-edit-status:empty { display: none; }
+.play-edit-status { color: var(--primary); }
+.play-edit-actions { display: flex; justify-content: flex-end; gap: 0.75rem; flex-wrap: wrap; }
+
 .play-viewport-container {
     background: #000; 
     border: 1px solid var(--border); 

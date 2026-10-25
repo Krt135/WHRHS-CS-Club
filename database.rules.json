@@ -12,7 +12,7 @@
       ".read": "true",
       ".indexOn": ["status"],
       "$gameId": {
-        ".write": "auth !== null && ((root.child('users').child(auth.uid).child('role').val() === 'exec' || root.child('users').child(auth.uid).child('role').val() === 'admin') || ((!data.exists() || data.child('authorUid').val() === auth.uid) && (!newData.exists() || (newData.child('authorUid').val() === auth.uid && newData.child('category').val() !== 'group' && !(data.child('format').val() === 'download' && data.child('status').val() === 'approved')))))",
+        ".write": "auth !== null && ((root.child('users').child(auth.uid).child('role').val() === 'exec' || root.child('users').child(auth.uid).child('role').val() === 'admin') || ((!data.exists() || data.child('authorUid').val() === auth.uid) && (!newData.exists() || (newData.child('authorUid').val() === auth.uid && newData.child('category').val() !== 'group' && (!data.exists() || (newData.child('title').val() === data.child('title').val() && newData.child('category').val() === data.child('category').val() && newData.child('engine').val() === data.child('engine').val() && newData.child('format').val() === data.child('format').val() && newData.child('type').val() === data.child('type').val() && newData.child('platform').val() === data.child('platform').val() && newData.child('status').val() === data.child('status').val() && newData.child('fileSize').val() === data.child('fileSize').val() && newData.child('embedUrl').val() === data.child('embedUrl').val() && newData.child('authorUid').val() === data.child('authorUid').val() && newData.child('authorName').val() === data.child('authorName').val() && newData.child('timestamp').val() === data.child('timestamp').val() && newData.child('id').val() === data.child('id').val() && newData.child('buildGeneration').val() === data.child('buildGeneration').val()))))))",
         "format": { ".validate": "newData.val() === 'webgl' || newData.val() === 'external' || newData.val() === 'download'" },
         "embedUrl": { ".validate": "newData.isString() && newData.val().length <= 2048 && (newData.val() === '' || newData.val().beginsWith('https://'))" },
         ".validate": "newData.child('format').val() !== 'download' || newData.hasChildren(['status', 'platform', 'fileSize'])",
@@ -23,6 +23,7 @@
         "description": { ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 1000" },
         "credits": { ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 300" },
         "knownBugs": { ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 1000" },
+        "$other": { ".validate": "(root.child('users').child(auth.uid).child('role').val() === 'exec' || root.child('users').child(auth.uid).child('role').val() === 'admin') || !data.parent().exists() || newData.val() === data.val()" },
         "coverUrl": { ".validate": "newData.isString() && newData.val().length <= 2048 && newData.val().beginsWith('https://firebasestorage.googleapis.com/v0/b/whrhs-cs-club.firebasestorage.app/o/covers%2F' + newData.parent().child('authorUid').val() + '%2F' + $gameId + '%2Fcover.webp?')" }
       }
     },

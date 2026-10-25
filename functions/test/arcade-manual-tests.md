@@ -237,3 +237,19 @@ ID=-P4KwU6SWlzTxRDgS-pj   # Loaded Dice
    Delete the test game afterwards. (The emulator seed's
    `arcade-test-game` carries the same description, for pages pointed at
    the emulator.)
+9. **Editing details and covers** (browser, a test member's own game):
+   - Upload a game with a cover (PNG or JPEG, any size). The modal shows a
+     16:10 preview; an SVG or GIF is refused, and so is a file that's still
+     over 1 MB as WebP. The card shows the cover with a small engine badge;
+     its title, author, delete and play/download row look unchanged. During
+     school hours the card is dimmed like the others.
+   - On its play page, **Edit details** appears for the owner and for an
+     exec, not for another member or when signed out. Change Known bugs,
+     save, reload: the new text shows. Replace the cover and check the
+     card updates; tick "Remove the current cover" and check the card goes
+     back to the engine panel.
+   - An approved download game can still be edited this way and stays
+     approved and downloadable.
+   - Permanently delete the test game in Admin → Moderation and check
+     `covers/<uid>/<id>/` is gone from Storage. Restoring a game instead
+     keeps its cover.

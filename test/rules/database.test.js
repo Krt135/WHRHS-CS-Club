@@ -90,23 +90,23 @@ test("an approved record keeps its generation through exec edits", async () => {
     await assertFails(db.ref("games/g1").update({ buildGeneration: "222" }));
 });
 
-// ---------- L3: approved downloads are read-only for their author ----------
+// ---------- L3: approved downloads stay locked for their author ----------
+// (Only the four detail fields may change; see "Owner edits" below.)
 
-test("author can't edit an approved download, only delete it", async () => {
+test("author can't change an approved download's other fields, only delete it", async () => {
     const approved = downloadGame({ status: "approved", buildGeneration: "111" });
-    await seedDatabase(env, { users: USERS, games: { g1: approved, g2: downloadGame() } });
+    await seedDatabase(env, { users: USERS, games: { g1: approved } });
     const db = dbAs(env, AUTHOR);
     for (const change of [
-        { title: "Something else" }, { engine: "unity" }, { platform: "windows" },
+        { title: "Something else" }, { engine: "unity" }, { status: "pending" },
         { fileSize: 1 }, { format: "external", embedUrl: "https://example.com" },
+        { buildGeneration: "222" }, { authorName: "Someone" },
     ]) {
         await assertFails(db.ref("games/g1").update(change));
     }
     await assertFails(db.ref("games/g1/title").set("Renamed"));
     await assertFails(db.ref("games/g1/title").remove());
     await assertFails(db.ref("games/g1").set({ ...approved, title: "Renamed" }));
-    // Pending builds stay editable.
-    await assertSucceeds(db.ref("games/g2").update({ title: "Renamed" }));
     // Soft delete still works.
     await assertSucceeds(db.ref().update(softDelete(approved)));
 });
@@ -173,4 +173,70 @@ test("coverUrl must be this game's own cover download URL", async () => {
         assert.equal(isCoverUrl(bad, AUTHOR, "w2"), false, bad);
         await assertFails(db.ref("games/w2").set(webglGame({ id: "w2", coverUrl: bad })));
     }
+});
+
+// ---------- Owner edits: only the four detail fields ----------
+
+const EDIT = {
+    description: "How to play: arrows to move.",
+    credits: "Thanks to Sam",
+    knownBugs: "Sometimes the dice clip\nthrough the table.",
+};
+
+test("owner can edit the four detail fields on any of their games", async () => {
+    const approved = downloadGame({ status: "approved", buildGeneration: "111" });
+    await seedDatabase(env, { users: USERS, games: {
+        w1: webglGame(), d1: downloadGame(), a1: approved } });
+    const db = dbAs(env, AUTHOR);
+    for (const id of ["w1", "d1", "a1"]) {
+        await assertSucceeds(db.ref(`games/${id}`).update({
+            ...EDIT, coverUrl: coverUrl(AUTHOR, id) }));
+        // Removing them again is an edit too.
+        await assertSucceeds(db.ref(`games/${id}`).update({
+            description: null, credits: null, knownBugs: null, coverUrl: null }));
+        await assertSucceeds(db.ref(`games/${id}/knownBugs`).set("Still clipping"));
+    }
+    const saved = (await db.ref("games/a1").get()).val();
+    assert.equal(saved.status, "approved");
+    assert.equal(saved.buildGeneration, "111");
+    assert.equal(saved.knownBugs, "Still clipping");
+});
+
+test("owner can't change anything else through an edit", async () => {
+    await seedDatabase(env, { users: USERS, games: { w1: webglGame(), d1: downloadGame() } });
+    const db = dbAs(env, AUTHOR);
+    for (const [id, change] of [
+        ["d1", { ...EDIT, status: "approved" }],
+        ["d1", { ...EDIT, status: "rejected" }],
+        ["w1", { ...EDIT, format: "external", embedUrl: "https://example.com" }],
+        ["w1", { ...EDIT, title: "New title" }],
+        ["w1", { ...EDIT, engine: "godot" }],
+        ["w1", { ...EDIT, category: "group" }],
+        ["w1", { ...EDIT, authorUid: OTHER }],
+        ["d1", { ...EDIT, platform: null }],
+        ["w1", { ...EDIT, somethingNew: "x" }],
+    ]) {
+        await assertFails(db.ref(`games/${id}`).update(change));
+    }
+    await assertFails(db.ref("games/w1/title").remove());
+    await assertFails(db.ref("games/w1").set({ ...webglGame(), ...EDIT, title: "New" }));
+    // A full set() that only changes the detail fields is fine.
+    await assertSucceeds(db.ref("games/w1").set({ ...webglGame(), ...EDIT }));
+});
+
+test("non-owners can't edit details at all", async () => {
+    await seedDatabase(env, { users: USERS, games: { w1: webglGame() } });
+    await assertFails(dbAs(env, OTHER).ref("games/w1").update(EDIT));
+    await assertFails(dbAs(env, OTHER).ref("games/w1/coverUrl").set(coverUrl(AUTHOR, "w1")));
+    await assertFails(env.unauthenticatedContext().database().ref("games/w1").update(EDIT));
+});
+
+test("execs keep their powers, except approving", async () => {
+    await seedDatabase(env, { users: USERS, games: { w1: webglGame(), d1: downloadGame() } });
+    const db = dbAs(env, EXEC);
+    await assertSucceeds(db.ref("games/w1").update({ ...EDIT, title: "Exec fix", engine: "godot" }));
+    await assertSucceeds(db.ref("games/w1/somethingNew").set("ok"));
+    await assertFails(db.ref("games/d1/status").set("approved"));
+    // Limits still apply to execs.
+    await assertFails(db.ref("games/w1/credits").set("x".repeat(301)));
 });
