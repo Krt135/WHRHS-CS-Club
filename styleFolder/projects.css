@@ -377,6 +377,36 @@
     flex-wrap: wrap;
 }
 
+/* Optional game details (scriptFolder/game-details.js renders them as
+   plain text; pre-line keeps the author's line breaks). */
+.play-details {
+    display: grid;
+    gap: 1.5rem;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+    margin: -1rem 0 2.5rem;
+}
+.play-details[hidden] { display: none; }
+.play-details-section {
+    border-left: 2px solid var(--primary);
+    padding-left: 1rem;
+}
+.play-details-label {
+    margin: 0 0 0.5rem;
+    font-family: monospace;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--primary);
+}
+.play-details-text {
+    margin: 0;
+    color: var(--muted-fg);
+    line-height: 1.6;
+    white-space: pre-line;
+    overflow-wrap: anywhere;
+}
+
 .play-viewport-container {
     background: #000; 
     border: 1px solid var(--border); 

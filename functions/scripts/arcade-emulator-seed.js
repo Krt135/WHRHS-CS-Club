@@ -110,6 +110,9 @@ async function main() {
       category: "people",
       engine: "JSCanvas",
       type: "game",
+      // Must show as literal text on play.html (no image, no alert).
+      description: "<img src=x onerror=alert(1)>",
+      credits: "Line one\nLine two (kept on its own line)",
       embedUrl: "",
       authorUid: AUTHOR,
       authorName: "Emulator",

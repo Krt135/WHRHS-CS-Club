@@ -373,6 +373,11 @@
     transition: border-color 0.2s ease, background-color 0.2s ease;
   }
   .upload-modal-input:focus { border-left-color: var(--ab-accent); background: #1c1c1c; }
+  .upload-modal-field { position: relative; margin-bottom: 22px; }
+  .upload-modal-field .upload-modal-input { margin-bottom: 4px; }
+  .upload-modal-textarea { display: block; resize: vertical; line-height: 1.5; font-family: 'Space Grotesk', system-ui, sans-serif; font-size: 14px; }
+  .upload-modal-count { display: block; text-align: right; font-family: var(--ab-mono); font-size: 10px; letter-spacing: 0.1em; color: #6f6f6f; }
+  .upload-modal-optional { margin-left: 6px; color: #5f5f5f; letter-spacing: 0.15em; }
   .upload-modal-row { display: flex; flex-wrap: wrap; gap: 16px; }
   .upload-modal-row > div { flex: 1; min-width: 200px; }
   .upload-modal-file { color: #bdbdbd; font-family: var(--ab-mono); font-size: 12px; margin-bottom: 16px; max-width: 100%; }
@@ -629,6 +634,22 @@
 
     <label class="upload-modal-label" for="projTitle">Project title</label>
     <input type="text" id="projTitle" class="upload-modal-input" placeholder="e.g., Space Invaders Pro" />
+
+    <div class="upload-modal-field">
+      <label class="upload-modal-label" for="projDescription">About this game <span class="upload-modal-optional">optional</span></label>
+      <textarea id="projDescription" class="upload-modal-input upload-modal-textarea" rows="4" maxlength="1000" data-detail="description" aria-describedby="projDescriptionCount" placeholder="What it is and how to play"></textarea>
+      <span class="upload-modal-count" id="projDescriptionCount" aria-live="polite"></span>
+    </div>
+    <div class="upload-modal-field">
+      <label class="upload-modal-label" for="projCredits">Made with help from <span class="upload-modal-optional">optional</span></label>
+      <textarea id="projCredits" class="upload-modal-input upload-modal-textarea" rows="2" maxlength="300" data-detail="credits" aria-describedby="projCreditsCount"></textarea>
+      <span class="upload-modal-count" id="projCreditsCount" aria-live="polite"></span>
+    </div>
+    <div class="upload-modal-field">
+      <label class="upload-modal-label" for="projKnownBugs">Known bugs <span class="upload-modal-optional">optional</span></label>
+      <textarea id="projKnownBugs" class="upload-modal-input upload-modal-textarea" rows="3" maxlength="1000" data-detail="knownBugs" aria-describedby="projKnownBugsCount"></textarea>
+      <span class="upload-modal-count" id="projKnownBugsCount" aria-live="polite"></span>
+    </div>
 
     <div class="upload-modal-row">
       <div>

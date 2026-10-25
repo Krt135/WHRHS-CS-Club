@@ -3,6 +3,7 @@ import { ref as dbRef, get } from "firebase/database";
 import { showSponsorSplash } from "./sponsor-splash.js";
 import { arcadeGameUrl, fetchArcadeStatus, CHECKING_MESSAGE, LOCK_MESSAGE, UNREACHABLE_MESSAGE } from "./arcade-lock.js";
 import { engineLabel, gameFormat, isHttpsUrl } from "./arcade-games.js";
+import { renderDetails } from "./game-details.js";
 
 document.addEventListener("DOMContentLoaded", async () => {
     // 1. Grab target system coordinates out of routing query array
@@ -53,6 +54,8 @@ document.addEventListener("DOMContentLoaded", async () => {
         titleEl.innerText = projectData.title;
         authorEl.innerText = `Published by: ${projectData.authorName || "Anonymous Member"}`;
         engineTagEl.innerText = `${engineLabel(projectData.engine)} // ${projectData.category === "group" ? "Group Build" : "Solo Project"}`;
+        // About / Credits / Known bugs: text only, shown even while locked.
+        renderDetails(document.getElementById("gameDetails"), projectData);
 
         // Windows download builds aren't playable in the browser.
         if (gameFormat(projectData) === "download") {

@@ -19,7 +19,10 @@
         "status": { ".validate": "(newData.val() === 'pending' || newData.val() === 'approved' || newData.val() === 'rejected') && ((data.exists() && newData.val() === data.val()) || (!data.exists() && newData.val() === 'pending') || (newData.val() !== 'approved' && (root.child('users').child(auth.uid).child('role').val() === 'exec' || root.child('users').child(auth.uid).child('role').val() === 'admin')))" },
         "buildGeneration": { ".validate": "data.exists() && newData.val() === data.val()" },
         "platform": { ".validate": "newData.val() === 'windows'" },
-        "fileSize": { ".validate": "newData.isNumber() && newData.val() > 0 && newData.val() <= 524288000" }
+        "fileSize": { ".validate": "newData.isNumber() && newData.val() > 0 && newData.val() <= 524288000" },
+        "description": { ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 1000" },
+        "credits": { ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 300" },
+        "knownBugs": { ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 1000" }
       }
     },
     "projects": {

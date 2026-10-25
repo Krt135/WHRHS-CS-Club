@@ -6,6 +6,7 @@ import { createScrollTrigger, scaleUp } from "./animations.js";
 import { registerTerminal } from "./init-terminal-animations.js";
 import { fetchArcadeStatus, arcadeDownloadUrl, LOCK_MESSAGE, UNREACHABLE_MESSAGE } from "./arcade-lock.js";
 import { normalizeEngine, engineLabel, gameFormat, formatFileSize, isHttpsUrl, webBuildMetadata, MAX_DOWNLOAD_BYTES } from "./arcade-games.js";
+import { DETAIL_FIELDS, attachCounter, cleanDetails, presentDetails } from "./game-details.js";
 
 import * as fflate from "https://cdn.jsdelivr.net/npm/fflate@0.8.2/+esm";
 
@@ -301,6 +302,17 @@ if (projFormat) {
     showFormatFields();
 }
 
+// Optional details textareas (data-detail="description" etc.) with counters.
+const detailInputs = {};
+const detailCounters = [];
+for (const { key, max } of DETAIL_FIELDS) {
+    const textarea = document.querySelector(`#uploadModal [data-detail="${key}"]`);
+    if (!textarea) continue;
+    detailInputs[key] = textarea;
+    const counter = document.getElementById(textarea.getAttribute("aria-describedby"));
+    if (counter) detailCounters.push(attachCounter(textarea, counter, max));
+}
+
 if (submitUploadBtn) {
     submitUploadBtn.addEventListener("click", async () => {
         if (!currentUser) return alert("Access denied: Please log in first.");
@@ -310,6 +322,8 @@ if (submitUploadBtn) {
         const engine = document.getElementById("projEngine").value;
         const format = projFormat.value;
         const uploadProgress = document.getElementById("uploadProgress");
+        const details = presentDetails(cleanDetails(Object.fromEntries(
+            Object.entries(detailInputs).map(([key, el]) => [key, el.value]))));
         
         if (!title) return alert("Please specify a project title.");
 
@@ -429,6 +443,7 @@ if (submitUploadBtn) {
                 // `type` is what older code and the arcade function read.
                 type: { webgl: "game", external: "web", download: "download" }[format],
                 ...downloadFields,
+                ...details,
                 embedUrl: finalEmbedUrl,
                 authorUid: currentUser.uid,
                 authorName: currentUser.displayName || currentUser.email.split('@')[0],

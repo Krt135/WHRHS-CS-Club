@@ -228,3 +228,12 @@ ID=-P4KwU6SWlzTxRDgS-pj   # Loaded Dice
    - A pending build's id: `404`.
    - `curl -s -o /dev/null -w "%{http_code}\n" "https://firebasestorage.googleapis.com/v0/b/whrhs-cs-club.firebasestorage.app/o/downloads%2F<uid>%2F$DL%2Fbuild.zip?alt=media"`
      returns `403`.
+8. **Game details are plain text** (browser, signed in as a test member):
+   upload a small external-link game whose "About this game" is
+   `<img src=x onerror=alert(1)>` and whose "Known bugs" has two lines. Open
+   its play page. The About section shows the tag as literal text, no
+   broken image appears, no alert fires, and the two bug lines stay on
+   separate lines. Loaded Dice's play page shows no details block at all.
+   Delete the test game afterwards. (The emulator seed's
+   `arcade-test-game` carries the same description, for pages pointed at
+   the emulator.)

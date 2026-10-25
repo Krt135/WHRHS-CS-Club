@@ -3,7 +3,7 @@
 import { after, before, beforeEach, test } from "node:test";
 import assert from "node:assert/strict";
 import { assertFails, assertSucceeds } from "@firebase/rules-unit-testing";
-import { AUTHOR, EXEC, USERS, dbAs, downloadGame, makeEnv, seedDatabase } from "./helpers.js";
+import { AUTHOR, EXEC, OTHER, USERS, dbAs, downloadGame, makeEnv, seedDatabase } from "./helpers.js";
 import { restoredGameRecord } from "../../scriptFolder/arcade-games.js";
 
 let env;
@@ -108,4 +108,43 @@ test("author can't edit an approved download, only delete it", async () => {
     await assertSucceeds(db.ref("games/g2").update({ title: "Renamed" }));
     // Soft delete still works.
     await assertSucceeds(db.ref().update(softDelete(approved)));
+});
+
+// ---------- Game details: description, credits, known bugs ----------
+
+const webglGame = (fields = {}) => ({
+    id: "w1", title: "Web Game", category: "people", engine: "unity",
+    format: "webgl", type: "game", embedUrl: "", authorUid: AUTHOR,
+    authorName: "Author", timestamp: 1, ...fields,
+});
+
+const DETAIL_LIMITS = { description: 1000, credits: 300, knownBugs: 1000 };
+
+test("detail fields must be non-empty strings within their limits", async () => {
+    await seedDatabase(env, { users: USERS });
+    const db = dbAs(env, AUTHOR);
+    for (const [key, max] of Object.entries(DETAIL_LIMITS)) {
+        await assertSucceeds(db.ref(`games/ok-${key}`).set(webglGame({ [key]: "x".repeat(max) })));
+        await assertFails(db.ref(`games/long-${key}`).set(webglGame({ [key]: "x".repeat(max + 1) })));
+        await assertFails(db.ref(`games/empty-${key}`).set(webglGame({ [key]: "" })));
+        await assertFails(db.ref(`games/num-${key}`).set(webglGame({ [key]: 42 })));
+    }
+    // Plain text is stored as-is; it's rendered with textContent.
+    await assertSucceeds(db.ref("games/xss").set(webglGame({
+        description: "<img src=x onerror=alert(1)>" })));
+});
+
+test("records without detail fields stay valid (Loaded Dice)", async () => {
+    await seedDatabase(env, { users: USERS });
+    await assertSucceeds(dbAs(env, AUTHOR).ref("games/w1").set(webglGame()));
+});
+
+test("non-owners can't write another member's details", async () => {
+    await seedDatabase(env, { users: USERS, games: { w1: webglGame() } });
+    const db = dbAs(env, OTHER);
+    for (const key of Object.keys(DETAIL_LIMITS)) {
+        await assertFails(db.ref(`games/w1/${key}`).set("hijacked"));
+    }
+    await assertFails(env.unauthenticatedContext().database()
+        .ref("games/w1/description").set("anon"));
 });
