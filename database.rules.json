@@ -184,7 +184,7 @@
       ".read": "auth !== null && (root.child('users').child(auth.uid).child('role').val() === 'exec' || root.child('users').child(auth.uid).child('role').val() === 'admin')",
       ".write": "auth !== null && (root.child('users').child(auth.uid).child('role').val() === 'exec' || root.child('users').child(auth.uid).child('role').val() === 'admin')",
       "$postId": {
-        ".write": "auth !== null && !data.exists() && newData.child('_deletedFrom').val() === 'lessons' && newData.child('_originalId').val() === $postId && newData.child('_deletedById').val() === auth.uid && newData.child('authorId').val() === auth.uid && root.child('lessons').child($postId).child('authorId').val() === auth.uid"
+        ".write": "auth !== null && !data.exists() && newData.child('_originalId').val() === $postId && newData.child('_deletedById').val() === auth.uid && ((newData.child('_deletedFrom').val() === 'lessons' && newData.child('authorId').val() === auth.uid && root.child('lessons').child($postId).child('authorId').val() === auth.uid) || (newData.child('_deletedFrom').val() === 'games' && newData.child('authorUid').val() === auth.uid && root.child('games').child($postId).child('authorUid').val() === auth.uid))"
       }
     },
     "siteSettings": {
