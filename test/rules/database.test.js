@@ -88,3 +88,24 @@ test("an approved record keeps its generation through exec edits", async () => {
     await assertSucceeds(db.ref("games/g1").update({ title: "Renamed" }));
     await assertFails(db.ref("games/g1").update({ buildGeneration: "222" }));
 });
+
+// ---------- L3: approved downloads are read-only for their author ----------
+
+test("author can't edit an approved download, only delete it", async () => {
+    const approved = downloadGame({ status: "approved", buildGeneration: "111" });
+    await seedDatabase(env, { users: USERS, games: { g1: approved, g2: downloadGame() } });
+    const db = dbAs(env, AUTHOR);
+    for (const change of [
+        { title: "Something else" }, { engine: "unity" }, { platform: "windows" },
+        { fileSize: 1 }, { format: "external", embedUrl: "https://example.com" },
+    ]) {
+        await assertFails(db.ref("games/g1").update(change));
+    }
+    await assertFails(db.ref("games/g1/title").set("Renamed"));
+    await assertFails(db.ref("games/g1/title").remove());
+    await assertFails(db.ref("games/g1").set({ ...approved, title: "Renamed" }));
+    // Pending builds stay editable.
+    await assertSucceeds(db.ref("games/g2").update({ title: "Renamed" }));
+    // Soft delete still works.
+    await assertSucceeds(db.ref().update(softDelete(approved)));
+});

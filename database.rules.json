@@ -12,7 +12,7 @@
       ".read": "true",
       ".indexOn": ["status"],
       "$gameId": {
-        ".write": "auth !== null && ((root.child('users').child(auth.uid).child('role').val() === 'exec' || root.child('users').child(auth.uid).child('role').val() === 'admin') || ((!data.exists() || data.child('authorUid').val() === auth.uid) && (!newData.exists() || (newData.child('authorUid').val() === auth.uid && newData.child('category').val() !== 'group'))))",
+        ".write": "auth !== null && ((root.child('users').child(auth.uid).child('role').val() === 'exec' || root.child('users').child(auth.uid).child('role').val() === 'admin') || ((!data.exists() || data.child('authorUid').val() === auth.uid) && (!newData.exists() || (newData.child('authorUid').val() === auth.uid && newData.child('category').val() !== 'group' && !(data.child('format').val() === 'download' && data.child('status').val() === 'approved')))))",
         "format": { ".validate": "newData.val() === 'webgl' || newData.val() === 'external' || newData.val() === 'download'" },
         "embedUrl": { ".validate": "newData.isString() && newData.val().length <= 2048 && (newData.val() === '' || newData.val().beginsWith('https://'))" },
         ".validate": "newData.child('format').val() !== 'download' || newData.hasChildren(['status', 'platform', 'fileSize'])",
