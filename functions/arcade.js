@@ -547,17 +547,22 @@ exports.arcade = onRequest(
  * downloads/ themselves (storage.rules), so this is the only way a build
  * goes away. Restoring a game also removes its deleted_posts node, but
  * writes games/{id} back first, so a game that exists again is skipped.
+ * Only a record stored under its own game id counts (an author's soft
+ * delete always is; the rules require it), and the path is built from the
+ * record's authorUid, so a stray record can't point at another game.
  * @param {Object} post The deleted deleted_posts/{id} value.
+ * @param {string} postId Its key under deleted_posts.
  * @param {Object} deps gameExists(id), deleteFile(storagePath).
  * @return {Promise<?string>} The deleted path, or null when skipped.
  */
-async function cleanUpDownload(post, deps) {
+async function cleanUpDownload(post, postId, deps) {
   if (!post || post._deletedFrom !== "games" ||
       post.format !== "download") {
     return null;
   }
   const gameId = post._originalId;
-  if (!ID_RE.test(gameId || "") || !ID_RE.test(post.authorUid || "")) {
+  if (!ID_RE.test(gameId || "") || gameId !== postId ||
+      !ID_RE.test(post.authorUid || "")) {
     return null;
   }
   if (await deps.gameExists(gameId)) return null;
@@ -568,12 +573,14 @@ async function cleanUpDownload(post, deps) {
 
 exports.cleanUpDownloadBuild = onValueDeleted("/deleted_posts/{postId}",
     async (event) => {
-      const storagePath = await cleanUpDownload(event.data.val(), {
+      const deps = {
         gameExists: async (id) =>
           (await admin.database().ref(`games/${id}`).get()).exists(),
         deleteFile: (p) => admin.storage().bucket().file(p)
             .delete({ignoreNotFound: true}),
-      });
+      };
+      const storagePath = await cleanUpDownload(event.data.val(),
+          event.params.postId, deps);
       if (storagePath) {
         logger.info("Download build deleted", {storagePath});
       }

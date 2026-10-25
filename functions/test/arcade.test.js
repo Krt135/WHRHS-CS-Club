@@ -470,16 +470,34 @@ test("permanent delete removes the build; restore does not", async () => {
     gameExists: async () => exists,
     deleteFile: async (p) => deleted.push(p),
   });
-  assert.equal(await cleanUpDownload(post, deps(false)),
+  assert.equal(await cleanUpDownload(post, "winOk", deps(false)),
       "downloads/uid123/winOk/build.zip");
-  assert.equal(await cleanUpDownload(post, deps(true)), null);
-  assert.equal(await cleanUpDownload({...post, format: "webgl"},
+  assert.equal(await cleanUpDownload(post, "winOk", deps(true)), null);
+  assert.equal(await cleanUpDownload({...post, format: "webgl"}, "winOk",
       deps(false)), null);
   assert.equal(await cleanUpDownload({...post, _deletedFrom: "lessons"},
-      deps(false)), null);
-  assert.equal(await cleanUpDownload({...post, authorUid: "../x"},
+      "winOk", deps(false)), null);
+  assert.equal(await cleanUpDownload({...post, authorUid: "../x"}, "winOk",
       deps(false)), null);
   assert.deepEqual(deleted, ["downloads/uid123/winOk/build.zip"]);
+});
+
+test("cleanup skips records not stored under their own game id", async () => {
+  const deleted = [];
+  const deps = {
+    gameExists: async () => false,
+    deleteFile: async (p) => deleted.push(p),
+  };
+  // e.g. an exec-written deleted_posts/someKey pointing at another game.
+  const post = {_deletedFrom: "games", _originalId: "victimGame",
+    format: "download", authorUid: "victimUid"};
+  assert.equal(await cleanUpDownload(post, "someKey", deps), null);
+  assert.equal(await cleanUpDownload({...post, _originalId: undefined},
+      "victimGame", deps), null);
+  // The path always comes from the record's own authorUid and id.
+  assert.equal(await cleanUpDownload(post, "victimGame", deps),
+      "downloads/victimUid/victimGame/build.zip");
+  assert.deepEqual(deleted, ["downloads/victimUid/victimGame/build.zip"]);
 });
 
 // ---------- Download review callable ----------
