@@ -28,8 +28,9 @@ Sponsors and fundraising live in the Realtime Database and are edited from the *
 The Arcade is locked on weekdays from 7:30 AM to 2:15 PM (America/New_York) and open at all other times and all weekend. The server enforces it, not the browser:
 
 - Uploaded game builds in Storage (`games/{uid}/{gameId}/`) are private. Players get them only through the `arcade` Cloud Function (`functions/arcade.js`), which checks the lock on every file request and answers **423 Locked** with only a lock message, never game bytes.
+- Builds may only contain web-build files (html, js, css, wasm, data, unityweb, pck, apk, json, images, audio, fonts, txt/xml/fnt, and `.br`/`.gz` versions), each stored with a Content-Type that fits its extension. `storage.rules` enforces this, and the uploader skips other files. Separately, the function refuses (404) executables, scripts and archives (`exe msi bat cmd com scr ps1 vbs jar dll zip 7z rar`) even in older uploads, so `.exe` files only reach players as reviewed Windows downloads.
 - Games are served from the Cloud Functions domain (`https://us-central1-whrhs-cs-club.cloudfunctions.net/arcade/game/{gameId}/index.html`), so uploaded game code never runs on the site's own origin.
-- `GET /api/arcade/status` (a Hosting rewrite to the same function) tells the Projects page and play page whether to show the lock message.
+- `GET https://us-central1-whrhs-cs-club.cloudfunctions.net/arcade/status` tells the Projects page and play page whether to show the lock message. The pages call the function URL directly (`scriptFolder/arcade-lock.js`), because the `/api/arcade/status` Hosting rewrite doesn't exist on Vercel. The rewrite still works on Firebase Hosting.
 - **External-link games** (GitHub Pages, etc.) are hosted elsewhere. The site disables their Play links while locked, but anyone with the direct link can still open them.
 
 **Override:** on Admin → ARCADE, an exec or admin enters the override code. The `setArcadeOverride` function checks the caller's role and compares the SHA-256 of the code with the `ARCADE_OVERRIDE_HASH` secret, then stores `arcadeOverride/expiresAt` (next midnight, New York time) in the database. It unlocks the Arcade for every visitor and expires by itself at midnight. Five attempts per exec per hour. The code itself is never stored anywhere, only its hash.
@@ -46,8 +47,51 @@ The Arcade is locked on weekdays from 7:30 AM to 2:15 PM (America/New_York) and 
    Use a long code (four or more random words). Changing the code later means setting a new hash and redeploying the functions.
 2. Deploy the functions and database rules: `firebase deploy --only functions,database`
 3. Test the functions in production (status, a game file, the override). See Part B of `functions/test/arcade-manual-tests.md`.
-4. Deploy the site: `firebase deploy --only hosting`, then check `https://whrhs-cs-club.web.app/api/arcade/status`.
+4. Deploy the site: `firebase deploy --only hosting`, then load the Projects page and check that the lock notice matches `https://us-central1-whrhs-cs-club.cloudfunctions.net/arcade/status`.
 5. Only after steps 2–4 pass: `firebase deploy --only storage`
 6. Remove public access from the bucket: Google Cloud Console → Cloud Storage → `whrhs-cs-club.firebasestorage.app` → Permissions → remove the **allUsers** principal (Storage Object Viewer). Then confirm an old `storage.googleapis.com/...` game URL returns 403. Sponsor logos and lesson files use Firebase download-token URLs and keep working.
 
-Tests: `cd functions && npm test`, plus the manual steps in `functions/test/arcade-manual-tests.md`.
+Tests: `cd functions && npm test`, plus the manual steps in `functions/test/arcade-manual-tests.md`. Run the emulators only under `--project demo-whrhs-cs-club`, with dummy secrets in `functions/.secret.local` (see `AGENTS.md`).
+
+## Arcade deployment formats
+
+Each game record in `games/{id}` stores `format`:
+
+| `format` | What's stored | How it's played |
+|---|---|---|
+| `webgl` | Unzipped build in `games/{uid}/{id}/` (private) | In the browser, through `arcade/game/{id}/…` |
+| `external` | An `https://` link (`embedUrl`) | The link loads in the play page |
+| `download` | One zip at `downloads/{uid}/{id}/build.zip` (private), plus `platform: "windows"`, `fileSize`, `status` | Downloaded and run on Windows |
+
+Records from before `format` existed are read as `webgl` when `type` is `"game"` and `external` otherwise (`scriptFolder/arcade-games.js`), so older games need no migration. Engines are stored as `unity`, `godot`, `phaser`, `pygame` or `other`; older values like `"Unity"` or `"JSCanvas"` are normalized when read, and anything unknown shows as Other / Web.
+
+### Windows downloads
+
+Use this when a game can't run in a browser, for example a Godot .NET (C#) project, which has no Web export. The member zips the whole Windows export folder (the `.exe` plus its data folder or `.pck`), up to 500 MB.
+
+- **Review:** new download games are saved with `status: "pending"` and stay hidden from visitors. Admin → ARCADE lists them with DOWNLOAD TO REVIEW, APPROVE and REJECT. APPROVE stays disabled until that build has been downloaded for review in the same session. Approving and rejecting go through the `approveDownload` callable, which checks the caller's role (with token revocation) and, on approval, records the Storage object's `buildGeneration` and real `fileSize`. The approval only goes through if the object is still the generation the exec downloaded. The database rules don't let any client set `approved` or `buildGeneration`. Execs may still set `rejected` directly. Once a download is approved, its author can only change the About, Credits, Known bugs and cover (see below) or delete it; the title, status and everything execs approved stay as they were. Scan every build with Windows Defender or VirusTotal before approving it.
+- **Download:** `GET arcade/download/{id}` checks the school-hours lock first (**423**, no URL). It then returns **404** unless the game is an approved download build whose stored object is still the approved `buildGeneration`, and otherwise redirects (**302**) to a V4 signed URL that expires in 5 minutes and downloads as `<title>-windows.zip`. Execs get pending builds with `?review=1` and their ID token; that still returns 423 during school hours unless the override is on.
+- **Storage:** the author can create `build.zip` once. Nobody can read, replace or delete it directly, so an approved build can't be swapped later. The `cleanUpDownloadBuild` function deletes it when the game is permanently deleted from Admin → Moderation. Restoring the game keeps it.
+- **Known limits:**
+  - Once a build is downloaded, the school-hours lock can't apply to it.
+  - A signed URL issued just before 7:30 AM stays valid for up to 5 minutes.
+  - Windows may show a SmartScreen "unknown publisher" warning, and school computers may block downloads or `.exe` files.
+
+**Signing setup (one time, before the first download):** the function signs URLs as its runtime service account. The account is the default compute service account, since the `arcade` function doesn't set `serviceAccount`. It needs permission to sign as itself:
+
+```bash
+gcloud services enable iamcredentials.googleapis.com --project=whrhs-cs-club
+gcloud iam service-accounts add-iam-policy-binding \
+  110216471172-compute@developer.gserviceaccount.com \
+  --member="serviceAccount:110216471172-compute@developer.gserviceaccount.com" \
+  --role="roles/iam.serviceAccountTokenCreator" \
+  --project=whrhs-cs-club
+```
+
+Check the account first with `gcloud functions describe arcade --region=us-central1 --project=whrhs-cs-club --format="value(serviceConfig.serviceAccountEmail)"`. If it prints a different account, use that one in both places. Without this, `/download` returns 500.
+
+### Game details and covers
+
+- **Details:** optional `description` ("About this game", up to 1000 characters), `credits` (300) and `knownBugs` (1000). Empty fields are left out of the record. The database rules require each one, when present, to be a non-empty string within its limit. The play page shows them above the game, as plain text only (`textContent`, `white-space: pre-line`, no markdown or links), including for download games and during the lock.
+- **Cover:** optional, at `covers/{uid}/{id}/cover.webp`. The upload modal accepts PNG, JPEG or WebP (no SVG or GIF), center-crops it in the browser to the card's 16:10 shape (at most 1200×750), re-encodes it as WebP at about 0.8 quality, and refuses anything still 1 MB or more. Covers are public to read, since cards show them during the lock, and only the owner can write, replace or delete one (WebP, under 1 MB). The record's `coverUrl` must be that object's Firebase Storage download URL; the rules refuse any other URL. On a card, the cover replaces only the engine panel and keeps a small engine badge; cards without one look as before. Permanently deleting a game from Moderation also deletes its cover (`cleanUpDownloadBuild`); restoring keeps it.
+- **Editing:** on the play page, the owner and exec/admin see **Edit details**, which reopens the three fields (and, for the owner, the cover, with an option to remove it). On an existing record the database rules let the owner change only `description`, `credits`, `knownBugs` and `coverUrl`; title, engine, format, platform, status, category, authorUid and the rest stay as they are, and owners can't add other fields. That includes approved downloads, which stay approved. Execs keep their usual powers (still not approving; see Windows downloads). Execs can't change someone else's cover, because Storage only lets the owner write `covers/{uid}/`.

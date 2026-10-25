@@ -275,15 +275,32 @@
     transform: skewX(-20deg);
   }
   .pj-game:hover .pj-game-preview::before { right: -2%; }
+  /* Member's cover image: replaces the engine panel and slash only. */
+  .pj-game-preview.has-cover::before,
+  .pj-game-preview.has-cover::after { display: none; }
+  .pj-game-cover {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    object-fit: cover;
+  }
+  .pj-game-badge {
+    position: absolute; top: 10px; left: 10px; z-index: 1;
+    padding: 4px 8px;
+    background: var(--ab-black); color: #fff;
+    border-left: 3px solid var(--pj-accent, var(--ab-accent));
+    font-family: var(--ab-mono); font-size: 10px; font-weight: 700;
+    letter-spacing: 0.15em; text-transform: uppercase;
+  }
   .pj-game-engine {
     position: relative; z-index: 1;
     font-size: clamp(1.6rem, 3vw, 2.2rem); font-weight: 700;
     letter-spacing: -0.03em; text-transform: uppercase; color: #fff;
     margin-right: 30%;
   }
-  .pj-game[data-engine="Pygame"] { --pj-accent: var(--ab-highlight); }
-  .pj-game[data-engine="JSCanvas"] { --pj-accent: #fff; }
-  .pj-game[data-engine="Other"] { --pj-accent: #7d9a9a; }
+  .pj-game[data-engine="pygame"] { --pj-accent: var(--ab-highlight); }
+  .pj-game[data-engine="phaser"] { --pj-accent: #fff; }
+  .pj-game[data-engine="godot"] { --pj-accent: #478cbf; }
+  .pj-game[data-engine="other"] { --pj-accent: #7d9a9a; }
   .pj-game-body { padding: 20px 20px 8px; }
   .pj-game-body h3 { font-size: 1.25rem; font-weight: 700; letter-spacing: -0.02em; line-height: 1.2; overflow-wrap: anywhere; }
   .pj-game-body p { color: #9a9a9a; font-size: 0.9rem; margin-top: 4px; }
@@ -328,6 +345,9 @@
   .pj-game.is-locked .pj-game-body { opacity: 0.45; }
   .pj-game.is-locked:hover { translate: none; background: #151515; }
   .pj-game.is-locked .pj-game-play { color: #8a8a8a; }
+  .pj-game.is-pending .pj-game-link { cursor: default; }
+  .pj-game.is-pending .pj-game-preview { opacity: 0.6; }
+  .pj-game.is-pending .pj-game-play { color: var(--ab-highlight); }
 
   /* ── Upload modal ── */
   .upload-modal-overlay {
@@ -369,6 +389,16 @@
     transition: border-color 0.2s ease, background-color 0.2s ease;
   }
   .upload-modal-input:focus { border-left-color: var(--ab-accent); background: #1c1c1c; }
+  .upload-modal-field { position: relative; margin-bottom: 22px; }
+  .upload-modal-field .upload-modal-input { margin-bottom: 4px; }
+  .upload-modal-textarea { display: block; resize: vertical; line-height: 1.5; font-family: 'Space Grotesk', system-ui, sans-serif; font-size: 14px; }
+  .upload-modal-count { display: block; text-align: right; font-family: var(--ab-mono); font-size: 10px; letter-spacing: 0.1em; color: #6f6f6f; }
+  .upload-modal-optional { margin-left: 6px; color: #5f5f5f; letter-spacing: 0.15em; }
+  .upload-modal-hint-tight { margin: -8px 0 10px; }
+  .upload-modal-cover-preview { display: block; width: 100%; height: auto; aspect-ratio: 16 / 10; object-fit: cover; background: #161616; }
+  .upload-modal-cover-preview[hidden] { display: none; }
+  .upload-modal-cover-error { min-height: 0; margin-top: 6px; font-family: var(--ab-mono); font-size: 12px; color: #ff8a73; }
+  .upload-modal-cover-error:empty { display: none; }
   .upload-modal-row { display: flex; flex-wrap: wrap; gap: 16px; }
   .upload-modal-row > div { flex: 1; min-width: 200px; }
   .upload-modal-file { color: #bdbdbd; font-family: var(--ab-mono); font-size: 12px; margin-bottom: 16px; max-width: 100%; }
@@ -385,6 +415,11 @@
   .upload-modal-actions .ab-btn-ghost { --ab-ink: #fff; }
   .upload-modal-actions .ab-btn-ghost:hover { color: var(--ab-black); }
   .upload-modal-actions .ab-btn:disabled { opacity: 0.5; cursor: wait; transform: none; }
+  .upload-modal-hint { margin: -8px 0 20px; color: #9a9a9a; font-size: 0.85rem; line-height: 1.5; }
+  .upload-modal-progress { display: block; width: 100%; height: 8px; margin-top: 8px; accent-color: var(--ab-accent); }
+  .upload-modal-progress[hidden] { display: none; }
+  .download-notice-list { margin: 0 0 8px 1.1em; color: #e6e6e6; line-height: 1.6; }
+  .download-notice-list li + li { margin-top: 6px; }
 
   /* ── Page-specific reduced motion (shared rules in brand.css) ── */
   @media (prefers-reduced-motion: reduce) {
@@ -488,9 +523,10 @@
         <div>
           <span class="pj-control-label" id="pj-engine-label">Made with —</span>
           <div class="pj-segment" id="engineFilters" role="group" aria-labelledby="pj-engine-label">
-            <button type="button" id="tag-Unity" class="pj-chip pj-chip-engine" aria-pressed="false">Unity</button>
-            <button type="button" id="tag-Pygame" class="pj-chip pj-chip-engine" aria-pressed="false">Pygame</button>
-            <button type="button" id="tag-JSCanvas" class="pj-chip pj-chip-engine" aria-pressed="false">JS Canvas</button>
+            <button type="button" data-engine-filter="unity" class="pj-chip pj-chip-engine" aria-pressed="false">Unity</button>
+            <button type="button" data-engine-filter="pygame" class="pj-chip pj-chip-engine" aria-pressed="false">Pygame</button>
+            <button type="button" data-engine-filter="phaser" class="pj-chip pj-chip-engine" aria-pressed="false">Phaser</button>
+            <button type="button" data-engine-filter="godot" class="pj-chip pj-chip-engine" aria-pressed="false">Godot</button>
           </div>
         </div>
         <button type="button" class="ab-btn ab-btn-accent" onclick="toggleUploadModal(true)">
@@ -533,17 +569,17 @@
         <li class="pj-step">
           <span class="pj-step-num">01</span>
           <h4>Create your game</h4>
-          <p>Build it in any engine above. Test it in a browser if it's headed for the arcade.</p>
+          <p>Build it in any engine above. Test it in a browser if it's headed for the arcade, or on Windows if it's a download.</p>
         </li>
         <li class="pj-step">
           <span class="pj-step-num">02</span>
           <h4>Export &amp; zip</h4>
-          <p>Export a web build (Godot: Web, Unity: WebGL) and zip the folder with <code>index.html</code> at the root.</p>
+          <p>Export a web build (Godot: Web, Unity: WebGL) and zip the folder with <code>index.html</code> at the root. If it can't run in a browser, like a Godot .NET (C#) project, which has no Web export, export for Windows and zip the whole export folder: the <code>.exe</code> plus its data folder or <code>.pck</code>.</p>
         </li>
         <li class="pj-step">
           <span class="pj-step-num">03</span>
           <h4>Upload</h4>
-          <p>Hit Upload, add a title and engine tag, and choose your zip, or paste a link if it's hosted elsewhere.</p>
+          <p>Hit Upload, add a title and engine tag, and pick a format: WebGL zip, an external link, or Windows download (up to 500 MB). Windows downloads go live once an exec reviews them.</p>
         </li>
         <li class="pj-step">
           <span class="pj-step-num">04</span>
@@ -620,6 +656,22 @@
     <label class="upload-modal-label" for="projTitle">Project title</label>
     <input type="text" id="projTitle" class="upload-modal-input" placeholder="e.g., Space Invaders Pro" />
 
+    <div class="upload-modal-field">
+      <label class="upload-modal-label" for="projDescription">About this game <span class="upload-modal-optional">optional</span></label>
+      <textarea id="projDescription" class="upload-modal-input upload-modal-textarea" rows="4" maxlength="1000" data-detail="description" aria-describedby="projDescriptionCount" placeholder="What it is and how to play"></textarea>
+      <span class="upload-modal-count" id="projDescriptionCount" aria-live="polite"></span>
+    </div>
+    <div class="upload-modal-field">
+      <label class="upload-modal-label" for="projCredits">Made with help from <span class="upload-modal-optional">optional</span></label>
+      <textarea id="projCredits" class="upload-modal-input upload-modal-textarea" rows="2" maxlength="300" data-detail="credits" aria-describedby="projCreditsCount"></textarea>
+      <span class="upload-modal-count" id="projCreditsCount" aria-live="polite"></span>
+    </div>
+    <div class="upload-modal-field">
+      <label class="upload-modal-label" for="projKnownBugs">Known bugs <span class="upload-modal-optional">optional</span></label>
+      <textarea id="projKnownBugs" class="upload-modal-input upload-modal-textarea" rows="3" maxlength="1000" data-detail="knownBugs" aria-describedby="projKnownBugsCount"></textarea>
+      <span class="upload-modal-count" id="projKnownBugsCount" aria-live="polite"></span>
+    </div>
+
     <div class="upload-modal-row">
       <div>
         <label class="upload-modal-label" for="projCategory">Category</label>
@@ -631,35 +683,73 @@
       <div>
         <label class="upload-modal-label" for="projEngine">Engine / Tag</label>
         <select id="projEngine" class="upload-modal-input">
-          <option value="Unity">Unity WebGL</option>
-          <option value="Pygame">Pygame (WASM)</option>
-          <option value="JSCanvas">JS Canvas</option>
-          <option value="Other">Other / Web</option>
+          <option value="unity">Unity WebGL</option>
+          <option value="godot">Godot</option>
+          <option value="phaser">Phaser</option>
+          <option value="pygame">Pygame (WASM)</option>
+          <option value="other">Other / Web</option>
         </select>
       </div>
     </div>
 
-    <label class="upload-modal-label" for="projType">Deployment format</label>
-    <select id="projType" class="upload-modal-input">
-      <option value="game">Game Folder Zip (Upload to Firebase Storage)</option>
-      <option value="web">External Live Link (GitHub Pages, etc.)</option>
+    <div class="upload-modal-field">
+      <label class="upload-modal-label" for="projCover">Cover image <span class="upload-modal-optional">optional</span></label>
+      <input type="file" id="projCover" class="upload-modal-file" accept="image/png,image/jpeg,image/webp" aria-describedby="projCoverHint" />
+      <p class="upload-modal-hint upload-modal-hint-tight" id="projCoverHint">PNG, JPEG or WebP. It's cropped to the card's shape (16:10) and replaces the engine panel on your card.</p>
+      <img id="projCoverPreview" class="upload-modal-cover-preview" alt="Cover preview" width="1200" height="750" hidden />
+      <p class="upload-modal-cover-error" id="projCoverError" role="alert"></p>
+    </div>
+
+    <label class="upload-modal-label" for="projFormat">Deployment format</label>
+    <select id="projFormat" class="upload-modal-input">
+      <option value="webgl">Upload WebGL build (zip)</option>
+      <option value="external">External link (GitHub Pages, etc.)</option>
+      <option value="download">Windows download (zip)</option>
     </select>
 
-    <div id="gameUploadGroup">
+    <div id="gameUploadGroup" data-format-group="webgl">
       <label class="upload-modal-label" for="projZipFile">Choose compressed zip (index.html at root)</label>
       <input type="file" id="projZipFile" class="upload-modal-file" accept=".zip" />
     </div>
 
-    <div id="webUploadGroup" style="display: none;">
+    <div id="webUploadGroup" data-format-group="external" hidden>
       <label class="upload-modal-label" for="projExternalUrl">External hosting URL</label>
       <input type="url" id="projExternalUrl" class="upload-modal-input" placeholder="https://username.github.io/game" />
     </div>
 
+    <div id="downloadUploadGroup" data-format-group="download" hidden>
+      <label class="upload-modal-label" for="projDownloadZip">Zip your entire Windows export folder (the .exe plus its data folder / .pck)</label>
+      <input type="file" id="projDownloadZip" class="upload-modal-file" accept=".zip,application/zip,application/x-zip-compressed" />
+      <p class="upload-modal-hint">One .zip, up to 500 MB. A bare .exe won't run without its data, so it isn't accepted. An exec reviews every download build before it appears in the Arcade.</p>
+      <label class="upload-modal-label" for="projPlatform">Platform</label>
+      <select id="projPlatform" class="upload-modal-input" required>
+        <option value="windows">Windows</option>
+      </select>
+    </div>
+
     <div id="uploadStatus" class="upload-modal-status" role="status"></div>
+    <progress id="uploadProgress" class="upload-modal-progress" max="100" value="0" hidden></progress>
 
     <div class="upload-modal-actions">
       <button type="button" class="ab-btn ab-btn-ghost" onclick="toggleUploadModal(false)">Cancel</button>
       <button type="button" id="submitUploadBtn" class="ab-btn ab-btn-accent">Deploy →</button>
+    </div>
+  </div>
+</div>
+
+<div id="downloadNotice" class="upload-modal-overlay" role="dialog" aria-modal="true" aria-labelledby="downloadNoticeTitle">
+  <div class="upload-modal-card">
+    <h3 class="upload-modal-title" id="downloadNoticeTitle">Before you <em>download.</em></h3>
+    <ul class="download-notice-list">
+      <li>This game is for <strong>Windows only</strong>.</li>
+      <li>Extract the <strong>whole zip</strong> before running the .exe. It won't start from inside the zip.</li>
+      <li>Windows may show a SmartScreen "unknown publisher" warning, because club games aren't code-signed.</li>
+      <li>Only run games from people you trust.</li>
+      <li>School computers may block downloads or running .exe files.</li>
+    </ul>
+    <div class="upload-modal-actions">
+      <button type="button" class="ab-btn ab-btn-ghost" id="downloadNoticeCancel">Cancel</button>
+      <button type="button" class="ab-btn ab-btn-accent" id="downloadNoticeConfirm">Download →</button>
     </div>
   </div>
 </div>
