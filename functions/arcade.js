@@ -484,7 +484,9 @@ const handler = createArcadeHandler({
     });
     return url;
   },
-  verifyIdToken: (token) => admin.auth().verifyIdToken(token),
+  // checkRevoked: a signed-out or disabled exec's token stops working now,
+  // not when it expires.
+  verifyIdToken: (token) => admin.auth().verifyIdToken(token, true),
   getRole: async (uid) =>
     (await admin.database().ref(`users/${uid}/role`).get()).val(),
 });
