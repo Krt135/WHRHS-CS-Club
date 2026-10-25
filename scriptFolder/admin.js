@@ -6,6 +6,7 @@ import { onAuthStateChanged } from "firebase/auth";
 import { ref, onValue, update, remove, get, set } from "firebase/database";
 import { mountSponsorsTab } from "./admin-sponsors.js";
 import { mountArcadeTab } from "./admin-arcade.js";
+import { restoredGameRecord } from "./arcade-games.js";
 
 let currentTab = 'approvals';
 let unsubscribe = null;
@@ -255,7 +256,10 @@ window.restorePost = async (id) => {
     // 2. Explicitly re-attach the ID just to be 100% safe
     data.id = _originalId;
 
-    await set(ref(db, `${_deletedFrom}/${_originalId}`), data);
+    // A moderation copy is never trusted to carry an approval.
+    const record = _deletedFrom === "games" ? restoredGameRecord(data) : data;
+
+    await set(ref(db, `${_deletedFrom}/${_originalId}`), record);
     await remove(ref(db, `deleted_posts/${id}`));
 };
 window.permanentDelete = (id) => confirm("Permanently delete?") && remove(ref(db, `deleted_posts/${id}`));

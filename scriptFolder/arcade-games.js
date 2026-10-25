@@ -46,3 +46,11 @@ export function formatFileSize(bytes) {
     const mb = bytes / (1024 * 1024);
     return `${mb < 10 ? mb.toFixed(1) : Math.round(mb)} MB`;
 }
+// What an exec's restore writes back to games/{id}. A restored Windows
+// download always goes back to review: the moderation copy could have been
+// edited, and only the approveDownload function may approve a build.
+export function restoredGameRecord(data) {
+    if (gameFormat(data) !== "download") return data;
+    const { buildGeneration, ...rest } = data;
+    return { ...rest, status: "pending" };
+}
