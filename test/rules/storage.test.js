@@ -70,3 +70,39 @@ test("only the owner writes their game folder", async () => {
     await assertFails(env.authenticatedContext(AUTHOR).storage()
         .ref(`games/${AUTHOR}/g1/index.html`).getDownloadURL());
 });
+
+// ---------- Card covers ----------
+
+test("owners create, replace and delete their own WebP cover", async () => {
+    const path = `covers/${AUTHOR}/g1/cover.webp`;
+    const webp = { contentType: "image/webp" };
+    await assertSucceeds(put(AUTHOR, path, webp));
+    await assertSucceeds(put(AUTHOR, path, webp)); // replace
+    await assertSucceeds(env.authenticatedContext(AUTHOR).storage().ref(path).delete());
+});
+
+test("covers are public to read and only the owner writes them", async () => {
+    const path = `covers/${AUTHOR}/g2/cover.webp`;
+    await env.withSecurityRulesDisabled(async (ctx) => {
+        await ctx.storage().ref(path).put(BYTES, { contentType: "image/webp" });
+    });
+    await assertSucceeds(env.unauthenticatedContext().storage().ref(path).getMetadata());
+    await assertFails(put(OTHER, path, { contentType: "image/webp" }));
+    await assertFails(env.authenticatedContext(OTHER).storage().ref(path).delete());
+    await assertFails(env.unauthenticatedContext().storage().ref(path)
+        .put(BYTES, { contentType: "image/webp" }));
+});
+
+test("covers must be WebP, under 1 MB, at the fixed name", async () => {
+    const base = `covers/${AUTHOR}/g3`;
+    for (const contentType of ["image/png", "image/jpeg", "image/gif", "image/svg+xml", "text/html"]) {
+        await assertFails(put(AUTHOR, `${base}/cover.webp`, { contentType }));
+    }
+    await assertFails(put(AUTHOR, `${base}/other.webp`, { contentType: "image/webp" }));
+    await assertFails(put(AUTHOR, `covers/${AUTHOR}/bad.id/cover.webp`, { contentType: "image/webp" }));
+    const big = new Uint8Array(1024 * 1024);
+    await assertFails(env.authenticatedContext(AUTHOR).storage().ref(`${base}/cover.webp`)
+        .put(big, { contentType: "image/webp" }));
+    await assertSucceeds(env.authenticatedContext(AUTHOR).storage().ref(`${base}/cover.webp`)
+        .put(big.subarray(1), { contentType: "image/webp" }));
+});

@@ -22,7 +22,8 @@
         "fileSize": { ".validate": "newData.isNumber() && newData.val() > 0 && newData.val() <= 524288000" },
         "description": { ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 1000" },
         "credits": { ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 300" },
-        "knownBugs": { ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 1000" }
+        "knownBugs": { ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 1000" },
+        "coverUrl": { ".validate": "newData.isString() && newData.val().length <= 2048 && newData.val().beginsWith('https://firebasestorage.googleapis.com/v0/b/whrhs-cs-club.firebasestorage.app/o/covers%2F' + newData.parent().child('authorUid').val() + '%2F' + $gameId + '%2Fcover.webp?')" }
       }
     },
     "projects": {

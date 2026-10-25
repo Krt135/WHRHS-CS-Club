@@ -5,6 +5,7 @@ import assert from "node:assert/strict";
 import { assertFails, assertSucceeds } from "@firebase/rules-unit-testing";
 import { AUTHOR, EXEC, OTHER, USERS, dbAs, downloadGame, makeEnv, seedDatabase } from "./helpers.js";
 import { restoredGameRecord } from "../../scriptFolder/arcade-games.js";
+import { COVER_URL_PREFIX, isCoverUrl } from "../../scriptFolder/game-details.js";
 
 let env;
 before(async () => { env = await makeEnv(); });
@@ -147,4 +148,29 @@ test("non-owners can't write another member's details", async () => {
     }
     await assertFails(env.unauthenticatedContext().database()
         .ref("games/w1/description").set("anon"));
+});
+
+// ---------- Cover URL ----------
+
+const coverUrl = (uid, gameId) =>
+    `${COVER_URL_PREFIX}${uid}%2F${gameId}%2Fcover.webp?alt=media&token=abc`;
+
+test("coverUrl must be this game's own cover download URL", async () => {
+    await seedDatabase(env, { users: USERS });
+    const db = dbAs(env, AUTHOR);
+    const own = coverUrl(AUTHOR, "w1");
+    assert.equal(isCoverUrl(own, AUTHOR, "w1"), true);
+    await assertSucceeds(db.ref("games/w1").set(webglGame({ coverUrl: own })));
+    for (const bad of [
+        "https://evil.example/cover.webp",
+        "https://firebasestorage.googleapis.com/v0/b/other-bucket/o/covers%2FauthorUid%2Fw2%2Fcover.webp?alt=media",
+        coverUrl(OTHER, "w2"),          // another member's cover
+        coverUrl(AUTHOR, "elsewhere"),  // another game's cover
+        `${COVER_URL_PREFIX}${AUTHOR}%2Fw2%2Fcover.png?alt=media`,
+        "javascript:alert(1)",
+        `${own}${"x".repeat(2048)}`,
+    ]) {
+        assert.equal(isCoverUrl(bad, AUTHOR, "w2"), false, bad);
+        await assertFails(db.ref("games/w2").set(webglGame({ id: "w2", coverUrl: bad })));
+    }
 });

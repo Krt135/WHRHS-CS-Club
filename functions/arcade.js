@@ -539,50 +539,61 @@ const handler = createArcadeHandler({
 exports.arcade = onRequest(
     {cors: true, timeoutSeconds: 120, memory: "256MiB"}, handler);
 
-// ---------- TRIGGER: DOWNLOAD BUILD CLEANUP ----------
+// ---------- TRIGGER: GAME FILE CLEANUP ----------
 
 /**
- * Deletes a Windows download build once its game is permanently deleted
- * from moderation (deleted_posts/{id} removed). Clients can't delete
- * downloads/ themselves (storage.rules), so this is the only way a build
- * goes away. Restoring a game also removes its deleted_posts node, but
- * writes games/{id} back first, so a game that exists again is skipped.
+ * Deletes a game's Storage files once it is permanently deleted from
+ * moderation (deleted_posts/{id} removed): its card cover
+ * (covers/{uid}/{id}/) and, for a Windows download, its build.zip. Clients
+ * can't delete downloads/ themselves (storage.rules), so this is the only
+ * way a build goes away. Restoring a game also removes its deleted_posts
+ * node, but writes games/{id} back first, so a game that exists again is
+ * skipped and keeps its files.
  * Only a record stored under its own game id counts (an author's soft
- * delete always is; the rules require it), and the path is built from the
- * record's authorUid, so a stray record can't point at another game.
+ * delete always is; the rules require it), and the paths are built from
+ * the record's authorUid, so a stray record can't point at another game.
  * @param {Object} post The deleted deleted_posts/{id} value.
  * @param {string} postId Its key under deleted_posts.
- * @param {Object} deps gameExists(id), deleteFile(storagePath).
- * @return {Promise<?string>} The deleted path, or null when skipped.
+ * @param {Object} deps gameExists(id), deleteFile(storagePath),
+ *   deletePrefix(prefix).
+ * @return {Promise<Array<string>>} Deleted paths and prefixes (empty when
+ *   skipped).
  */
-async function cleanUpDownload(post, postId, deps) {
-  if (!post || post._deletedFrom !== "games" ||
-      post.format !== "download") {
-    return null;
-  }
+async function cleanUpGameFiles(post, postId, deps) {
+  if (!post || post._deletedFrom !== "games") return [];
   const gameId = post._originalId;
   if (!ID_RE.test(gameId || "") || gameId !== postId ||
       !ID_RE.test(post.authorUid || "")) {
-    return null;
+    return [];
   }
-  if (await deps.gameExists(gameId)) return null;
-  const storagePath = downloadPath(post.authorUid, gameId);
-  await deps.deleteFile(storagePath);
-  return storagePath;
+  if (await deps.gameExists(gameId)) return [];
+  const deleted = [];
+  // Trailing slash: game "abc" must not match "abcd".
+  const coverPrefix = `covers/${post.authorUid}/${gameId}/`;
+  await deps.deletePrefix(coverPrefix);
+  deleted.push(coverPrefix);
+  if (post.format === "download") {
+    const storagePath = downloadPath(post.authorUid, gameId);
+    await deps.deleteFile(storagePath);
+    deleted.push(storagePath);
+  }
+  return deleted;
 }
 
+// The export name stays the same so deploying replaces the existing trigger.
 exports.cleanUpDownloadBuild = onValueDeleted("/deleted_posts/{postId}",
     async (event) => {
+      const bucket = admin.storage().bucket();
       const deps = {
         gameExists: async (id) =>
           (await admin.database().ref(`games/${id}`).get()).exists(),
-        deleteFile: (p) => admin.storage().bucket().file(p)
-            .delete({ignoreNotFound: true}),
+        deleteFile: (p) => bucket.file(p).delete({ignoreNotFound: true}),
+        deletePrefix: (prefix) => bucket.deleteFiles({prefix}),
       };
-      const storagePath = await cleanUpDownload(event.data.val(),
+      const deleted = await cleanUpGameFiles(event.data.val(),
           event.params.postId, deps);
-      if (storagePath) {
-        logger.info("Download build deleted", {storagePath});
+      if (deleted.length) {
+        logger.info("Game files deleted", {deleted});
       }
     });
 
@@ -731,4 +742,4 @@ exports.parseGamePath = parseGamePath;
 exports.createArcadeHandler = createArcadeHandler;
 exports.createDownloadReview = createDownloadReview;
 exports.downloadFilename = downloadFilename;
-exports.cleanUpDownload = cleanUpDownload;
+exports.cleanUpGameFiles = cleanUpGameFiles;

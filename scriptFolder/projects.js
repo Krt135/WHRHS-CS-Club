@@ -1,12 +1,12 @@
 import { auth, db, storage } from "./firebase.js";
 import { onAuthStateChanged } from "firebase/auth";
 import { ref as dbRef, onValue, update, remove, get, set, push } from "firebase/database";
-import { ref, uploadBytes, uploadBytesResumable } from "firebase/storage";
+import { ref, uploadBytes, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import { createScrollTrigger, scaleUp } from "./animations.js";
 import { registerTerminal } from "./init-terminal-animations.js";
 import { fetchArcadeStatus, arcadeDownloadUrl, LOCK_MESSAGE, UNREACHABLE_MESSAGE } from "./arcade-lock.js";
 import { normalizeEngine, engineLabel, gameFormat, formatFileSize, isHttpsUrl, webBuildMetadata, MAX_DOWNLOAD_BYTES } from "./arcade-games.js";
-import { DETAIL_FIELDS, attachCounter, cleanDetails, presentDetails } from "./game-details.js";
+import { DETAIL_FIELDS, attachCounter, cleanDetails, coverPath, isCoverUrl, prepareCover, presentDetails } from "./game-details.js";
 
 import * as fflate from "https://cdn.jsdelivr.net/npm/fflate@0.8.2/+esm";
 
@@ -134,7 +134,7 @@ function renderGames() {
         return `
             <article class="pj-game${stateClass}" data-engine="${normalizeEngine(game.engine)}">
                 <a class="pj-game-link" ${linkAttrs}>
-                    <div class="pj-game-preview"><span class="pj-game-engine">${escapeHTML(engineLabel(game.engine))}</span></div>
+                    ${previewHTML(game)}
                     <div class="pj-game-body">
                         <h3>${escapeHTML(game.title)}</h3>
                         <p>By ${escapeHTML(author)}</p>
@@ -199,6 +199,19 @@ if (gameGridContainer) {
     setInterval(() => {
         if (document.visibilityState === "visible") refreshArcadeStatus();
     }, ARCADE_STATUS_REFRESH_MS);
+}
+
+// Top of a card: the member's cover with a small engine badge, or the
+// engine panel with the accent slash when there's no (valid) cover.
+function previewHTML(game) {
+    const engine = escapeHTML(engineLabel(game.engine));
+    if (!isCoverUrl(game.coverUrl, game.authorUid, game.id)) {
+        return `<div class="pj-game-preview"><span class="pj-game-engine">${engine}</span></div>`;
+    }
+    return `<div class="pj-game-preview has-cover">
+                        <img class="pj-game-cover" src="${escapeHTML(game.coverUrl)}" alt="${escapeHTML(game.title || "Game cover")}" loading="lazy" width="1200" height="750">
+                        <span class="pj-game-badge">${engine}</span>
+                    </div>`;
 }
 
 function escapeHTML(value) {
@@ -312,6 +325,34 @@ for (const { key, max } of DETAIL_FIELDS) {
     const counter = document.getElementById(textarea.getAttribute("aria-describedby"));
     if (counter) detailCounters.push(attachCounter(textarea, counter, max));
 }
+
+// Optional cover: processed as soon as it's picked, so the preview shows
+// before submitting and a bad file is reported right away.
+const coverInput = document.getElementById("projCover");
+const coverPreview = document.getElementById("projCoverPreview");
+const coverError = document.getElementById("projCoverError");
+let pendingCover = null;
+
+function clearCover() {
+    if (pendingCover) URL.revokeObjectURL(pendingCover.previewUrl);
+    pendingCover = null;
+    if (coverPreview) { coverPreview.hidden = true; coverPreview.removeAttribute("src"); }
+}
+
+coverInput?.addEventListener("change", async () => {
+    clearCover();
+    coverError.textContent = "";
+    const file = coverInput.files[0];
+    if (!file) return;
+    try {
+        pendingCover = await prepareCover(file);
+        coverPreview.src = pendingCover.previewUrl;
+        coverPreview.hidden = false;
+    } catch (error) {
+        coverInput.value = "";
+        coverError.textContent = error.message;
+    }
+});
 
 if (submitUploadBtn) {
     submitUploadBtn.addEventListener("click", async () => {
@@ -433,6 +474,14 @@ if (submitUploadBtn) {
                 if (!isHttpsUrl(finalEmbedUrl)) throw new Error("The link must be a full https:// URL.");
             }
 
+            let coverFields = {};
+            if (pendingCover) {
+                uploadStatus.innerText = "Uploading cover image...";
+                const coverRef = ref(storage, coverPath(currentUser.uid, projectKey));
+                await uploadBytes(coverRef, pendingCover.blob, { contentType: "image/webp" });
+                coverFields = { coverUrl: await getDownloadURL(coverRef) };
+            }
+
             uploadStatus.innerText = "Saving to Firebase database...";
             await set(dbRef(db, `games/${projectKey}`), {
                 id: projectKey,
@@ -444,6 +493,7 @@ if (submitUploadBtn) {
                 type: { webgl: "game", external: "web", download: "download" }[format],
                 ...downloadFields,
                 ...details,
+                ...coverFields,
                 embedUrl: finalEmbedUrl,
                 authorUid: currentUser.uid,
                 authorName: currentUser.displayName || currentUser.email.split('@')[0],
@@ -458,6 +508,8 @@ if (submitUploadBtn) {
                 submitUploadBtn.disabled = false;
                 uploadStatus.innerText = "";
                 uploadProgress.hidden = true;
+                if (coverInput) coverInput.value = "";
+                clearCover();
             }, format === "download" ? 3000 : 1200);
 
         } catch (error) {

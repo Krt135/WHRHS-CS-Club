@@ -275,6 +275,22 @@
     transform: skewX(-20deg);
   }
   .pj-game:hover .pj-game-preview::before { right: -2%; }
+  /* Member's cover image: replaces the engine panel and slash only. */
+  .pj-game-preview.has-cover::before,
+  .pj-game-preview.has-cover::after { display: none; }
+  .pj-game-cover {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    object-fit: cover;
+  }
+  .pj-game-badge {
+    position: absolute; top: 10px; left: 10px; z-index: 1;
+    padding: 4px 8px;
+    background: var(--ab-black); color: #fff;
+    border-left: 3px solid var(--pj-accent, var(--ab-accent));
+    font-family: var(--ab-mono); font-size: 10px; font-weight: 700;
+    letter-spacing: 0.15em; text-transform: uppercase;
+  }
   .pj-game-engine {
     position: relative; z-index: 1;
     font-size: clamp(1.6rem, 3vw, 2.2rem); font-weight: 700;
@@ -378,6 +394,11 @@
   .upload-modal-textarea { display: block; resize: vertical; line-height: 1.5; font-family: 'Space Grotesk', system-ui, sans-serif; font-size: 14px; }
   .upload-modal-count { display: block; text-align: right; font-family: var(--ab-mono); font-size: 10px; letter-spacing: 0.1em; color: #6f6f6f; }
   .upload-modal-optional { margin-left: 6px; color: #5f5f5f; letter-spacing: 0.15em; }
+  .upload-modal-hint-tight { margin: -8px 0 10px; }
+  .upload-modal-cover-preview { display: block; width: 100%; height: auto; aspect-ratio: 16 / 10; object-fit: cover; background: #161616; }
+  .upload-modal-cover-preview[hidden] { display: none; }
+  .upload-modal-cover-error { min-height: 0; margin-top: 6px; font-family: var(--ab-mono); font-size: 12px; color: #ff8a73; }
+  .upload-modal-cover-error:empty { display: none; }
   .upload-modal-row { display: flex; flex-wrap: wrap; gap: 16px; }
   .upload-modal-row > div { flex: 1; min-width: 200px; }
   .upload-modal-file { color: #bdbdbd; font-family: var(--ab-mono); font-size: 12px; margin-bottom: 16px; max-width: 100%; }
@@ -669,6 +690,14 @@
           <option value="other">Other / Web</option>
         </select>
       </div>
+    </div>
+
+    <div class="upload-modal-field">
+      <label class="upload-modal-label" for="projCover">Cover image <span class="upload-modal-optional">optional</span></label>
+      <input type="file" id="projCover" class="upload-modal-file" accept="image/png,image/jpeg,image/webp" aria-describedby="projCoverHint" />
+      <p class="upload-modal-hint upload-modal-hint-tight" id="projCoverHint">PNG, JPEG or WebP. It's cropped to the card's shape (16:10) and replaces the engine panel on your card.</p>
+      <img id="projCoverPreview" class="upload-modal-cover-preview" alt="Cover preview" width="1200" height="750" hidden />
+      <p class="upload-modal-cover-error" id="projCoverError" role="alert"></p>
     </div>
 
     <label class="upload-modal-label" for="projFormat">Deployment format</label>

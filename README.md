@@ -89,3 +89,8 @@ gcloud iam service-accounts add-iam-policy-binding \
 ```
 
 Check the account first with `gcloud functions describe arcade --region=us-central1 --project=whrhs-cs-club --format="value(serviceConfig.serviceAccountEmail)"`. If it prints a different account, use that one in both places. Without this, `/download` returns 500.
+
+### Game details and covers
+
+- **Details:** optional `description` ("About this game", up to 1000 characters), `credits` (300) and `knownBugs` (1000). Empty fields are left out of the record. The database rules require each one, when present, to be a non-empty string within its limit. The play page shows them above the game, as plain text only (`textContent`, `white-space: pre-line`, no markdown or links), including for download games and during the lock.
+- **Cover:** optional, at `covers/{uid}/{id}/cover.webp`. The upload modal accepts PNG, JPEG or WebP (no SVG or GIF), center-crops it in the browser to the card's 16:10 shape (at most 1200×750), re-encodes it as WebP at about 0.8 quality, and refuses anything still 1 MB or more. Covers are public to read, since cards show them during the lock, and only the owner can write, replace or delete one (WebP, under 1 MB). The record's `coverUrl` must be that object's Firebase Storage download URL; the rules refuse any other URL. On a card, the cover replaces only the engine panel and keeps a small engine badge; cards without one look as before. Permanently deleting a game from Moderation also deletes its cover (`cleanUpDownloadBuild`); restoring keeps it.

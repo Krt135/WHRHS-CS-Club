@@ -62,6 +62,21 @@ service firebase.storage {
                         || request.resource.contentType == 'application/x-zip-compressed');
     }
 
+    // Arcade card covers: one WebP per game, made in the browser by
+    // scriptFolder/game-details.js. Public to read (cards show them during
+    // the school-hours lock; they aren't game content). Unlike build.zip,
+    // the owner may replace or delete their cover. The cleanUpDownloadBuild
+    // function removes it when the game is permanently deleted.
+    match /covers/{uid}/{gameId}/cover.webp {
+      allow read: if true;
+      allow create, update: if request.auth != null
+                            && request.auth.uid == uid
+                            && gameId.matches('^[-A-Za-z0-9_]{1,128}$')
+                            && request.resource.contentType == 'image/webp'
+                            && request.resource.size < 1024 * 1024;
+      allow delete: if request.auth != null && request.auth.uid == uid;
+    }
+
     // Lesson cover images (Resources page). Public to read; each signed-in
     // user writes only their own folder. Raster images only (no SVG, which
     // can carry script). Which uploads end up attached to a lesson is
