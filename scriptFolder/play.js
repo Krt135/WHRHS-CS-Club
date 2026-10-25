@@ -2,7 +2,7 @@ import { db } from "./firebase.js";
 import { ref as dbRef, get } from "firebase/database";
 import { showSponsorSplash } from "./sponsor-splash.js";
 import { arcadeGameUrl, fetchArcadeStatus, CHECKING_MESSAGE, LOCK_MESSAGE, UNREACHABLE_MESSAGE } from "./arcade-lock.js";
-import { engineLabel, gameFormat } from "./arcade-games.js";
+import { engineLabel, gameFormat, isHttpsUrl } from "./arcade-games.js";
 
 document.addEventListener("DOMContentLoaded", async () => {
     // 1. Grab target system coordinates out of routing query array
@@ -64,6 +64,13 @@ document.addEventListener("DOMContentLoaded", async () => {
         if (!status) return showBlocked(UNREACHABLE_MESSAGE);
         if (!status.open) return showBlocked(LOCK_MESSAGE);
 
+        const isWebgl = gameFormat(projectData) === "webgl";
+        if (!isWebgl && !isHttpsUrl(projectData.embedUrl)) {
+            if (statusSpinner) statusSpinner.hidden = true;
+            statusMessage.innerText = "This game's link is invalid.";
+            return;
+        }
+
         // 4. Load the game. Uploaded builds come from the arcade function
         // (its own origin, lock checked on every file); external links load
         // as-is, since another site can't be locked from here.
@@ -73,7 +80,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         viewport.addEventListener("load", () => {
             if (statusScreen) statusScreen.style.display = "none";
         }, { once: true });
-        viewport.src = gameFormat(projectData) === "webgl" ? arcadeGameUrl(gameId) : projectData.embedUrl;
+        viewport.src = isWebgl ? arcadeGameUrl(gameId) : projectData.embedUrl;
 
     } catch (error) {
         console.error(error);

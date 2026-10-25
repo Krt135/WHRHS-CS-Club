@@ -5,7 +5,7 @@ import { ref, uploadBytes, uploadBytesResumable } from "firebase/storage";
 import { createScrollTrigger, scaleUp } from "./animations.js";
 import { registerTerminal } from "./init-terminal-animations.js";
 import { fetchArcadeStatus, arcadeDownloadUrl, LOCK_MESSAGE, UNREACHABLE_MESSAGE } from "./arcade-lock.js";
-import { normalizeEngine, engineLabel, gameFormat, formatFileSize, webBuildMetadata, MAX_DOWNLOAD_BYTES } from "./arcade-games.js";
+import { normalizeEngine, engineLabel, gameFormat, formatFileSize, isHttpsUrl, webBuildMetadata, MAX_DOWNLOAD_BYTES } from "./arcade-games.js";
 
 import * as fflate from "https://cdn.jsdelivr.net/npm/fflate@0.8.2/+esm";
 
@@ -301,15 +301,6 @@ if (projFormat) {
     showFormatFields();
 }
 
-// External links must be absolute https:// URLs.
-function validExternalUrl(raw) {
-    try {
-        return new URL(raw).protocol === "https:";
-    } catch {
-        return false;
-    }
-}
-
 if (submitUploadBtn) {
     submitUploadBtn.addEventListener("click", async () => {
         if (!currentUser) return alert("Access denied: Please log in first.");
@@ -425,7 +416,7 @@ if (submitUploadBtn) {
             } else {
                 finalEmbedUrl = document.getElementById("projExternalUrl").value.trim();
                 if (!finalEmbedUrl) throw new Error("Please configure a routing URL link.");
-                if (!validExternalUrl(finalEmbedUrl)) throw new Error("The link must be a full https:// URL.");
+                if (!isHttpsUrl(finalEmbedUrl)) throw new Error("The link must be a full https:// URL.");
             }
 
             uploadStatus.innerText = "Saving to Firebase database...";

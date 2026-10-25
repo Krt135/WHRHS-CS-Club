@@ -103,3 +103,14 @@ export function webBuildMetadata(path) {
     if (!contentType) return null;
     return contentEncoding ? { contentType, contentEncoding } : { contentType };
 }
+
+// External game links must be absolute https:// URLs. The database rules
+// require that for new records; this also covers older ones before a link
+// goes into an iframe.
+export function isHttpsUrl(raw) {
+    try {
+        return new URL(raw).protocol === "https:";
+    } catch {
+        return false;
+    }
+}
