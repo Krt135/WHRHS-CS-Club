@@ -55,6 +55,10 @@ const ATTEMPT_WINDOW_MS = 60 * 60 * 1000;
 const MAX_CODE_LENGTH = 200;
 const ID_RE = /^[-\w]{1,128}$/;
 const DOWNLOAD_URL_TTL_MS = 5 * 60 * 1000;
+// Never served from a WebGL build, even if an old upload contains one:
+// executables, scripts and archives belong in a reviewed download build.
+const BLOCKED_FILE_RE =
+  /\.(exe|msi|bat|cmd|com|scr|ps1|vbs|jar|dll|zip|7z|rar)(\.(br|gz))?$/i;
 
 const LOCK_MESSAGE = "The Arcade is restricted during school hours and " +
   "cannot be played right now. It unlocks at 2:15 PM on school days.";
@@ -400,6 +404,10 @@ function createArcadeHandler(deps) {
     }
     if (parsed.filePath === "") {
       res.redirect(302, "index.html");
+      return;
+    }
+    if (BLOCKED_FILE_RE.test(parsed.filePath)) {
+      res.status(404).json({error: "Not found"});
       return;
     }
 

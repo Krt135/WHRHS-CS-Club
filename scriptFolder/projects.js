@@ -5,7 +5,7 @@ import { ref, uploadBytes, uploadBytesResumable } from "firebase/storage";
 import { createScrollTrigger, scaleUp } from "./animations.js";
 import { registerTerminal } from "./init-terminal-animations.js";
 import { fetchArcadeStatus, arcadeDownloadUrl, LOCK_MESSAGE, UNREACHABLE_MESSAGE } from "./arcade-lock.js";
-import { normalizeEngine, engineLabel, gameFormat, formatFileSize, MAX_DOWNLOAD_BYTES } from "./arcade-games.js";
+import { normalizeEngine, engineLabel, gameFormat, formatFileSize, webBuildMetadata, MAX_DOWNLOAD_BYTES } from "./arcade-games.js";
 
 import * as fflate from "https://cdn.jsdelivr.net/npm/fflate@0.8.2/+esm";
 
@@ -350,9 +350,19 @@ if (submitUploadBtn) {
                 const filesArray = Object.entries(unzipped);
                 const totalFiles = filesArray.length;
                 let uploadProgressCount = 0;
+                const skipped = [];
 
                 for (const [path, contentData] of filesArray) {
                     if (path.endsWith('/') || path.includes('__MACOSX')) {
+                        uploadProgressCount++;
+                        continue;
+                    }
+
+                    // Only web-build file types (see WEB_BUILD_TYPES); anything
+                    // else, like a README or an .exe, stays out of the Arcade.
+                    const metadata = webBuildMetadata(path);
+                    if (!metadata) {
+                        skipped.push(path);
                         uploadProgressCount++;
                         continue;
                     }
@@ -361,23 +371,8 @@ if (submitUploadBtn) {
                     const storagePath = `games/${currentUser.uid}/${projectKey}/${path}`;
                     
                     // Unity WebGL compressed builds ship files like "game.framework.js.br".
-                    // Storing Content-Encoding on the object makes Cloud Storage send that header,
-                    // so the browser decompresses natively; the Content-Type must describe the
-                    // *decompressed* payload (e.g. JS or wasm), not the .br/.gz wrapper.
-                    let contentEncoding;
-                    let typePath = path;
-                    if (path.endsWith(".br")) { contentEncoding = "br";   typePath = path.slice(0, -3); }
-                    if (path.endsWith(".gz")) { contentEncoding = "gzip"; typePath = path.slice(0, -3); }
-
-                    let contentType = "application/octet-stream";
-                    if (typePath.endsWith(".html")) contentType = "text/html; charset=utf-8";
-                    if (typePath.endsWith(".js"))   contentType = "application/javascript; charset=utf-8";
-                    if (typePath.endsWith(".css"))  contentType = "text/css; charset=utf-8";
-                    if (typePath.endsWith(".wasm")) contentType = "application/wasm";
-                    if (typePath.endsWith(".png"))  contentType = "image/png";
-
-                    const metadata = contentEncoding ? { contentType, contentEncoding } : { contentType };
-
+                    // webBuildMetadata stores Content-Encoding on those, so the browser
+                    // decompresses natively, with the *decompressed* payload's Content-Type.
                     try {
                         await uploadBytes(ref(storage, storagePath), contentData, metadata);
                     } catch (err) {
@@ -391,6 +386,10 @@ if (submitUploadBtn) {
                 }
 
                 if (!finalEmbedUrl) throw new Error("Validation failure: index.html was not found inside the zip file.");
+                if (skipped.length) {
+                    console.warn("Skipped files that aren't part of a web build:", skipped);
+                    alert(`Skipped ${skipped.length} file(s) that aren't web-build files: ${skipped.slice(0, 5).join(", ")}${skipped.length > 5 ? ", ..." : ""}`);
+                }
 
             } else if (format === "download") {
                 const file = document.getElementById("projDownloadZip").files[0];

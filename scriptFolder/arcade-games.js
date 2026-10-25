@@ -54,3 +54,52 @@ export function restoredGameRecord(data) {
     const { buildGeneration, ...rest } = data;
     return { ...rest, status: "pending" };
 }
+
+// Files a WebGL build may contain, with the Content-Type each is stored
+// under (the decompressed payload's type for .br/.gz files). storage.rules
+// (isWebBuildFile) allows the same extensions and types; keep them in step.
+const WEB_BUILD_TYPES = {
+    html: "text/html; charset=utf-8",
+    htm: "text/html; charset=utf-8",
+    js: "application/javascript; charset=utf-8",
+    mjs: "application/javascript; charset=utf-8",
+    css: "text/css; charset=utf-8",
+    wasm: "application/wasm",
+    data: "application/octet-stream",
+    unityweb: "application/octet-stream",
+    pck: "application/octet-stream",
+    apk: "application/octet-stream",
+    json: "application/json",
+    png: "image/png",
+    jpg: "image/jpeg",
+    jpeg: "image/jpeg",
+    gif: "image/gif",
+    webp: "image/webp",
+    svg: "image/svg+xml",
+    ico: "image/x-icon",
+    mp3: "audio/mpeg",
+    ogg: "audio/ogg",
+    wav: "audio/wav",
+    m4a: "audio/mp4",
+    woff: "font/woff",
+    woff2: "font/woff2",
+    ttf: "font/ttf",
+    otf: "font/otf",
+    txt: "text/plain; charset=utf-8",
+    fnt: "text/plain; charset=utf-8",
+    xml: "application/xml",
+};
+
+// Upload metadata for a file in a WebGL build, or null when the file type
+// isn't allowed in one (it would be refused by storage.rules).
+export function webBuildMetadata(path) {
+    let contentEncoding;
+    let typePath = path.toLowerCase();
+    if (typePath.endsWith(".br")) { contentEncoding = "br"; typePath = typePath.slice(0, -3); }
+    else if (typePath.endsWith(".gz")) { contentEncoding = "gzip"; typePath = typePath.slice(0, -3); }
+    const name = typePath.slice(typePath.lastIndexOf("/") + 1);
+    const dot = name.lastIndexOf(".");
+    const contentType = dot > 0 ? WEB_BUILD_TYPES[name.slice(dot + 1)] : undefined;
+    if (!contentType) return null;
+    return contentEncoding ? { contentType, contentEncoding } : { contentType };
+}

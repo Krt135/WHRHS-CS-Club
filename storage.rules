@@ -2,14 +2,46 @@ rules_version = '2';
 
 service firebase.storage {
   match /b/{bucket}/o {
+  // Extension list -> pattern for a file name ending in one of them,
+  // optionally compressed (.br/.gz, as Unity and Godot builds ship).
+  function webExt(list) {
+    return '.*[.](' + list + ')([.](br|gz))?';
+  }
+
+  // Content type of the decompressed payload, matched to its extension.
+  function isWebBuildFile(name, type) {
+    return (name.matches(webExt('html|htm')) && type.matches('text/html(;.*)?'))
+      || (name.matches(webExt('js|mjs')) && type.matches('(application|text)/javascript(;.*)?'))
+      || (name.matches(webExt('css')) && type.matches('text/css(;.*)?'))
+      || (name.matches(webExt('wasm')) && type.matches('application/(wasm|octet-stream)'))
+      || (name.matches(webExt('data|unityweb|pck|apk')) && type == 'application/octet-stream')
+      || (name.matches(webExt('json')) && type.matches('application/json(;.*)?'))
+      || (name.matches(webExt('png|jpg|jpeg|gif|webp|svg|ico'))
+          && type.matches('image/(png|jpeg|gif|webp|svg[+]xml|x-icon|vnd[.]microsoft[.]icon)'))
+      || (name.matches(webExt('mp3|ogg|wav|m4a'))
+          && type.matches('audio/(mpeg|ogg|wav|x-wav|wave|mp4|x-m4a)'))
+      || (name.matches(webExt('woff|woff2|ttf|otf'))
+          && type.matches('font/(woff|woff2|ttf|otf)|application/octet-stream'))
+      || (name.matches(webExt('txt|fnt')) && type.matches('text/plain(;.*)?'))
+      || (name.matches(webExt('xml')) && type.matches('(application|text)/xml(;.*)?'));
+  }
+
     // Uploaded game builds: writable only by their author. Nobody reads them
     // directly; players get them through the `arcade` Cloud Function, which
     // enforces the school-hours lock (functions/arcade.js).
+    //
+    // Only web-build files, each with a content type that fits its
+    // extension, so the folder can't host an .exe or other download that
+    // skips the exec review of Windows builds. Keep in step with
+    // WEB_BUILD_TYPES in scriptFolder/arcade-games.js.
     match /games/{uid}/{allPaths=**} {
       allow read: if false;
-      allow write: if request.auth != null
-                   && request.auth.uid == uid
-                   && request.resource.size < 100 * 1024 * 1024;
+      allow create, update: if request.auth != null
+                            && request.auth.uid == uid
+                            && request.resource.size < 100 * 1024 * 1024
+                            && isWebBuildFile(request.resource.name.lower(),
+                                              request.resource.contentType);
+      allow delete: if request.auth != null && request.auth.uid == uid;
     }
 
     // Windows download builds: one zip per game, uploaded once by its

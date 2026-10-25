@@ -168,6 +168,18 @@ const FILES = {
   "games/uid123/dice/Build/g.wasm.br":
     {contentType: "application/wasm", contentEncoding: "br",
       size: GAME_BYTES.length, body: GAME_BYTES},
+  // Shaped like Loaded Dice (Unity WebGL, Brotli).
+  "games/uid123/dice/Build/Gambers-Revenge.data.br":
+    {contentType: "application/octet-stream", contentEncoding: "br",
+      size: 4, body: "data"},
+  "games/uid123/dice/TemplateData/style.css":
+    {contentType: "text/css; charset=utf-8", size: 4, body: "body"},
+  // Uploaded before the storage rules allowed only web-build files.
+  "games/uid123/dice/setup.exe":
+    {contentType: "application/octet-stream", size: 2, body: "MZ"},
+  "games/uid123/dice/Build/setup.exe.br":
+    {contentType: "application/octet-stream", contentEncoding: "br",
+      size: 2, body: "MZ"},
 };
 
 /**
@@ -583,4 +595,29 @@ test("review only accepts download games and known decisions", async () => {
     await rejectsWith(review(callAs("exec-token", data)), code);
   }
   assert.deepEqual(saved, []);
+});
+
+// ---------- WebGL file types ----------
+
+test("executables and archives in a WebGL build are never served", async () => {
+  for (const file of ["setup.exe", "Build/setup.exe.br", "SETUP.EXE",
+    "x.msi", "run.bat", "a.cmd", "a.com", "a.scr", "a.ps1", "a.vbs",
+    "a.jar", "a.dll", "a.zip", "a.7z", "a.rar", "a.zip.gz"]) {
+    const {handler, calls} = makeHandler(OPEN);
+    const res = await request(handler, `/game/dice/${file}`);
+    assert.equal(res.statusCode, 404, file);
+    assert.ok(!res.body.toString().includes("MZ"), file);
+    assert.equal(calls.openFile, 0, file);
+    assert.equal(calls.getGame, 0, file);
+  }
+});
+
+test("web build files still serve, with nosniff", async () => {
+  for (const file of ["Build/g.wasm.br", "Build/Gambers-Revenge.data.br",
+    "TemplateData/style.css", "index.html"]) {
+    const {handler} = makeHandler(OPEN);
+    const res = await request(handler, `/game/dice/${file}`);
+    assert.equal(res.statusCode, 200, file);
+    assert.equal(res.headers["x-content-type-options"], "nosniff", file);
+  }
 });
