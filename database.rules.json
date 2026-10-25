@@ -16,7 +16,8 @@
         "format": { ".validate": "newData.val() === 'webgl' || newData.val() === 'external' || newData.val() === 'download'" },
         "embedUrl": { ".validate": "newData.isString() && newData.val().length <= 2048 && (newData.val() === '' || newData.val().beginsWith('https://'))" },
         ".validate": "newData.child('format').val() !== 'download' || newData.hasChildren(['status', 'platform', 'fileSize'])",
-        "status": { ".validate": "(newData.val() === 'pending' || newData.val() === 'approved' || newData.val() === 'rejected') && ((root.child('users').child(auth.uid).child('role').val() === 'exec' || root.child('users').child(auth.uid).child('role').val() === 'admin') || (data.exists() && newData.val() === data.val()) || (!data.exists() && newData.val() === 'pending'))" },
+        "status": { ".validate": "(newData.val() === 'pending' || newData.val() === 'approved' || newData.val() === 'rejected') && ((data.exists() && newData.val() === data.val()) || (!data.exists() && newData.val() === 'pending') || (newData.val() !== 'approved' && (root.child('users').child(auth.uid).child('role').val() === 'exec' || root.child('users').child(auth.uid).child('role').val() === 'admin')))" },
+        "buildGeneration": { ".validate": "data.exists() && newData.val() === data.val()" },
         "platform": { ".validate": "newData.val() === 'windows'" },
         "fileSize": { ".validate": "newData.isNumber() && newData.val() > 0 && newData.val() <= 524288000" }
       }

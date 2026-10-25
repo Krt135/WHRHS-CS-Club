@@ -61,3 +61,30 @@ test("restoring a non-download game keeps the copy as is", () => {
     const copy = { title: "Web", format: "webgl", type: "game", authorUid: AUTHOR };
     assert.deepEqual(restoredGameRecord(copy), copy);
 });
+
+// ---------- M2: only the approveDownload function approves ----------
+
+test("no client can approve a build or set its generation", async () => {
+    await seedDatabase(env, { users: USERS, games: { g1: downloadGame() } });
+    for (const uid of [EXEC, AUTHOR]) {
+        const db = dbAs(env, uid);
+        await assertFails(db.ref("games/g1/status").set("approved"));
+        await assertFails(db.ref("games/g1").update({ buildGeneration: "1" }));
+        await assertFails(db.ref("games/g2").set(downloadGame({ status: "approved" })));
+    }
+    // The author can't reject their own build either.
+    await assertFails(dbAs(env, AUTHOR).ref("games/g1/status").set("rejected"));
+    // Execs may still reject (or send back to pending) directly.
+    await assertSucceeds(dbAs(env, EXEC).ref("games/g1/status").set("rejected"));
+    await assertSucceeds(dbAs(env, EXEC).ref("games/g1/status").set("pending"));
+    // New uploads start pending.
+    await assertSucceeds(dbAs(env, AUTHOR).ref("games/g3").set(downloadGame()));
+});
+
+test("an approved record keeps its generation through exec edits", async () => {
+    await seedDatabase(env, { users: USERS, games: {
+        g1: downloadGame({ status: "approved", buildGeneration: "111" }) } });
+    const db = dbAs(env, EXEC);
+    await assertSucceeds(db.ref("games/g1").update({ title: "Renamed" }));
+    await assertFails(db.ref("games/g1").update({ buildGeneration: "222" }));
+});

@@ -6,16 +6,22 @@
 //
 // It also lists pending Windows download builds. Execs download one for
 // review through the arcade function (role checked there, lock still
-// applies), then approve or reject it. The database rules only let
-// exec/admin change a game's status.
+// applies), then approve or reject it through the approveDownload function.
+// Approval sends back the object generation the exec downloaded, so the
+// server approves exactly that file; the database rules don't let any
+// client set status "approved".
 import { auth, db } from "./firebase.js";
 import { getFunctions, httpsCallable } from "firebase/functions";
-import { equalTo, onValue, orderByChild, query, ref, update } from "firebase/database";
+import { equalTo, onValue, orderByChild, query, ref } from "firebase/database";
 import { arcadeDownloadUrl, fetchArcadeStatus, CHECKING_MESSAGE, UNREACHABLE_MESSAGE } from "./arcade-lock.js";
 import { formatFileSize } from "./arcade-games.js";
 import { escapeHTML } from "./sponsor-data.js";
 
 const OVERRIDE_ACTIVE_MESSAGE = "Arcade override active until 12:00 AM tonight.";
+
+// gameId -> object generation of the build this exec downloaded for review
+// in this page session. APPROVE stays disabled until there's an entry.
+const reviewedGenerations = new Map();
 
 function describe(status) {
     if (status.reason === "override") return OVERRIDE_ACTIVE_MESSAGE;
@@ -101,8 +107,11 @@ export function mountArcadeTab(container) {
 
     const pendingList = container.querySelector("#arcadePendingList");
     const pendingStatus = container.querySelector("#arcadePendingStatus");
+    const approveDownload = httpsCallable(getFunctions(auth.app), "approveDownload");
+    let pendingGames = [];
 
     const renderPending = (games) => {
+        pendingGames = games;
         if (!games.length) {
             pendingList.innerHTML = `<p class="admin-summary">No download builds are waiting for review.</p>`;
             return;
@@ -115,7 +124,7 @@ export function mountArcadeTab(container) {
                 </div>
                 <div class="admin-actions">
                     <button type="button" class="btn-neutral" data-review="${escapeHTML(game.id)}">DOWNLOAD TO REVIEW</button>
-                    <button type="button" class="btn-approve" data-approve="${escapeHTML(game.id)}">APPROVE</button>
+                    <button type="button" class="btn-approve" data-approve="${escapeHTML(game.id)}"${reviewedGenerations.has(game.id) ? "" : ` disabled title="Download it to review first."`}>APPROVE</button>
                     <button type="button" class="btn-deny" data-reject="${escapeHTML(game.id)}">REJECT</button>
                 </div>
             </div>
@@ -146,7 +155,9 @@ export function mountArcadeTab(container) {
             });
             if (res.status === 423) throw new Error("The Arcade is locked for school hours. Use the override above or try after 2:15 PM.");
             if (!res.ok) throw new Error(`The server refused (HTTP ${res.status}).`);
-            const { url } = await res.json();
+            const { url, generation } = await res.json();
+            reviewedGenerations.set(gameId, generation);
+            renderPending(pendingGames);
             pendingStatus.textContent = "Download started. Scan it before running it.";
             window.location.assign(url);
         } catch (error) {
@@ -155,16 +166,19 @@ export function mountArcadeTab(container) {
         }
     };
 
-    const setStatus = async (gameId, status) => {
+    const setStatus = async (gameId, decision) => {
         pendingStatus.textContent = "Saving...";
         try {
-            await update(ref(db, `games/${gameId}`), { status });
-            pendingStatus.textContent = status === "approved"
+            await approveDownload({ gameId, decision, generation: reviewedGenerations.get(gameId) });
+            pendingStatus.textContent = decision === "approved"
                 ? "Approved. It now shows in the Arcade."
                 : "Rejected. The author sees it as rejected and can delete it.";
         } catch (error) {
             console.error("Status change failed:", error);
-            pendingStatus.textContent = "Could not save. Check that your account is exec or admin.";
+            // e.g. the build changed since it was downloaded: review it again.
+            if (error.code === "functions/failed-precondition") reviewedGenerations.delete(gameId);
+            renderPending(pendingGames);
+            pendingStatus.textContent = error.message || "Could not save.";
         }
     };
 
@@ -172,7 +186,7 @@ export function mountArcadeTab(container) {
         const btn = e.target.closest("button");
         if (!btn) return;
         if (btn.dataset.review) review(btn.dataset.review);
-        if (btn.dataset.approve && confirm("Approve this build? Anyone will be able to download it outside school hours.")) {
+        if (btn.dataset.approve && reviewedGenerations.has(btn.dataset.approve) && confirm("Approve this build? Anyone will be able to download it outside school hours.")) {
             setStatus(btn.dataset.approve, "approved");
         }
         if (btn.dataset.reject && confirm("Reject this build?")) setStatus(btn.dataset.reject, "rejected");

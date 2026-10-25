@@ -19,11 +19,18 @@
  *                              (also at /api/arcade/status via Hosting)
  *   GET /game/{gameId}/{path} - a file from the game's build, or 423 Locked
  *   GET /download/{gameId}   - 302 to a 5-minute signed URL for an approved
- *                              download build, or 423 Locked / 404
+ *                              download build, or 423 Locked / 404. The
+ *                              stored object must still be the generation
+ *                              an exec approved (games/{id}/buildGeneration).
  *   GET /download/{gameId}?review=1 with "Authorization: Bearer <ID token>"
- *                            - exec/admin only: {url} for a build in any
- *                              review status, so it can be checked before
- *                              approval. Also 423 while locked.
+ *                            - exec/admin only: {url, generation} for a
+ *                              build in any review status, so it can be
+ *                              checked before approval. Also 423 while
+ *                              locked.
+ *
+ * Callable `approveDownload` ({gameId, decision, generation}): exec/admin
+ * approve or reject a download build. Approval pins the reviewed object
+ * generation; the database rules let only this function approve.
  *
  * Secrets:
  *   ARCADE_OVERRIDE_HASH - hex SHA-256 of the override code. Set it with
@@ -249,8 +256,9 @@ function downloadFilename(title) {
  * without Firebase.
  * @param {Object} deps now(fake), getOverrideUntil(), getGame(id),
  *   openFile(storagePath) -> ?{metadata, createReadStream()},
- *   signDownload(storagePath, filename, ttlMs) -> ?url (null when the
- *   object is missing), verifyIdToken(token) -> {uid}, getRole(uid).
+ *   statDownload(storagePath) -> ?{generation, size} (null when missing),
+ *   signDownload(storagePath, filename, ttlMs) -> url,
+ *   verifyIdToken(token) -> {uid}, getRole(uid).
  * @return {function(Object, Object): Promise<void>} Express-style handler.
  */
 function createArcadeHandler(deps) {
@@ -306,16 +314,25 @@ function createArcadeHandler(deps) {
         return;
       }
 
-      const url = await deps.signDownload(
-          downloadPath(game.authorUid, gameId),
-          downloadFilename(game.title), DOWNLOAD_URL_TTL_MS);
-      if (!url) {
+      // Players only get the exact object an exec approved. Clients can't
+      // overwrite a build, but this also catches a build uploaded after
+      // the record was approved.
+      const storagePath = downloadPath(game.authorUid, gameId);
+      const stat = await deps.statDownload(storagePath);
+      const generation = stat ? String(stat.generation) : null;
+      if (!generation || (!review &&
+          generation !== game.buildGeneration)) {
         res.status(404).json({error: "Not found"});
         return;
       }
 
-      logger.info("Arcade download issued", {gameId, review});
-      if (review) res.status(200).json({url});
+      const url = await deps.signDownload(storagePath,
+          downloadFilename(game.title), DOWNLOAD_URL_TTL_MS);
+
+      logger.info("Arcade download issued", {gameId, review, generation});
+      // The panel sends `generation` back with its approval, so the build
+      // approved is the one this exec downloaded.
+      if (review) res.status(200).json({url, generation});
       else res.redirect(302, url);
     } catch (err) {
       // `message` would collide with the log entry's own message field.
@@ -448,6 +465,30 @@ async function readOverrideUntil() {
       .val();
 }
 
+/**
+ * Generation and size of a stored object.
+ * @param {string} storagePath Object path in the default bucket.
+ * @return {Promise<?Object>} {generation, size}, or null when missing.
+ */
+async function statDownloadObject(storagePath) {
+  try {
+    const [meta] = await admin.storage().bucket().file(storagePath)
+        .getMetadata();
+    return {generation: String(meta.generation), size: Number(meta.size)};
+  } catch (err) {
+    if (err.code === 404) return null;
+    throw err;
+  }
+}
+
+// checkRevoked: a signed-out or disabled exec's token stops working now,
+// not when it expires.
+const verifyIdTokenRevocable = (token) =>
+  admin.auth().verifyIdToken(token, true);
+
+const readRole = async (uid) =>
+  (await admin.database().ref(`users/${uid}/role`).get()).val();
+
 const handler = createArcadeHandler({
   now: currentTime,
   getOverrideUntil: readOverrideUntil,
@@ -469,10 +510,9 @@ const handler = createArcadeHandler({
       createReadStream: () => file.createReadStream({decompress: false}),
     };
   },
+  statDownload: statDownloadObject,
   signDownload: async (storagePath, filename, ttlMs) => {
     const file = admin.storage().bucket().file(storagePath);
-    const [exists] = await file.exists();
-    if (!exists) return null;
     // Signing uses the function's service account (IAM signBlob), so it
     // needs roles/iam.serviceAccountTokenCreator on itself. See README.
     const [url] = await file.getSignedUrl({
@@ -484,11 +524,8 @@ const handler = createArcadeHandler({
     });
     return url;
   },
-  // checkRevoked: a signed-out or disabled exec's token stops working now,
-  // not when it expires.
-  verifyIdToken: (token) => admin.auth().verifyIdToken(token, true),
-  getRole: async (uid) =>
-    (await admin.database().ref(`users/${uid}/role`).get()).val(),
+  verifyIdToken: verifyIdTokenRevocable,
+  getRole: readRole,
 });
 
 exports.arcade = onRequest(
@@ -533,6 +570,84 @@ exports.cleanUpDownloadBuild = onValueDeleted("/deleted_posts/{postId}",
         logger.info("Download build deleted", {storagePath});
       }
     });
+
+// ---------- CALLABLE: DOWNLOAD REVIEW ----------
+
+/**
+ * Builds the approveDownload callable. Data access is injected so tests can
+ * run it without Firebase.
+ * @param {Object} deps verifyIdToken(token) -> {uid} (checks revocation),
+ *   getRole(uid), getGame(id), statDownload(storagePath),
+ *   saveReview(gameId, fields).
+ * @return {function(Object): Promise<Object>} Callable handler.
+ */
+function createDownloadReview(deps) {
+  return async (request) => {
+    // The callable framework has verified the token, but not whether it
+    // was revoked, so check the raw one again.
+    const header = (request.rawRequest && request.rawRequest.get &&
+      request.rawRequest.get("Authorization")) || "";
+    const match = /^Bearer (\S+)$/.exec(header);
+    if (!request.auth || !match) {
+      throw new HttpsError("unauthenticated", "Sign in first.");
+    }
+    let uid;
+    try {
+      uid = (await deps.verifyIdToken(match[1])).uid;
+    } catch (err) {
+      throw new HttpsError("unauthenticated", "Sign in again.");
+    }
+    const role = await deps.getRole(uid);
+    if (role !== "exec" && role !== "admin") {
+      throw new HttpsError("permission-denied", "Exec board only.");
+    }
+
+    const data = request.data || {};
+    const gameId = typeof data.gameId === "string" ? data.gameId : "";
+    if (!ID_RE.test(gameId) ||
+        (data.decision !== "approved" && data.decision !== "rejected")) {
+      throw new HttpsError("invalid-argument", "Bad request.");
+    }
+    const game = await deps.getGame(gameId);
+    if (!game || game.format !== "download" ||
+        !ID_RE.test(game.authorUid || "")) {
+      throw new HttpsError("not-found", "No such download game.");
+    }
+
+    if (data.decision === "rejected") {
+      await deps.saveReview(gameId, {status: "rejected",
+        buildGeneration: null});
+      logger.info("Download build rejected", {gameId, uid});
+      return {status: "rejected"};
+    }
+
+    const stat = await deps.statDownload(downloadPath(game.authorUid, gameId));
+    if (!stat) {
+      throw new HttpsError("failed-precondition",
+          "No build has been uploaded for this game.");
+    }
+    const generation = String(stat.generation);
+    if (typeof data.generation !== "string" ||
+        data.generation !== generation) {
+      throw new HttpsError("failed-precondition",
+          "The build changed since you downloaded it. Download it again.");
+    }
+    await deps.saveReview(gameId, {status: "approved",
+      buildGeneration: generation, fileSize: stat.size});
+    logger.info("Download build approved", {gameId, uid, generation});
+    return {status: "approved"};
+  };
+}
+
+exports.approveDownload = onCall(createDownloadReview({
+  verifyIdToken: verifyIdTokenRevocable,
+  getRole: readRole,
+  getGame: async (gameId) =>
+    (await admin.database().ref(`games/${gameId}`).get()).val(),
+  statDownload: statDownloadObject,
+  saveReview: (gameId, fields) =>
+    admin.database().ref(`games/${gameId}`).update(fields),
+}));
 
 // ---------- CALLABLE: EXEC OVERRIDE ----------
 
@@ -599,5 +714,6 @@ exports.arcadeStatus = arcadeStatus;
 exports.codeMatches = codeMatches;
 exports.parseGamePath = parseGamePath;
 exports.createArcadeHandler = createArcadeHandler;
+exports.createDownloadReview = createDownloadReview;
 exports.downloadFilename = downloadFilename;
 exports.cleanUpDownload = cleanUpDownload;

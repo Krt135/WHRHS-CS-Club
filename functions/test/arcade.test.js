@@ -13,6 +13,7 @@ const {
   codeMatches,
   cleanUpDownload,
   createArcadeHandler,
+  createDownloadReview,
   downloadFilename,
   isSchoolHours,
   nextClubMidnight,
@@ -137,7 +138,12 @@ const GAMES = {
   dice: {type: "game", authorUid: "uid123"},
   link: {type: "web", authorUid: "uid123", embedUrl: "https://x.github.io"},
   winOk: {format: "download", type: "download", status: "approved",
-    title: "Loaded Dice: Deluxe!", authorUid: "uid123"},
+    title: "Loaded Dice: Deluxe!", authorUid: "uid123", buildGeneration: "111"},
+  // Approved, but the stored object isn't the generation that was approved.
+  winStale: {format: "download", status: "approved", authorUid: "uid123",
+    buildGeneration: "999"},
+  // Approved before approvals were pinned to a generation.
+  winUnpinned: {format: "download", status: "approved", authorUid: "uid123"},
   winPending: {format: "download", type: "download", status: "pending",
     title: "Pending", authorUid: "uid123"},
   winRejected: {format: "download", type: "download", status: "rejected",
@@ -146,10 +152,14 @@ const GAMES = {
   // A WebGL record with a forged status is still not a download.
   webglApproved: {type: "game", status: "approved", authorUid: "uid123"},
 };
-const ZIPS = new Set(["downloads/uid123/winOk/build.zip",
-  "downloads/uid123/winPending/build.zip",
-  "downloads/uid123/winRejected/build.zip",
-  "downloads/uid123/webglApproved/build.zip"]);
+const ZIPS = {
+  "downloads/uid123/winOk/build.zip": {generation: "111", size: 4096},
+  "downloads/uid123/winStale/build.zip": {generation: "111", size: 4096},
+  "downloads/uid123/winUnpinned/build.zip": {generation: "111", size: 4096},
+  "downloads/uid123/winPending/build.zip": {generation: "222", size: 2048},
+  "downloads/uid123/winRejected/build.zip": {generation: "333", size: 1024},
+  "downloads/uid123/webglApproved/build.zip": {generation: "444", size: 1},
+};
 const TOKENS = {"exec-token": "execUid", "member-token": "memberUid"};
 const ROLES = {execUid: "exec", memberUid: "member"};
 const FILES = {
@@ -231,9 +241,9 @@ const makeHandler = (nowIso, overrideUntil = null) => {
       if (!f) return null;
       return {metadata: f, createReadStream: () => Readable.from([f.body])};
     },
+    statDownload: async (path) => ZIPS[path] || null,
     signDownload: async (path, filename, ttlMs) => {
       calls.sign.push({path, filename, ttlMs});
-      if (!ZIPS.has(path)) return null;
       return `https://signed.example/${path}?ttl=${ttlMs}`;
     },
     verifyIdToken: async (token) => {
@@ -383,15 +393,25 @@ test("override unlocks downloads during school hours", async () => {
 test("pending, rejected, missing and non-download games are 404", async () => {
   for (const id of ["winPending", "winRejected", "winMissing", "nope",
     "dice", "link", "webglApproved", "bad%2Fid", ""]) {
-    const {handler} = makeHandler(OPEN);
+    const {handler, calls} = makeHandler(OPEN);
     const res = await request(handler, `/download/${id}`);
     assert.equal(res.statusCode, 404, id);
     assert.equal(res.headers.location, undefined, id);
+    assert.equal(calls.sign.length, 0, id);
+  }
+});
+
+test("approved downloads must still be the approved generation", async () => {
+  for (const id of ["winStale", "winUnpinned"]) {
+    const {handler, calls} = makeHandler(OPEN);
+    const res = await request(handler, `/download/${id}`);
+    assert.equal(res.statusCode, 404, id);
+    assert.equal(calls.sign.length, 0, id);
   }
 });
 
 test("exec review returns JSON for pending builds", async () => {
-  for (const id of ["winPending", "winOk", "winRejected"]) {
+  for (const id of ["winPending", "winOk", "winRejected", "winStale"]) {
     const {handler} = makeHandler(OPEN);
     const res = await request(handler, `/download/${id}`, "GET",
         reviewAs("exec-token"));
@@ -399,6 +419,8 @@ test("exec review returns JSON for pending builds", async () => {
     const body = JSON.parse(res.body);
     assert.ok(body.url.startsWith(
         `https://signed.example/downloads/uid123/${id}/build.zip`));
+    assert.equal(body.generation,
+        ZIPS[`downloads/uid123/${id}/build.zip`].generation);
   }
 });
 
@@ -446,4 +468,119 @@ test("permanent delete removes the build; restore does not", async () => {
   assert.equal(await cleanUpDownload({...post, authorUid: "../x"},
       deps(false)), null);
   assert.deepEqual(deleted, ["downloads/uid123/winOk/build.zip"]);
+});
+
+// ---------- Download review callable ----------
+
+const makeReview = (games = GAMES, zips = ZIPS) => {
+  const saved = [];
+  const live = structuredClone(games);
+  const review = createDownloadReview({
+    verifyIdToken: async (token) => {
+      if (token === "revoked-token") throw new Error("auth/id-token-revoked");
+      if (!TOKENS[token]) throw new Error("bad token");
+      return {uid: TOKENS[token]};
+    },
+    getRole: async (uid) => ROLES[uid] || null,
+    getGame: async (id) => live[id] || null,
+    statDownload: async (path) => zips[path] || null,
+    saveReview: async (gameId, fields) => {
+      saved.push({gameId, fields});
+      for (const [k, v] of Object.entries(fields)) {
+        if (v === null) delete live[gameId][k];
+        else live[gameId][k] = v;
+      }
+    },
+  });
+  return {review, saved, live};
+};
+
+const callAs = (token, data) => ({
+  auth: token ? {uid: TOKENS[token] || "someone"} : null,
+  rawRequest: {get: (name) =>
+    name === "Authorization" && token ? `Bearer ${token}` : undefined},
+  data,
+});
+
+const rejectsWith = async (promise, code) => {
+  await assert.rejects(promise, (err) => {
+    assert.equal(err.code, code);
+    return true;
+  });
+};
+
+test("approving needs an exec or admin with a live token", async () => {
+  const {review, saved} = makeReview();
+  const data = {gameId: "winPending", decision: "approved", generation: "222"};
+  await rejectsWith(review(callAs(null, data)), "unauthenticated");
+  await rejectsWith(review(callAs("revoked-token", data)), "unauthenticated");
+  await rejectsWith(review(callAs("member-token", data)), "permission-denied");
+  assert.deepEqual(saved, []);
+});
+
+test("approving with no uploaded build fails", async () => {
+  const {review, saved} = makeReview();
+  await rejectsWith(review(callAs("exec-token", {gameId: "winMissing",
+    decision: "approved", generation: "1"})), "failed-precondition");
+  assert.deepEqual(saved, []);
+});
+
+test("approving pins the reviewed generation and real size", async () => {
+  const {review, saved, live} = makeReview();
+  // Not the generation the exec downloaded.
+  await rejectsWith(review(callAs("exec-token", {gameId: "winPending",
+    decision: "approved", generation: "221"})), "failed-precondition");
+  await rejectsWith(review(callAs("exec-token", {gameId: "winPending",
+    decision: "approved"})), "failed-precondition");
+  assert.deepEqual(saved, []);
+
+  assert.deepEqual(await review(callAs("exec-token", {gameId: "winPending",
+    decision: "approved", generation: "222"})), {status: "approved"});
+  assert.deepEqual(saved, [{gameId: "winPending", fields: {
+    status: "approved", buildGeneration: "222", fileSize: 2048}}]);
+
+  // The approved record now signs; the same record with another object
+  // generation does not.
+  const handler = (zips) => createArcadeHandler({
+    now: () => at(OPEN),
+    getOverrideUntil: async () => null,
+    getGame: async (id) => live[id] || null,
+    openFile: async () => null,
+    statDownload: async (path) => zips[path] || null,
+    signDownload: async (path) => `https://signed.example/${path}`,
+    verifyIdToken: async () => ({uid: "x"}),
+    getRole: async () => null,
+  });
+  const ok = await request(handler(ZIPS), "/download/winPending");
+  assert.equal(ok.statusCode, 302);
+  const swapped = {...ZIPS,
+    "downloads/uid123/winPending/build.zip": {generation: "223", size: 9}};
+  assert.equal((await request(handler(swapped), "/download/winPending"))
+      .statusCode, 404);
+});
+
+test("rejecting works without a build and clears the generation", async () => {
+  const {review, saved} = makeReview();
+  assert.deepEqual(await review(callAs("exec-token", {gameId: "winMissing",
+    decision: "rejected"})), {status: "rejected"});
+  assert.deepEqual(await review(callAs("exec-token", {gameId: "winOk",
+    decision: "rejected"})), {status: "rejected"});
+  assert.deepEqual(saved.map((s) => s.fields), [
+    {status: "rejected", buildGeneration: null},
+    {status: "rejected", buildGeneration: null},
+  ]);
+});
+
+test("review only accepts download games and known decisions", async () => {
+  const {review, saved} = makeReview();
+  for (const [data, code] of [
+    [{gameId: "dice", decision: "approved", generation: "1"}, "not-found"],
+    [{gameId: "nope", decision: "rejected"}, "not-found"],
+    [{gameId: "winPending", decision: "pending"}, "invalid-argument"],
+    [{gameId: "../x", decision: "rejected"}, "invalid-argument"],
+    [{decision: "rejected"}, "invalid-argument"],
+  ]) {
+    await rejectsWith(review(callAs("exec-token", data)), code);
+  }
+  assert.deepEqual(saved, []);
 });

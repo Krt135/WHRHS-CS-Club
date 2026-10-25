@@ -71,6 +71,32 @@ const USERS = [
 async function main() {
   const app = admin.initializeApp({projectId: PROJECT});
 
+  const generations = {};
+  for (const name of BUCKETS) {
+    const folder = `games/${AUTHOR}/${GAME_ID}`;
+    const bucket = app.storage().bucket(name);
+    await bucket.file(`${folder}/index.html`).save(INDEX_HTML, {
+      metadata: {contentType: "text/html; charset=utf-8"},
+    });
+    await bucket.file(`${folder}/Build/game.js.br`)
+        .save(zlib.brotliCompressSync(GAME_JS), {
+          metadata: {
+            contentType: "application/javascript; charset=utf-8",
+            contentEncoding: "br",
+          },
+        });
+    for (const d of DOWNLOADS) {
+      const file = bucket.file(`downloads/${AUTHOR}/${d.id}/build.zip`);
+      await file.save(EMPTY_ZIP, {metadata: {contentType: "application/zip"}});
+      // Approval pins the object generation (see approveDownload). The
+      // functions emulator's default bucket is the first one.
+      if (name === BUCKETS[0]) {
+        const [meta] = await file.getMetadata();
+        generations[d.id] = String(meta.generation);
+      }
+    }
+  }
+
   for (const ns of NAMESPACES) {
     const db = app.database(`http://127.0.0.1:9000?ns=${ns}`);
     // Mark welcome emails as sent first so onUserSignup doesn't try to email
@@ -99,6 +125,8 @@ async function main() {
         type: "download",
         platform: "windows",
         status: d.status,
+        ...(d.status === "approved" ?
+          {buildGeneration: generations[d.id]} : {}),
         fileSize: EMPTY_ZIP.length,
         embedUrl: "",
         authorUid: AUTHOR,
@@ -114,25 +142,6 @@ async function main() {
     }
     await db.ref("arcadeOverride").remove();
     await db.ref("arcadeOverrideAttempts").remove();
-  }
-
-  for (const name of BUCKETS) {
-    const folder = `games/${AUTHOR}/${GAME_ID}`;
-    const bucket = app.storage().bucket(name);
-    await bucket.file(`${folder}/index.html`).save(INDEX_HTML, {
-      metadata: {contentType: "text/html; charset=utf-8"},
-    });
-    await bucket.file(`${folder}/Build/game.js.br`)
-        .save(zlib.brotliCompressSync(GAME_JS), {
-          metadata: {
-            contentType: "application/javascript; charset=utf-8",
-            contentEncoding: "br",
-          },
-        });
-    for (const d of DOWNLOADS) {
-      await bucket.file(`downloads/${AUTHOR}/${d.id}/build.zip`)
-          .save(EMPTY_ZIP, {metadata: {contentType: "application/zip"}});
-    }
   }
 
   for (const u of USERS) {
