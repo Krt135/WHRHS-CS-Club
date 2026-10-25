@@ -642,18 +642,18 @@
       </div>
     </div>
 
-    <label class="upload-modal-label" for="projType">Deployment format</label>
-    <select id="projType" class="upload-modal-input">
-      <option value="game">Game Folder Zip (Upload to Firebase Storage)</option>
-      <option value="web">External Live Link (GitHub Pages, etc.)</option>
+    <label class="upload-modal-label" for="projFormat">Deployment format</label>
+    <select id="projFormat" class="upload-modal-input">
+      <option value="webgl">Upload WebGL build (zip)</option>
+      <option value="external">External link (GitHub Pages, etc.)</option>
     </select>
 
-    <div id="gameUploadGroup">
+    <div id="gameUploadGroup" data-format-group="webgl">
       <label class="upload-modal-label" for="projZipFile">Choose compressed zip (index.html at root)</label>
       <input type="file" id="projZipFile" class="upload-modal-file" accept=".zip" />
     </div>
 
-    <div id="webUploadGroup" style="display: none;">
+    <div id="webUploadGroup" data-format-group="external" hidden>
       <label class="upload-modal-label" for="projExternalUrl">External hosting URL</label>
       <input type="url" id="projExternalUrl" class="upload-modal-input" placeholder="https://username.github.io/game" />
     </div>

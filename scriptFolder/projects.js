@@ -228,22 +228,29 @@ window.deleteGame = async (gameId) => {
 };
 
 // ─── 4. MODAL & UPLOAD PIPELINE ───────────────────────────────────
-const projType = document.getElementById("projType");
-const gameUploadGroup = document.getElementById("gameUploadGroup");
-const webUploadGroup = document.getElementById("webUploadGroup");
+const projFormat = document.getElementById("projFormat");
 const submitUploadBtn = document.getElementById("submitUploadBtn");
 const uploadStatus = document.getElementById("uploadStatus");
 
-if (projType) {
-    projType.addEventListener("change", (e) => {
-        if (e.target.value === "game") {
-            gameUploadGroup.style.display = "block";
-            webUploadGroup.style.display = "none";
-        } else {
-            gameUploadGroup.style.display = "none";
-            webUploadGroup.style.display = "block";
-        }
+// Show only the fields for the selected deployment format.
+function showFormatFields() {
+    document.querySelectorAll("[data-format-group]").forEach(group => {
+        group.hidden = group.dataset.formatGroup !== projFormat.value;
     });
+}
+
+if (projFormat) {
+    projFormat.addEventListener("change", showFormatFields);
+    showFormatFields();
+}
+
+// External links must be absolute https:// URLs.
+function validExternalUrl(raw) {
+    try {
+        return new URL(raw).protocol === "https:";
+    } catch {
+        return false;
+    }
 }
 
 if (submitUploadBtn) {
@@ -253,7 +260,7 @@ if (submitUploadBtn) {
         const title = document.getElementById("projTitle").value.trim();
         const category = document.getElementById("projCategory").value;
         const engine = document.getElementById("projEngine").value;
-        const type = projType.value;
+        const format = projFormat.value;
         
         if (!title) return alert("Please specify a project title.");
 
@@ -270,7 +277,7 @@ if (submitUploadBtn) {
             const projectKey = push(dbRef(db, 'games')).key;
             let finalEmbedUrl = "";
 
-            if (type === "game") {
+            if (format === "webgl") {
                 const zipFileInput = document.getElementById("projZipFile");
                 if (!zipFileInput.files.length) throw new Error("Please select a valid .zip file.");
                 
@@ -329,6 +336,7 @@ if (submitUploadBtn) {
             } else {
                 finalEmbedUrl = document.getElementById("projExternalUrl").value.trim();
                 if (!finalEmbedUrl) throw new Error("Please configure a routing URL link.");
+                if (!validExternalUrl(finalEmbedUrl)) throw new Error("The link must be a full https:// URL.");
             }
 
             uploadStatus.innerText = "Saving to Firebase database...";
@@ -337,7 +345,9 @@ if (submitUploadBtn) {
                 title: title,
                 category: category,
                 engine: engine,
-                type: type,
+                format: format,
+                // `type` is what older code and the arcade function read.
+                type: format === "webgl" ? "game" : "web",
                 embedUrl: finalEmbedUrl,
                 authorUid: currentUser.uid,
                 authorName: currentUser.displayName || currentUser.email.split('@')[0],

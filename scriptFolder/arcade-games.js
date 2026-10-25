@@ -24,3 +24,14 @@ export function engineLabel(raw) {
     const value = normalizeEngine(raw);
     return ENGINES.find(e => e.value === value).label;
 }
+
+// Deployment format: "webgl" (zip build served by the arcade function),
+// "external" (a link to another site) or "download" (a zip players download).
+// Records from before `format` existed only have `type`: "game" was an
+// uploaded build, anything else an external link.
+const FORMATS = new Set(["webgl", "external", "download"]);
+
+export function gameFormat(game) {
+    if (game && FORMATS.has(game.format)) return game.format;
+    return game && game.type === "game" ? "webgl" : "external";
+}

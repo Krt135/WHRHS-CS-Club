@@ -2,7 +2,7 @@ import { db } from "./firebase.js";
 import { ref as dbRef, get } from "firebase/database";
 import { showSponsorSplash } from "./sponsor-splash.js";
 import { arcadeGameUrl, fetchArcadeStatus, CHECKING_MESSAGE, LOCK_MESSAGE, UNREACHABLE_MESSAGE } from "./arcade-lock.js";
-import { engineLabel } from "./arcade-games.js";
+import { engineLabel, gameFormat } from "./arcade-games.js";
 
 document.addEventListener("DOMContentLoaded", async () => {
     // 1. Grab target system coordinates out of routing query array
@@ -66,7 +66,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         viewport.addEventListener("load", () => {
             if (statusScreen) statusScreen.style.display = "none";
         }, { once: true });
-        viewport.src = projectData.type === "game" ? arcadeGameUrl(gameId) : projectData.embedUrl;
+        viewport.src = gameFormat(projectData) === "webgl" ? arcadeGameUrl(gameId) : projectData.embedUrl;
 
     } catch (error) {
         console.error(error);
