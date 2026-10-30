@@ -1,5 +1,6 @@
 import { createScrollTrigger, fadeInUp, pulseGlow } from "./animations.js";
 import "../styleFolder/site-footer.css";
+import { mainPage } from "./site-urls.js";
 
 class SpecialFooter extends HTMLElement {
     connectedCallback() {
@@ -15,16 +16,16 @@ class SpecialFooter extends HTMLElement {
         Build with us.<br>
         <span class="dim">Or sponsor what we build.</span>
       </h2>
-      <span class="footer-cta-wrap"><a href="sponsors.html#contact" class="footer-cta">Get in touch <span class="arrow" aria-hidden="true">→</span></a></span>
+      <span class="footer-cta-wrap"><a href="${mainPage("sponsors.html#contact")}" class="footer-cta">Get in touch <span class="arrow" aria-hidden="true">→</span></a></span>
     </div>
     <div class="footer-sitemap">
       <p class="footer-eyebrow">/ Sitemap</p>
       <nav class="footer-nav" aria-label="Footer">
-        <a href="about.html">→ About</a>
+        <a href="${mainPage("about.html")}">→ About</a>
         <a href="projects.html">→ Projects</a>
-        <a href="events.html">→ Events</a>
-        <a href="resources.html">→ Resources</a>
-        <a href="sponsors.html">→ Sponsors</a>
+        <a href="${mainPage("events.html")}">→ Events</a>
+        <a href="${mainPage("resources.html")}">→ Resources</a>
+        <a href="${mainPage("sponsors.html")}">→ Sponsors</a>
       </nav>
     </div>
     <div class="footer-contact">

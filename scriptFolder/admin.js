@@ -5,7 +5,6 @@ import { auth, db } from "./firebase.js";
 import { onAuthStateChanged } from "firebase/auth";
 import { ref, onValue, update, remove, get, set } from "firebase/database";
 import { mountSponsorsTab } from "./admin-sponsors.js";
-import { mountArcadeTab } from "./admin-arcade.js";
 import { restoredGameRecord } from "./arcade-games.js";
 
 let currentTab = 'approvals';
@@ -70,8 +69,6 @@ function loadData() {
         });
     } else if (currentTab === 'sponsors') {
         unsubscribe = mountSponsorsTab(content);
-    } else if (currentTab === 'arcade') {
-        unsubscribe = mountArcadeTab(content);
     } else if (currentTab === 'moderation') {
         unsubscribe = onValue(ref(db, 'deleted_posts'), (snapshot) => {
             const data = snapshot.val();

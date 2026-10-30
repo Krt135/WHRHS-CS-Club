@@ -5,6 +5,7 @@ import { ref, uploadBytes, uploadBytesResumable, getDownloadURL } from "firebase
 import { createScrollTrigger, scaleUp } from "./animations.js";
 import { registerTerminal } from "./init-terminal-animations.js";
 import { arcadeDownloadUrl } from "./arcade-urls.js";
+import { mainPage } from "./site-urls.js";
 import { normalizeEngine, engineLabel, gameFormat, formatFileSize, isHttpsUrl, webBuildMetadata, MAX_DOWNLOAD_BYTES } from "./arcade-games.js";
 import { DETAIL_FIELDS, attachCounter, cleanDetails, coverPath, isCoverUrl, prepareCover, presentDetails } from "./game-details.js";
 
@@ -135,7 +136,7 @@ function renderGames() {
                     </div>
                 </a>
                 <div class="pj-game-foot">
-                    <a class="pj-game-author" href="account.html?user=${encodeURIComponent(game.authorUid || '')}"
+                    <a class="pj-game-author" href="${mainPage(`account.html?user=${encodeURIComponent(game.authorUid || '')}`)}"
                        title="View ${escapeHTML(author)}'s profile" aria-label="View ${escapeHTML(author)}'s profile">${escapeHTML(author.substring(0, 2).toUpperCase())}</a>
                     ${deleteBtnHTML}
                     <a class="pj-game-play" ${linkAttrs} tabindex="-1" aria-hidden="true">${actionLabel}</a>

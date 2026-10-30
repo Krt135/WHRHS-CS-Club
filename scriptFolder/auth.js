@@ -10,6 +10,7 @@ import {
 
 import { ref, get, set } from "firebase/database";
 import { auth, db } from "./firebase";
+import { isArcadeBuild } from "./site-urls.js";
 
 // ---------- PROFILE SAVE ----------
 async function saveProfile(user, displayName) {
@@ -106,7 +107,8 @@ export function initAuthRedirect() {
         return;
       }
 
-      window.location.href = "account.html";
+      // Signing in on the Arcade returns to the Arcade.
+      window.location.href = isArcadeBuild ? "projects.html" : "account.html";
     }
   });
 }

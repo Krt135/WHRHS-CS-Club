@@ -1,5 +1,6 @@
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "./firebase.js";
+import { mainPage } from "./site-urls.js";
 import { staggerIn, hoverLift, openPanel, closePanel } from "./animations.js";
 import "../styleFolder/site-header.css";
 import "../styleFolder/themes.css";
@@ -22,12 +23,12 @@ function updateAuthButtons(root, user) {
     const initial = getProfileInitial(user);
 
     if (navAuth) {
-      navAuth.innerHTML = `<a href="account.html" class="btn-profile" aria-label="Your account">${initial}</a>`;
+      navAuth.innerHTML = `<a href="${mainPage("account.html")}" class="btn-profile" aria-label="Your account">${initial}</a>`;
     }
 
     /* 🌟 FIX: Injecting the inner bubble wrapper safely via innerHTML */
     if (mobileAuth) {
-      mobileAuth.href = "account.html";
+      mobileAuth.href = mainPage("account.html");
       mobileAuth.innerHTML = `Account · <span class="btn-profile">${initial}</span>`;
     }
   } else {
@@ -59,16 +60,16 @@ class SpecialHeader extends HTMLElement {
             </div>
 
             <header class="site-header">
-                <a href="index.html" class="nav-logo ${isActive("index")}">
+                <a href="${mainPage("index.html")}" class="nav-logo ${isActive("index")}">
                     <span class="nav-logo-icon" aria-hidden="true">W/</span>
                     <span>WHRHS<span class="muted"> · CS Club</span></span>
                 </a>
                 <nav class="nav-links" aria-label="Main navigation">
-                    <a href="about.html" class="${isActive("about")}" ${current("about")}><span class="num">01</span>About</a>
+                    <a href="${mainPage("about.html")}" class="${isActive("about")}" ${current("about")}><span class="num">01</span>About</a>
                     <a href="projects.html" class="${isActive("projects")}" ${current("projects")}><span class="num">02</span>Projects</a>
-                    <a href="events.html" class="${isActive("events")}" ${current("events")}><span class="num">03</span>Events</a>
-                    <a href="resources.html" class="${isActive("resources")}" ${current("resources")}><span class="num">04</span>Resources</a>
-                    <a href="sponsors.html" class="${isActive("sponsors")}" ${current("sponsors")}><span class="num">05</span>Sponsors</a>
+                    <a href="${mainPage("events.html")}" class="${isActive("events")}" ${current("events")}><span class="num">03</span>Events</a>
+                    <a href="${mainPage("resources.html")}" class="${isActive("resources")}" ${current("resources")}><span class="num">04</span>Resources</a>
+                    <a href="${mainPage("sponsors.html")}" class="${isActive("sponsors")}" ${current("sponsors")}><span class="num">05</span>Sponsors</a>
                 </nav>
                 <div class="nav-right" id="nav-auth">
                     <a href="login.html" class="btn-signin">Sign in →</a>
@@ -78,11 +79,11 @@ class SpecialHeader extends HTMLElement {
                 </button>
 
                 <nav class="mobile-nav" id="mobile-nav" aria-label="Mobile navigation">
-                    <a href="about.html" class="${isActive("about")}" ${current("about")}>01 About</a>
+                    <a href="${mainPage("about.html")}" class="${isActive("about")}" ${current("about")}>01 About</a>
                     <a href="projects.html" class="${isActive("projects")}" ${current("projects")}>02 Projects</a>
-                    <a href="events.html" class="${isActive("events")}" ${current("events")}>03 Events</a>
-                    <a href="resources.html" class="${isActive("resources")}" ${current("resources")}>04 Resources</a>
-                    <a href="sponsors.html" class="${isActive("sponsors")}" ${current("sponsors")}>05 Sponsors</a>
+                    <a href="${mainPage("events.html")}" class="${isActive("events")}" ${current("events")}>03 Events</a>
+                    <a href="${mainPage("resources.html")}" class="${isActive("resources")}" ${current("resources")}>04 Resources</a>
+                    <a href="${mainPage("sponsors.html")}" class="${isActive("sponsors")}" ${current("sponsors")}>05 Sponsors</a>
                     <a href="login.html" id="mobile-auth-link">Sign in →</a>
                 </nav>
             </header>
