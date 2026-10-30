@@ -27,8 +27,8 @@ service firebase.storage {
   }
 
     // Uploaded game builds: writable only by their author. Nobody reads them
-    // directly; players get them through the `arcade` Cloud Function, which
-    // enforces the school-hours lock (functions/arcade.js).
+    // directly; players get them through the `arcade` Cloud Function
+    // (functions/arcade.js).
     //
     // Only web-build files, each with a content type that fits its
     // extension, so the folder can't host an .exe or other download that
@@ -63,10 +63,10 @@ service firebase.storage {
     }
 
     // Arcade card covers: one WebP per game, made in the browser by
-    // scriptFolder/game-details.js. Public to read (cards show them during
-    // the school-hours lock; they aren't game content). Unlike build.zip,
-    // the owner may replace or delete their cover. The cleanUpDownloadBuild
-    // function removes it when the game is permanently deleted.
+    // scriptFolder/game-details.js. Public to read (they aren't game
+    // content). Unlike build.zip, the owner may replace or delete their
+    // cover. The cleanUpDownloadBuild function removes it when the game is
+    // permanently deleted.
     match /covers/{uid}/{gameId}/cover.webp {
       allow read: if true;
       allow create, update: if request.auth != null

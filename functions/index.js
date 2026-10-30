@@ -35,7 +35,6 @@ exports.statsDailyRefresh = stats.statsDailyRefresh;
 
 const arcade = require("./arcade");
 exports.arcade = arcade.arcade;
-exports.setArcadeOverride = arcade.setArcadeOverride;
 exports.cleanUpDownloadBuild = arcade.cleanUpDownloadBuild;
 exports.approveDownload = arcade.approveDownload;
 

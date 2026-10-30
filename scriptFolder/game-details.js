@@ -60,10 +60,10 @@ export function renderDetails(container, game) {
 
 // ---------- Cover image ----------
 //
-// covers/{uid}/{gameId}/cover.webp, public to read (cards show it during
-// the school-hours lock; it isn't game content). storage.rules lets only
-// the owner write it: WebP, under 1 MB. The record's coverUrl must be that
-// object's download URL; database.rules.json checks the same prefix.
+// covers/{uid}/{gameId}/cover.webp, public to read (it isn't game
+// content). storage.rules lets only the owner write it: WebP, under 1 MB.
+// The record's coverUrl must be that object's download URL;
+// database.rules.json checks the same prefix.
 
 // Same shape as the card's top area (.pj-game-preview, aspect-ratio 16/10).
 export const COVER_ASPECT = 16 / 10;

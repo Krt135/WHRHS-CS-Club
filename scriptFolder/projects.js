@@ -4,7 +4,7 @@ import { ref as dbRef, onValue, update, remove, get, set, push } from "firebase/
 import { ref, uploadBytes, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import { createScrollTrigger, scaleUp } from "./animations.js";
 import { registerTerminal } from "./init-terminal-animations.js";
-import { fetchArcadeStatus, arcadeDownloadUrl, LOCK_MESSAGE, UNREACHABLE_MESSAGE } from "./arcade-lock.js";
+import { arcadeDownloadUrl } from "./arcade-urls.js";
 import { normalizeEngine, engineLabel, gameFormat, formatFileSize, isHttpsUrl, webBuildMetadata, MAX_DOWNLOAD_BYTES } from "./arcade-games.js";
 import { DETAIL_FIELDS, attachCounter, cleanDetails, coverPath, isCoverUrl, prepareCover, presentDetails } from "./game-details.js";
 
@@ -17,10 +17,6 @@ let allGames = [];
 let activeEngine = null; 
 let hasPlayedCardTerminals = false;
 let activeCategory = 'people';
-
-// Play links stay disabled until the server says the Arcade is open.
-let arcadePlayable = false;
-const ARCADE_STATUS_REFRESH_MS = 60 * 1000;
 
 const gameGridContainer = document.getElementById("gameGridContainer");
 const filterPeopleBtn = document.getElementById("filter-people");
@@ -116,20 +112,18 @@ function renderGames() {
             : "";
         const isDownload = gameFormat(game) === "download";
         const approved = !isDownload || game.status === "approved";
-        let linkAttrs = arcadePlayable ? `href="${playUrl}"` : `aria-disabled="true"`;
-        let actionLabel = arcadePlayable ? 'Play →' : 'Locked';
+        let linkAttrs = `href="${playUrl}"`;
+        let actionLabel = 'Play →';
         if (!approved) {
             linkAttrs = `aria-disabled="true"`;
             actionLabel = game.status === "rejected" ? 'Rejected by exec' : 'Pending exec review';
         } else if (isDownload) {
             // Opens the download notice first (see the click handler below).
-            linkAttrs = arcadePlayable
-                ? `href="${arcadeDownloadUrl(game.id)}" data-download-id="${escapeHTML(game.id)}"`
-                : `aria-disabled="true"`;
+            linkAttrs = `href="${arcadeDownloadUrl(game.id)}" data-download-id="${escapeHTML(game.id)}"`;
             const size = formatFileSize(game.fileSize);
-            actionLabel = arcadePlayable ? `Download for Windows${size ? ` · ${size}` : ''} ↓` : 'Locked';
+            actionLabel = `Download for Windows${size ? ` · ${size}` : ''} ↓`;
         }
-        const stateClass = !approved ? ' is-pending' : (arcadePlayable ? '' : ' is-locked');
+        const stateClass = approved ? '' : ' is-pending';
 
         return `
             <article class="pj-game${stateClass}" data-engine="${normalizeEngine(game.engine)}">
@@ -167,40 +161,6 @@ function renderGames() {
     }
 }
 
-// ─── 2b. ARCADE LOCK ──────────────────────────────────────────────
-// The server enforces the lock on the game files; this just keeps the cards
-// and notice in step with it. Re-renders only when open/locked flips, so the
-// card animations don't replay every minute.
-const arcadeLockNotice = document.getElementById("arcadeLockNotice");
-
-async function refreshArcadeStatus() {
-    let playable = false;
-    let message = UNREACHABLE_MESSAGE;
-    try {
-        const status = await fetchArcadeStatus();
-        playable = status.open;
-        message = LOCK_MESSAGE;
-    } catch (err) {
-        console.error("Arcade status unavailable:", err);
-    }
-
-    if (arcadeLockNotice) {
-        arcadeLockNotice.textContent = playable ? "" : message;
-        arcadeLockNotice.hidden = playable;
-    }
-    if (playable !== arcadePlayable) {
-        arcadePlayable = playable;
-        renderGames();
-    }
-}
-
-if (gameGridContainer) {
-    refreshArcadeStatus();
-    setInterval(() => {
-        if (document.visibilityState === "visible") refreshArcadeStatus();
-    }, ARCADE_STATUS_REFRESH_MS);
-}
-
 // Top of a card: the member's cover with a small engine badge, or the
 // engine panel with the accent slash when there's no (valid) cover.
 function previewHTML(game) {
@@ -231,14 +191,13 @@ if (gameGridContainer) {
     });
 }
 
-// ─── 2c. WINDOWS DOWNLOAD NOTICE ──────────────────────────────────
-// Shown before every download. The lock is enforced by the server (423
-// while locked); once a build is downloaded, nothing can lock it.
+// ─── 2b. WINDOWS DOWNLOAD NOTICE ──────────────────────────────────
+// Shown before every download.
 const downloadNotice = document.getElementById("downloadNotice");
 let pendingDownloadId = null;
 
 function openDownloadNotice(gameId) {
-    if (!downloadNotice || !arcadePlayable) return;
+    if (!downloadNotice) return;
     pendingDownloadId = gameId;
     downloadNotice.style.display = "flex";
     document.getElementById("downloadNoticeConfirm")?.focus();

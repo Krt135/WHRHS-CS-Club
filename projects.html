@@ -331,20 +331,7 @@
     letter-spacing: 0.15em; text-transform: uppercase; color: var(--ab-accent);
   }
 
-  /* ── Arcade lock (school hours) ── */
-  .pj-arcade-lock {
-    margin: 0 0 20px;
-    padding: 16px 20px;
-    border-left: 4px solid var(--ab-accent);
-    background: #151515; color: #e6e6e6;
-    font-size: 0.95rem; line-height: 1.5;
-  }
-  .pj-arcade-lock[hidden] { display: none; }
-  .pj-game.is-locked .pj-game-link { cursor: not-allowed; }
-  .pj-game.is-locked .pj-game-preview,
-  .pj-game.is-locked .pj-game-body { opacity: 0.45; }
-  .pj-game.is-locked:hover { translate: none; background: #151515; }
-  .pj-game.is-locked .pj-game-play { color: #8a8a8a; }
+  /* ── Pending / rejected download cards ── */
   .pj-game.is-pending .pj-game-link { cursor: default; }
   .pj-game.is-pending .pj-game-preview { opacity: 0.6; }
   .pj-game.is-pending .pj-game-play { color: var(--ab-highlight); }
@@ -534,8 +521,6 @@
           Upload
         </button>
       </div>
-
-      <p id="arcadeLockNotice" class="pj-arcade-lock" role="status" hidden></p>
 
       <div id="gameGridContainer" class="pj-game-grid" aria-live="polite">
         <div class="pj-empty">Loading the arcade…</div>
