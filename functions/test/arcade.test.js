@@ -136,6 +136,7 @@ test("game paths stay inside the game folder", () => {
 const GAME_BYTES = Buffer.from("SECRET-GAME-BYTES-wasm-payload");
 const GAMES = {
   dice: {type: "game", authorUid: "uid123"},
+  godot: {type: "game", authorUid: "uid123"},
   link: {type: "web", authorUid: "uid123", embedUrl: "https://x.github.io"},
   winOk: {format: "download", type: "download", status: "approved",
     title: "Loaded Dice: Deluxe!", authorUid: "uid123", buildGeneration: "111"},
@@ -180,6 +181,19 @@ const FILES = {
   "games/uid123/dice/Build/setup.exe.br":
     {contentType: "application/octet-stream", contentEncoding: "br",
       size: 2, body: "MZ"},
+  // Shaped like a Godot 4 web export. Sizes are metadata only; the large
+  // file must never be streamed, so its body is a marker.
+  "games/uid123/godot/index.html":
+    {contentType: "text/html", size: 13, body: "<html></html>"},
+  "games/uid123/godot/index.wasm":
+    {contentType: "application/octet-stream", size: 38.5 * 1024 * 1024,
+      body: "BIG-WASM"},
+  "games/uid123/godot/small.wasm":
+    {contentType: "application/octet-stream", size: 4, body: "\0asm"},
+  "games/uid123/godot/index.pck":
+    {size: 4, body: "GDPC"},
+  "games/uid123/godot/big.zip":
+    {contentType: "application/zip", size: 40 * 1024 * 1024, body: "PK"},
 };
 
 /**
@@ -240,7 +254,8 @@ class FakeResponse extends PassThrough {
 }
 
 const makeHandler = (nowIso, overrideUntil = null) => {
-  const calls = {openFile: 0, getGame: 0, sign: [], verify: 0};
+  const calls = {openFile: 0, getGame: 0, sign: [], signGame: [],
+    verify: 0};
   const handler = createArcadeHandler({
     now: () => at(nowIso),
     getOverrideUntil: async () => overrideUntil,
@@ -257,6 +272,10 @@ const makeHandler = (nowIso, overrideUntil = null) => {
     signDownload: async (path, filename, ttlMs) => {
       calls.sign.push({path, filename, ttlMs});
       return `https://signed.example/${path}?ttl=${ttlMs}`;
+    },
+    signGameFile: async (path, contentType, ttlMs) => {
+      calls.signGame.push({path, contentType, ttlMs});
+      return `https://signed.example/${path}?type=${contentType}`;
     },
     verifyIdToken: async (token) => {
       calls.verify++;
@@ -668,4 +687,73 @@ test("web build files still serve, with nosniff", async () => {
     assert.equal(res.statusCode, 200, file);
     assert.equal(res.headers["x-content-type-options"], "nosniff", file);
   }
+});
+
+// ---------- Large files (Godot) ----------
+
+test("locked large files return 423 with no URL and no lookups", async () => {
+  for (const method of ["GET", "HEAD"]) {
+    const {handler, calls} = makeHandler(LOCKED);
+    const res = await request(handler, "/game/godot/index.wasm", method);
+    assert.equal(res.statusCode, 423);
+    assert.equal(res.headers.location, undefined);
+    assert.ok(!res.body.toString().includes("BIG-WASM"));
+    assert.equal(calls.getGame, 0);
+    assert.equal(calls.openFile, 0);
+    assert.deepEqual(calls.signGame, []);
+  }
+});
+
+test("open: files over 30 MiB redirect to a 5-minute signed URL", async () => {
+  for (const method of ["GET", "HEAD"]) {
+    const {handler, calls} = makeHandler(OPEN);
+    const res = await request(handler, "/game/godot/index.wasm", method);
+    assert.equal(res.statusCode, 302);
+    assert.equal(res.headers.location,
+        "https://signed.example/games/uid123/godot/index.wasm" +
+        "?type=application/wasm");
+    assert.equal(res.headers["cache-control"], "private, no-store");
+    assert.equal(res.headers["x-content-type-options"], "nosniff");
+    assert.equal(res.headers["content-length"], undefined);
+    assert.ok(!res.body.toString().includes("BIG-WASM"));
+    assert.deepEqual(calls.signGame, [{path: "games/uid123/godot/index.wasm",
+      contentType: "application/wasm", ttlMs: 5 * 60 * 1000}]);
+  }
+});
+
+test("large blocked files are still 404 and never signed", async () => {
+  const {handler, calls} = makeHandler(OPEN);
+  const res = await request(handler, "/game/godot/big.zip");
+  assert.equal(res.statusCode, 404);
+  assert.equal(calls.openFile, 0);
+  assert.deepEqual(calls.signGame, []);
+});
+
+test(".wasm is application/wasm and .pck is octet-stream", async () => {
+  const {handler, calls} = makeHandler(OPEN);
+  const wasm = await request(handler, "/game/godot/small.wasm");
+  assert.equal(wasm.statusCode, 200);
+  assert.equal(wasm.headers["content-type"], "application/wasm");
+  assert.equal(wasm.headers["content-length"], "4");
+  assert.equal(wasm.body.toString(), "\0asm");
+  const pck = await request(handler, "/game/godot/index.pck");
+  assert.equal(pck.statusCode, 200);
+  assert.equal(pck.headers["content-type"], "application/octet-stream");
+  assert.equal(pck.body.toString(), "GDPC");
+  assert.deepEqual(calls.signGame, []);
+});
+
+test("Loaded Dice .br files are served exactly as before", async () => {
+  const {handler, calls} = makeHandler(OPEN);
+  const data = await request(handler,
+      "/game/dice/Build/Gambers-Revenge.data.br");
+  assert.equal(data.statusCode, 200);
+  assert.equal(data.headers["content-type"], "application/octet-stream");
+  assert.equal(data.headers["content-encoding"], "br");
+  assert.equal(data.headers["content-length"], "4");
+  assert.equal(data.body.toString(), "data");
+  const wasm = await request(handler, "/game/dice/Build/g.wasm.br");
+  assert.equal(wasm.headers["content-type"], "application/wasm");
+  assert.equal(wasm.headers["content-encoding"], "br");
+  assert.deepEqual(calls.signGame, []);
 });

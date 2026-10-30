@@ -17,7 +17,9 @@
  * Routes on the `arcade` function:
  *   GET /status              - {open, reason, overrideUntil, serverTime}
  *                              (also at /api/arcade/status via Hosting)
- *   GET /game/{gameId}/{path} - a file from the game's build, or 423 Locked
+ *   GET /game/{gameId}/{path} - a file from the game's build, or 423 Locked.
+ *                              Files over 30 MiB are a 302 to a 5-minute
+ *                              signed URL instead (see LARGE_FILE_BYTES).
  *   GET /download/{gameId}   - 302 to a 5-minute signed URL for an approved
  *                              download build, or 423 Locked / 404. The
  *                              stored object must still be the generation
@@ -55,6 +57,11 @@ const ATTEMPT_WINDOW_MS = 60 * 60 * 1000;
 const MAX_CODE_LENGTH = 200;
 const ID_RE = /^[-\w]{1,128}$/;
 const DOWNLOAD_URL_TTL_MS = 5 * 60 * 1000;
+// Cloud Run caps a function's HTTP/1 response at 32 MiB (10 MB if streamed),
+// so bigger game files (a Godot index.wasm can be ~40 MB) are fetched from
+// Storage directly. Leaves headroom under the 32 MiB limit.
+const LARGE_FILE_BYTES = 30 * 1024 * 1024;
+const GAME_FILE_URL_TTL_MS = 5 * 60 * 1000;
 // Never served from a WebGL build, even if an old upload contains one:
 // executables, scripts and archives belong in a reviewed download build.
 const BLOCKED_FILE_RE =
@@ -256,12 +263,26 @@ function downloadFilename(title) {
 }
 
 /**
+ * Content-Type for a game file. Browsers need application/wasm to compile
+ * .wasm while it streams, and uploads don't always store it.
+ * @param {string} filePath Path inside the game folder.
+ * @param {string} storedType Content-Type stored with the object, if any.
+ * @return {string} Content-Type to send.
+ */
+function gameContentType(filePath, storedType) {
+  if (/\.wasm$/i.test(filePath)) return "application/wasm";
+  if (/\.pck$/i.test(filePath)) return "application/octet-stream";
+  return storedType || "application/octet-stream";
+}
+
+/**
  * Builds the request handler. Data access is injected so tests can run it
  * without Firebase.
  * @param {Object} deps now(fake), getOverrideUntil(), getGame(id),
  *   openFile(storagePath) -> ?{metadata, createReadStream()},
  *   statDownload(storagePath) -> ?{generation, size} (null when missing),
  *   signDownload(storagePath, filename, ttlMs) -> url,
+ *   signGameFile(storagePath, contentType, ttlMs) -> url,
  *   verifyIdToken(token) -> {uid}, getRole(uid).
  * @return {function(Object, Object): Promise<void>} Express-style handler.
  */
@@ -419,16 +440,28 @@ function createArcadeHandler(deps) {
         return;
       }
 
-      const file = await deps.openFile(
-          `games/${game.authorUid}/${parsed.gameId}/${parsed.filePath}`);
+      const storagePath =
+          `games/${game.authorUid}/${parsed.gameId}/${parsed.filePath}`;
+      const file = await deps.openFile(storagePath);
       if (!file) {
         res.status(404).json({error: "Not found"});
         return;
       }
 
       const meta = file.metadata;
+      const contentType = gameContentType(parsed.filePath, meta.contentType);
+      if (Number(meta.size) > LARGE_FILE_BYTES) {
+        const url = await deps.signGameFile(storagePath, contentType,
+            GAME_FILE_URL_TTL_MS);
+        logger.info("Arcade large file redirected", {
+          gameId: parsed.gameId, size: Number(meta.size),
+        });
+        res.redirect(302, url);
+        return;
+      }
+
       res.status(200);
-      res.set("Content-Type", meta.contentType || "application/octet-stream");
+      res.set("Content-Type", contentType);
       // Unity's .br/.gz files are stored with Content-Encoding and sent
       // still compressed, so the browser decompresses them natively.
       if (meta.contentEncoding) {
@@ -529,6 +562,18 @@ const handler = createArcadeHandler({
       // The real clock, not the lock's (which the emulator can fake).
       expires: Date.now() + ttlMs,
       responseDisposition: `attachment; filename="${filename}"`,
+    });
+    return url;
+  },
+  signGameFile: async (storagePath, contentType, ttlMs) => {
+    const file = admin.storage().bucket().file(storagePath);
+    // Same signing setup as signDownload. The game page fetches this URL
+    // cross-origin, so the bucket needs CORS for the function's origin.
+    const [url] = await file.getSignedUrl({
+      version: "v4",
+      action: "read",
+      expires: Date.now() + ttlMs,
+      responseType: contentType,
     });
     return url;
   },
