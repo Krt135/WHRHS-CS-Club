@@ -1,6 +1,7 @@
 import { onAuthStateChanged, updateProfile, signOut, updateEmail } from "firebase/auth";
 import { ref, set, get, update } from "firebase/database";
 import { auth, db } from "./firebase.js";
+import { arcadeHome } from "./site-urls.js";
 
 // 2. Grab HTML Elements
 const largeAvatar = document.getElementById("largeAvatar");
@@ -190,7 +191,7 @@ onAuthStateChanged(auth, async (user) => {
                 }
             } else {
                 alert("The selected club profile could not be found.");
-                window.location.href = "projects.html";
+                window.location.href = arcadeHome;
             }
         }
     } catch (error) {

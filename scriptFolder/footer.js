@@ -1,6 +1,6 @@
 import { createScrollTrigger, fadeInUp, pulseGlow } from "./animations.js";
 import "../styleFolder/site-footer.css";
-import { mainPage } from "./site-urls.js";
+import { arcadeHome, mainPage } from "./site-urls.js";
 
 class SpecialFooter extends HTMLElement {
     connectedCallback() {
@@ -22,7 +22,7 @@ class SpecialFooter extends HTMLElement {
       <p class="footer-eyebrow">/ Sitemap</p>
       <nav class="footer-nav" aria-label="Footer">
         <a href="${mainPage("about.html")}">→ About</a>
-        <a href="projects.html">→ Projects</a>
+        <a href="${arcadeHome}">→ Projects</a>
         <a href="${mainPage("events.html")}">→ Events</a>
         <a href="${mainPage("resources.html")}">→ Resources</a>
         <a href="${mainPage("sponsors.html")}">→ Sponsors</a>

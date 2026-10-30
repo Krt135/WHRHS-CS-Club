@@ -1,0 +1,15 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "redirects": [
+    {
+      "source": "/projects.html",
+      "destination": "https://projects.whrhs-cs-club.com/",
+      "statusCode": 301
+    },
+    {
+      "source": "/play.html",
+      "destination": "https://projects.whrhs-cs-club.com/play.html",
+      "statusCode": 301
+    }
+  ]
+}

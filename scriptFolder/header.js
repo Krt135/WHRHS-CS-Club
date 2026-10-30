@@ -1,6 +1,6 @@
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "./firebase.js";
-import { mainPage } from "./site-urls.js";
+import { arcadeHome, mainPage } from "./site-urls.js";
 import { staggerIn, hoverLift, openPanel, closePanel } from "./animations.js";
 import "../styleFolder/site-header.css";
 import "../styleFolder/themes.css";
@@ -66,7 +66,7 @@ class SpecialHeader extends HTMLElement {
                 </a>
                 <nav class="nav-links" aria-label="Main navigation">
                     <a href="${mainPage("about.html")}" class="${isActive("about")}" ${current("about")}><span class="num">01</span>About</a>
-                    <a href="projects.html" class="${isActive("projects")}" ${current("projects")}><span class="num">02</span>Projects</a>
+                    <a href="${arcadeHome}" class="${isActive("projects")}" ${current("projects")}><span class="num">02</span>Projects</a>
                     <a href="${mainPage("events.html")}" class="${isActive("events")}" ${current("events")}><span class="num">03</span>Events</a>
                     <a href="${mainPage("resources.html")}" class="${isActive("resources")}" ${current("resources")}><span class="num">04</span>Resources</a>
                     <a href="${mainPage("sponsors.html")}" class="${isActive("sponsors")}" ${current("sponsors")}><span class="num">05</span>Sponsors</a>
@@ -80,7 +80,7 @@ class SpecialHeader extends HTMLElement {
 
                 <nav class="mobile-nav" id="mobile-nav" aria-label="Mobile navigation">
                     <a href="${mainPage("about.html")}" class="${isActive("about")}" ${current("about")}>01 About</a>
-                    <a href="projects.html" class="${isActive("projects")}" ${current("projects")}>02 Projects</a>
+                    <a href="${arcadeHome}" class="${isActive("projects")}" ${current("projects")}>02 Projects</a>
                     <a href="${mainPage("events.html")}" class="${isActive("events")}" ${current("events")}>03 Events</a>
                     <a href="${mainPage("resources.html")}" class="${isActive("resources")}" ${current("resources")}>04 Resources</a>
                     <a href="${mainPage("sponsors.html")}" class="${isActive("sponsors")}" ${current("sponsors")}>05 Sponsors</a>

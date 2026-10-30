@@ -16,6 +16,12 @@
       "**/node_modules/**"
     ],
     "cleanUrls": true,
+    "redirects": [
+      { "source": "/projects.html", "destination": "https://projects.whrhs-cs-club.com/", "type": 301 },
+      { "source": "/projects", "destination": "https://projects.whrhs-cs-club.com/", "type": 301 },
+      { "source": "/play.html", "destination": "https://projects.whrhs-cs-club.com/play.html", "type": 301 },
+      { "source": "/play", "destination": "https://projects.whrhs-cs-club.com/play.html", "type": 301 }
+    ],
     "rewrites": [
       {
         "source": "/api/arcade/status",
