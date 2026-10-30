@@ -1,5 +1,5 @@
 /**
- * Seeds the LOCAL emulators for the Arcade lock manual tests
+ * Seeds the LOCAL emulators for the Arcade manual tests
  * (see functions/test/arcade-manual-tests.md). Never touches production:
  * it refuses to run unless the emulator host variables point at 127.0.0.1.
  *
@@ -143,8 +143,6 @@ async function main() {
         emailPreferences: {announcements: false, newGames: false},
       });
     }
-    await db.ref("arcadeOverride").remove();
-    await db.ref("arcadeOverrideAttempts").remove();
   }
 
   for (const u of USERS) {

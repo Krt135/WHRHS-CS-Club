@@ -1,120 +1,17 @@
 /**
- * Arcade lock tests: `npm test` in functions/.
- * Times are written with their New York UTC offset (-04:00 EDT, -05:00 EST).
+ * Arcade function tests: `npm test` in functions/.
  */
 
 const test = require("node:test");
 const assert = require("node:assert/strict");
-const crypto = require("crypto");
 const {PassThrough, Readable} = require("stream");
 const {
-  LOCK_MESSAGE,
-  arcadeStatus,
-  codeMatches,
   cleanUpGameFiles,
   createArcadeHandler,
   createDownloadReview,
   downloadFilename,
-  isSchoolHours,
-  nextClubMidnight,
   parseGamePath,
 } = require("../arcade");
-
-const at = (iso) => Date.parse(iso);
-
-// ---------- Schedule ----------
-
-test("weekday boundaries (Wednesday, EDT)", () => {
-  assert.equal(isSchoolHours(at("2026-10-14T07:29:59-04:00")), false);
-  assert.equal(isSchoolHours(at("2026-10-14T07:30:00-04:00")), true);
-  assert.equal(isSchoolHours(at("2026-10-14T14:14:59-04:00")), true);
-  assert.equal(isSchoolHours(at("2026-10-14T14:15:00-04:00")), false);
-  assert.equal(isSchoolHours(at("2026-10-14T00:00:00-04:00")), false);
-  assert.equal(isSchoolHours(at("2026-10-14T23:59:00-04:00")), false);
-});
-
-test("weekday boundaries in winter (EST)", () => {
-  assert.equal(isSchoolHours(at("2026-01-14T07:29:00-05:00")), false);
-  assert.equal(isSchoolHours(at("2026-01-14T07:30:00-05:00")), true);
-  assert.equal(isSchoolHours(at("2026-01-14T14:14:00-05:00")), true);
-  assert.equal(isSchoolHours(at("2026-01-14T14:15:00-05:00")), false);
-});
-
-test("every weekday locks, weekends never do", () => {
-  // Mon 12 Oct 2026 .. Sun 18 Oct 2026 at 10:00 AM.
-  const expected = [true, true, true, true, true, false, false];
-  expected.forEach((locked, i) => {
-    const day = String(12 + i).padStart(2, "0");
-    assert.equal(isSchoolHours(at(`2026-10-${day}T10:00:00-04:00`)), locked,
-        `Oct ${day}`);
-  });
-  assert.equal(isSchoolHours(at("2026-10-17T07:30:00-04:00")), false);
-  assert.equal(isSchoolHours(at("2026-10-18T14:14:00-04:00")), false);
-});
-
-test("uses New York time, not the server's UTC clock", () => {
-  // 11:45 UTC Wednesday = 7:45 AM in New York.
-  assert.equal(isSchoolHours(at("2026-10-14T11:45:00Z")), true);
-  // 18:20 UTC = 2:20 PM in New York.
-  assert.equal(isSchoolHours(at("2026-10-14T18:20:00Z")), false);
-});
-
-// ---------- Override expiry ----------
-
-test("override expires at the next New York midnight", () => {
-  const setAt = at("2026-10-14T13:00:00-04:00");
-  const expiresAt = nextClubMidnight(setAt);
-  assert.equal(expiresAt, at("2026-10-15T00:00:00-04:00"));
-
-  assert.deepEqual(arcadeStatus(setAt, expiresAt),
-      {open: true, reason: "override", overrideUntil: expiresAt});
-  assert.equal(arcadeStatus(expiresAt - 1000, expiresAt).reason, "override");
-  // At midnight the override is gone; the schedule says open (it's 12 AM).
-  assert.deepEqual(arcadeStatus(expiresAt, expiresAt),
-      {open: true, reason: "schedule", overrideUntil: null});
-  // Next morning it locks again.
-  assert.equal(
-      arcadeStatus(at("2026-10-15T07:30:00-04:00"), expiresAt).open, false);
-});
-
-test("override set seconds before midnight still ends at that midnight", () => {
-  assert.equal(nextClubMidnight(at("2026-10-14T23:59:59-04:00")),
-      at("2026-10-15T00:00:00-04:00"));
-  assert.equal(nextClubMidnight(at("2026-10-15T00:00:00-04:00")),
-      at("2026-10-16T00:00:00-04:00"));
-});
-
-test("midnight is correct across DST changes", () => {
-  // Fall back: Sun 1 Nov 2026 is 25 hours long.
-  assert.equal(nextClubMidnight(at("2026-10-31T23:00:00-04:00")),
-      at("2026-11-01T00:00:00-04:00"));
-  assert.equal(nextClubMidnight(at("2026-11-01T10:00:00-05:00")),
-      at("2026-11-02T00:00:00-05:00"));
-  // Spring forward: Sun 8 Mar 2026 is 23 hours long.
-  assert.equal(nextClubMidnight(at("2026-03-08T01:00:00-05:00")),
-      at("2026-03-09T00:00:00-04:00"));
-});
-
-test("an override during school hours unlocks, a stale one does not", () => {
-  const now = at("2026-10-14T09:00:00-04:00");
-  assert.equal(arcadeStatus(now, null).open, false);
-  assert.equal(arcadeStatus(now, nextClubMidnight(now)).open, true);
-  assert.equal(arcadeStatus(now, at("2026-10-14T00:00:00-04:00")).open, false);
-  assert.equal(arcadeStatus(now, "9999999999999").open, false);
-});
-
-// ---------- Code check ----------
-
-test("override code is checked against its SHA-256 hash", () => {
-  const hash = crypto.createHash("sha256").update("purple-otter-lamp", "utf8")
-      .digest("hex");
-  assert.equal(codeMatches("purple-otter-lamp", hash), true);
-  assert.equal(codeMatches("purple-otter-lamp", ` ${hash.toUpperCase()}\n`),
-      true);
-  assert.equal(codeMatches("purple-otter-lam", hash), false);
-  assert.equal(codeMatches("purple-otter-lamp", ""), false);
-  assert.equal(codeMatches("purple-otter-lamp", "not-a-hash"), false);
-});
 
 // ---------- Paths ----------
 
@@ -136,6 +33,7 @@ test("game paths stay inside the game folder", () => {
 const GAME_BYTES = Buffer.from("SECRET-GAME-BYTES-wasm-payload");
 const GAMES = {
   dice: {type: "game", authorUid: "uid123"},
+  godot: {type: "game", authorUid: "uid123"},
   link: {type: "web", authorUid: "uid123", embedUrl: "https://x.github.io"},
   winOk: {format: "download", type: "download", status: "approved",
     title: "Loaded Dice: Deluxe!", authorUid: "uid123", buildGeneration: "111"},
@@ -180,6 +78,19 @@ const FILES = {
   "games/uid123/dice/Build/setup.exe.br":
     {contentType: "application/octet-stream", contentEncoding: "br",
       size: 2, body: "MZ"},
+  // Shaped like a Godot 4 web export. Sizes are metadata only; the large
+  // file must never be streamed, so its body is a marker.
+  "games/uid123/godot/index.html":
+    {contentType: "text/html", size: 13, body: "<html></html>"},
+  "games/uid123/godot/index.wasm":
+    {contentType: "application/octet-stream", size: 38.5 * 1024 * 1024,
+      body: "BIG-WASM"},
+  "games/uid123/godot/small.wasm":
+    {contentType: "application/octet-stream", size: 4, body: "\0asm"},
+  "games/uid123/godot/index.pck":
+    {size: 4, body: "GDPC"},
+  "games/uid123/godot/big.zip":
+    {contentType: "application/zip", size: 40 * 1024 * 1024, body: "PK"},
 };
 
 /**
@@ -239,11 +150,10 @@ class FakeResponse extends PassThrough {
   }
 }
 
-const makeHandler = (nowIso, overrideUntil = null) => {
-  const calls = {openFile: 0, getGame: 0, sign: [], verify: 0};
+const makeHandler = () => {
+  const calls = {openFile: 0, getGame: 0, sign: [], signGame: [],
+    verify: 0};
   const handler = createArcadeHandler({
-    now: () => at(nowIso),
-    getOverrideUntil: async () => overrideUntil,
     getGame: async (id) => {
       calls.getGame++; return GAMES[id] || null;
     },
@@ -257,6 +167,10 @@ const makeHandler = (nowIso, overrideUntil = null) => {
     signDownload: async (path, filename, ttlMs) => {
       calls.sign.push({path, filename, ttlMs});
       return `https://signed.example/${path}?ttl=${ttlMs}`;
+    },
+    signGameFile: async (path, contentType, ttlMs) => {
+      calls.signGame.push({path, contentType, ttlMs});
+      return `https://signed.example/${path}?type=${contentType}`;
     },
     verifyIdToken: async (token) => {
       calls.verify++;
@@ -279,39 +193,23 @@ const request = async (handler, path, method = "GET", opts = {}) => {
   return res;
 };
 
-const OPEN = "2026-10-14T15:00:00-04:00";
-const LOCKED = "2026-10-14T09:00:00-04:00";
+test("status route always says open, on both paths, never cached",
+    async () => {
+      for (const path of ["/status", "/api/arcade/status"]) {
+        const {handler, calls} = makeHandler();
+        const res = await request(handler, path);
+        assert.equal(res.statusCode, 200);
+        assert.equal(res.headers["cache-control"], "private, no-store");
+        const body = JSON.parse(res.body);
+        assert.equal(body.open, true);
+        assert.equal(body.reason, "schedule");
+        assert.equal(body.overrideUntil, null);
+        assert.equal(calls.getGame, 0);
+      }
+    });
 
-test("status route answers on both paths and is never cached", async () => {
-  for (const path of ["/status", "/api/arcade/status"]) {
-    const {handler} = makeHandler(LOCKED);
-    const res = await request(handler, path);
-    assert.equal(res.statusCode, 200);
-    assert.equal(res.headers["cache-control"], "private, no-store");
-    const body = JSON.parse(res.body);
-    assert.equal(body.open, false);
-    assert.equal(body.reason, "school-hours");
-  }
-});
-
-test("locked game URLs return 423 and none of the game", async () => {
-  for (const path of ["/game/dice/index.html", "/game/dice/Build/g.wasm.br"]) {
-    for (const method of ["GET", "HEAD"]) {
-      const {handler, calls} = makeHandler(LOCKED);
-      const res = await request(handler, path, method);
-      assert.equal(res.statusCode, 423);
-      assert.equal(res.headers["cache-control"], "private, no-store");
-      assert.equal(res.headers["content-encoding"], undefined);
-      assert.ok(res.body.toString().includes(LOCK_MESSAGE));
-      assert.ok(!res.body.includes(GAME_BYTES));
-      assert.equal(calls.getGame, 0, "game record must not be read");
-      assert.equal(calls.openFile, 0, "game file must not be opened");
-    }
-  }
-});
-
-test("open: .br files stream with Content-Encoding br", async () => {
-  const {handler} = makeHandler(OPEN);
+test(".br files stream with Content-Encoding br", async () => {
+  const {handler} = makeHandler();
   const res = await request(handler, "/game/dice/Build/g.wasm.br");
   assert.equal(res.statusCode, 200);
   assert.equal(res.headers["content-type"], "application/wasm");
@@ -321,45 +219,21 @@ test("open: .br files stream with Content-Encoding br", async () => {
   assert.deepEqual(res.body, GAME_BYTES);
 });
 
-test("override unlocks game files during school hours", async () => {
-  const until = nextClubMidnight(at(LOCKED));
-  const {handler} = makeHandler(LOCKED, until);
-  const res = await request(handler, "/game/dice/index.html");
-  assert.equal(res.statusCode, 200);
-  assert.equal(res.body.toString(), "<html></html>");
-});
-
 test("bad paths, unknown games and external links are 404", async () => {
   for (const path of ["/game/dice/missing.js", "/game/nope/index.html",
     "/game/link/index.html", "/game/dice/../x", "/other"]) {
-    const {handler} = makeHandler(OPEN);
+    const {handler} = makeHandler();
     const res = await request(handler, path);
     assert.equal(res.statusCode, 404, path);
   }
 });
 
 test("folder URLs redirect so relative assets resolve", async () => {
-  const {handler} = makeHandler(OPEN);
+  const {handler} = makeHandler();
   assert.equal((await request(handler, "/game/dice")).headers.location,
       "dice/index.html");
   assert.equal((await request(handler, "/game/dice/")).headers.location,
       "index.html");
-});
-
-test("status failure locks instead of serving", async () => {
-  const handler = createArcadeHandler({
-    now: () => at(OPEN),
-    getOverrideUntil: async () => {
-      throw new Error("db down");
-    },
-    getGame: async () => GAMES.dice,
-    openFile: async () => {
-      throw new Error("should not be called");
-    },
-  });
-  const res = await request(handler, "/game/dice/index.html");
-  assert.equal(res.statusCode, 500);
-  assert.ok(!res.body.includes(GAME_BYTES));
 });
 
 // ---------- Windows downloads ----------
@@ -367,24 +241,8 @@ test("status failure locks instead of serving", async () => {
 const reviewAs = (token) => ({query: {review: "1"},
   headers: token ? {Authorization: `Bearer ${token}`} : {}});
 
-test("locked downloads return 423, no URL and no lookups", async () => {
-  for (const opts of [{}, reviewAs("exec-token")]) {
-    for (const method of ["GET", "HEAD"]) {
-      const {handler, calls} = makeHandler(LOCKED);
-      const res = await request(handler, "/download/winOk", method, opts);
-      assert.equal(res.statusCode, 423);
-      assert.equal(res.headers.location, undefined);
-      assert.ok(res.body.toString().includes(LOCK_MESSAGE));
-      assert.ok(!res.body.toString().includes("downloads/"));
-      assert.equal(calls.getGame, 0);
-      assert.equal(calls.sign.length, 0);
-      assert.equal(calls.verify, 0);
-    }
-  }
-});
-
 test("approved download redirects to a 5-minute attachment URL", async () => {
-  const {handler, calls} = makeHandler(OPEN);
+  const {handler, calls} = makeHandler();
   const res = await request(handler, "/download/winOk");
   assert.equal(res.statusCode, 302);
   assert.ok(res.headers.location.startsWith(
@@ -397,15 +255,10 @@ test("approved download redirects to a 5-minute attachment URL", async () => {
   }]);
 });
 
-test("override unlocks downloads during school hours", async () => {
-  const {handler} = makeHandler(LOCKED, nextClubMidnight(at(LOCKED)));
-  assert.equal((await request(handler, "/download/winOk")).statusCode, 302);
-});
-
 test("pending, rejected, missing and non-download games are 404", async () => {
   for (const id of ["winPending", "winRejected", "winMissing", "nope",
     "dice", "link", "webglApproved", "bad%2Fid", ""]) {
-    const {handler, calls} = makeHandler(OPEN);
+    const {handler, calls} = makeHandler();
     const res = await request(handler, `/download/${id}`);
     assert.equal(res.statusCode, 404, id);
     assert.equal(res.headers.location, undefined, id);
@@ -415,7 +268,7 @@ test("pending, rejected, missing and non-download games are 404", async () => {
 
 test("approved downloads must still be the approved generation", async () => {
   for (const id of ["winStale", "winUnpinned"]) {
-    const {handler, calls} = makeHandler(OPEN);
+    const {handler, calls} = makeHandler();
     const res = await request(handler, `/download/${id}`);
     assert.equal(res.statusCode, 404, id);
     assert.equal(calls.sign.length, 0, id);
@@ -424,7 +277,7 @@ test("approved downloads must still be the approved generation", async () => {
 
 test("exec review returns JSON for pending builds", async () => {
   for (const id of ["winPending", "winOk", "winRejected", "winStale"]) {
-    const {handler} = makeHandler(OPEN);
+    const {handler} = makeHandler();
     const res = await request(handler, `/download/${id}`, "GET",
         reviewAs("exec-token"));
     assert.equal(res.statusCode, 200, id);
@@ -439,7 +292,7 @@ test("exec review returns JSON for pending builds", async () => {
 test("review needs a valid token from an exec or admin", async () => {
   const cases = [[null, 401], ["garbage", 401], ["member-token", 403]];
   for (const [token, code] of cases) {
-    const {handler, calls} = makeHandler(OPEN);
+    const {handler, calls} = makeHandler();
     const res = await request(handler, "/download/winPending", "GET",
         reviewAs(token));
     assert.equal(res.statusCode, code, String(token));
@@ -447,7 +300,7 @@ test("review needs a valid token from an exec or admin", async () => {
     assert.equal(calls.sign.length, 0);
   }
   // Review still 404s for things that aren't download builds.
-  const {handler} = makeHandler(OPEN);
+  const {handler} = makeHandler();
   const res = await request(handler, "/download/dice", "GET",
       reviewAs("exec-token"));
   assert.equal(res.statusCode, 404);
@@ -602,8 +455,6 @@ test("approving pins the reviewed generation and real size", async () => {
   // The approved record now signs; the same record with another object
   // generation does not.
   const handler = (zips) => createArcadeHandler({
-    now: () => at(OPEN),
-    getOverrideUntil: async () => null,
     getGame: async (id) => live[id] || null,
     openFile: async () => null,
     statDownload: async (path) => zips[path] || null,
@@ -651,7 +502,7 @@ test("executables and archives in a WebGL build are never served", async () => {
   for (const file of ["setup.exe", "Build/setup.exe.br", "SETUP.EXE",
     "x.msi", "run.bat", "a.cmd", "a.com", "a.scr", "a.ps1", "a.vbs",
     "a.jar", "a.dll", "a.zip", "a.7z", "a.rar", "a.zip.gz"]) {
-    const {handler, calls} = makeHandler(OPEN);
+    const {handler, calls} = makeHandler();
     const res = await request(handler, `/game/dice/${file}`);
     assert.equal(res.statusCode, 404, file);
     assert.ok(!res.body.toString().includes("MZ"), file);
@@ -663,9 +514,65 @@ test("executables and archives in a WebGL build are never served", async () => {
 test("web build files still serve, with nosniff", async () => {
   for (const file of ["Build/g.wasm.br", "Build/Gambers-Revenge.data.br",
     "TemplateData/style.css", "index.html"]) {
-    const {handler} = makeHandler(OPEN);
+    const {handler} = makeHandler();
     const res = await request(handler, `/game/dice/${file}`);
     assert.equal(res.statusCode, 200, file);
     assert.equal(res.headers["x-content-type-options"], "nosniff", file);
   }
+});
+
+// ---------- Large files (Godot) ----------
+
+test("files over 30 MiB redirect to a 5-minute signed URL", async () => {
+  for (const method of ["GET", "HEAD"]) {
+    const {handler, calls} = makeHandler();
+    const res = await request(handler, "/game/godot/index.wasm", method);
+    assert.equal(res.statusCode, 302);
+    assert.equal(res.headers.location,
+        "https://signed.example/games/uid123/godot/index.wasm" +
+        "?type=application/wasm");
+    assert.equal(res.headers["cache-control"], "private, no-store");
+    assert.equal(res.headers["x-content-type-options"], "nosniff");
+    assert.equal(res.headers["content-length"], undefined);
+    assert.ok(!res.body.toString().includes("BIG-WASM"));
+    assert.deepEqual(calls.signGame, [{path: "games/uid123/godot/index.wasm",
+      contentType: "application/wasm", ttlMs: 5 * 60 * 1000}]);
+  }
+});
+
+test("large blocked files are still 404 and never signed", async () => {
+  const {handler, calls} = makeHandler();
+  const res = await request(handler, "/game/godot/big.zip");
+  assert.equal(res.statusCode, 404);
+  assert.equal(calls.openFile, 0);
+  assert.deepEqual(calls.signGame, []);
+});
+
+test(".wasm is application/wasm and .pck is octet-stream", async () => {
+  const {handler, calls} = makeHandler();
+  const wasm = await request(handler, "/game/godot/small.wasm");
+  assert.equal(wasm.statusCode, 200);
+  assert.equal(wasm.headers["content-type"], "application/wasm");
+  assert.equal(wasm.headers["content-length"], "4");
+  assert.equal(wasm.body.toString(), "\0asm");
+  const pck = await request(handler, "/game/godot/index.pck");
+  assert.equal(pck.statusCode, 200);
+  assert.equal(pck.headers["content-type"], "application/octet-stream");
+  assert.equal(pck.body.toString(), "GDPC");
+  assert.deepEqual(calls.signGame, []);
+});
+
+test("Loaded Dice .br files are served exactly as before", async () => {
+  const {handler, calls} = makeHandler();
+  const data = await request(handler,
+      "/game/dice/Build/Gambers-Revenge.data.br");
+  assert.equal(data.statusCode, 200);
+  assert.equal(data.headers["content-type"], "application/octet-stream");
+  assert.equal(data.headers["content-encoding"], "br");
+  assert.equal(data.headers["content-length"], "4");
+  assert.equal(data.body.toString(), "data");
+  const wasm = await request(handler, "/game/dice/Build/g.wasm.br");
+  assert.equal(wasm.headers["content-type"], "application/wasm");
+  assert.equal(wasm.headers["content-encoding"], "br");
+  assert.deepEqual(calls.signGame, []);
 });

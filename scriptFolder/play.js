@@ -3,7 +3,7 @@ import { onAuthStateChanged } from "firebase/auth";
 import { ref as dbRef, get, update } from "firebase/database";
 import { ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage";
 import { showSponsorSplash } from "./sponsor-splash.js";
-import { arcadeGameUrl, fetchArcadeStatus, CHECKING_MESSAGE, LOCK_MESSAGE, UNREACHABLE_MESSAGE } from "./arcade-lock.js";
+import { arcadeGameUrl } from "./arcade-urls.js";
 import { engineLabel, gameFormat, isHttpsUrl } from "./arcade-games.js";
 import { DETAIL_FIELDS, attachCounter, cleanDetails, coverPath, isCoverUrl, prepareCover, renderDetails } from "./game-details.js";
 
@@ -26,25 +26,10 @@ document.addEventListener("DOMContentLoaded", async () => {
         return;
     }
 
-    // Leaves the status screen up over an empty viewport with a message.
-    const showBlocked = (message) => {
-        if (statusSpinner) statusSpinner.hidden = true;
-        if (statusMessage) statusMessage.innerText = message;
-        if (engineTagEl) engineTagEl.innerText = "ARCADE LOCKED";
-    };
-
     try {
-        // 2. Ask the server whether the Arcade is open while the game's
-        // details load. The server refuses the game files when it's locked;
-        // this check just explains why instead of showing a broken frame.
-        statusMessage.innerText = CHECKING_MESSAGE;
-        const [status, projectSnap] = await Promise.all([
-            fetchArcadeStatus().catch((err) => {
-                console.error("Arcade status unavailable:", err);
-                return null;
-            }),
-            get(dbRef(db, `games/${gameId}`)),
-        ]);
+        // 2. Load the game's details.
+        statusMessage.innerText = "Loading game…";
+        const projectSnap = await get(dbRef(db, `games/${gameId}`));
 
         if (!projectSnap.exists()) {
             throw new Error("Target cluster data array has expired or does not exist.");
@@ -56,7 +41,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         titleEl.innerText = projectData.title;
         authorEl.innerText = `Published by: ${projectData.authorName || "Anonymous Member"}`;
         engineTagEl.innerText = `${engineLabel(projectData.engine)} // ${projectData.category === "group" ? "Group Build" : "Solo Project"}`;
-        // About / Credits / Known bugs: text only, shown even while locked.
+        // About / Credits / Known bugs: text only.
         renderDetails(document.getElementById("gameDetails"), projectData);
         setUpDetailsEditing(gameId, projectData);
 
@@ -67,9 +52,6 @@ document.addEventListener("DOMContentLoaded", async () => {
             return;
         }
 
-        if (!status) return showBlocked(UNREACHABLE_MESSAGE);
-        if (!status.open) return showBlocked(LOCK_MESSAGE);
-
         const isWebgl = gameFormat(projectData) === "webgl";
         if (!isWebgl && !isHttpsUrl(projectData.embedUrl)) {
             if (statusSpinner) statusSpinner.hidden = true;
@@ -78,8 +60,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
 
         // 4. Load the game. Uploaded builds come from the arcade function
-        // (its own origin, lock checked on every file); external links load
-        // as-is, since another site can't be locked from here.
+        // (its own origin); external links load as-is.
         statusMessage.innerText = "Connecting secure asset stream path...";
         showSponsorSplash(document.querySelector(".play-viewport-container"));
 
