@@ -123,8 +123,12 @@ another user's folder and other content types are all refused.
 
 ### A5. Pages (optional)
 
-Open http://127.0.0.1:5000/projects.html and
-`http://127.0.0.1:5000/play.html?id=<a game id>`. The cards always say
+Hosting serves only the main site, which redirects these pages to the
+subdomain. For the Arcade pages, run `npm run build:arcade` with the same
+`VITE_ARCADE_FUNCTION_URL`, then
+`npx vite preview --config vite.arcade.config.js --port 5173`. Open
+http://127.0.0.1:5173/projects.html and
+`http://127.0.0.1:5173/play.html?id=<a game id>`. The cards always say
 "Play →" (or "Download for Windows" for approved downloads), there is no
 lock notice, and the play page loads the game. (The pages read game titles
 from the production database, so use a real game id for the play page.)

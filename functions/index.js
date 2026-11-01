@@ -42,6 +42,8 @@ const sendgridKey = defineSecret("SENDGRID_API_KEY");
 const fromEmail = defineString("SENDGRID_FROM_EMAIL", {
   description: "Verified SendGrid sender address for club emails",
 });
+const ARCADE_URL = "https://projects.whrhs-cs-club.com";
+
 const siteUrl = defineString("SITE_URL", {
   default: "https://whrhs-cs-club.web.app",
   description: "Public site origin used in email links (no trailing slash)",
@@ -228,7 +230,7 @@ exports.onGameUpload = onValueCreated(
 
       const title = escapeHtml(game.title || "Untitled");
       const author = escapeHtml(game.authorName || "a club member");
-      const playUrl = `${siteUrl.value()}/play.html?id=` +
+      const playUrl = `${ARCADE_URL}/play.html?id=` +
         encodeURIComponent(gameId);
       const html = renderEmail({
         heading: `New Group Game: ${title}`,
@@ -299,7 +301,7 @@ exports.onUserSignup = onValueCreated(
               <a href="${base}/account.html" style="color:${BRAND.coral};">
               account page</a>.</li>
             <li>Browse member builds on the
-              <a href="${base}/projects.html" style="color:${BRAND.coral};">
+              <a href="${ARCADE_URL}/" style="color:${BRAND.coral};">
               projects page</a> and upload your own.</li>
             <li>Check <a href="${base}/events.html"
               style="color:${BRAND.coral};">upcoming events</a> and

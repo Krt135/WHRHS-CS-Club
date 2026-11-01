@@ -6,14 +6,12 @@ export default defineConfig({
       input: {
         main: './index.html',
         about: './about.html',
-        projects: './projects.html',
         events: './events.html',
         login: './login.html',
         account: './account.html',
         resources: './resources.html',
         sponsors: './sponsors.html',
         admin: './admin.html',
-        play: './play.html',
         resetPassword: './reset-password.html'
       }
     }
