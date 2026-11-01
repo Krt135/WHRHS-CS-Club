@@ -35,7 +35,7 @@ from Secret Manager. Never print `*-debug.log` (see `AGENTS.md`).
    game iframe at the local function:
 
    ```bash
-   VITE_ARCADE_FUNCTION_URL=http://127.0.0.1:5001/demo-whrhs-cs-club/us-central1/arcade npm run build
+   VITE_ARCADE_FUNCTION_URL=http://127.0.0.1:5001/demo-whrhs-cs-club/us-east1/arcade npm run build
    ```
 
 3. Start the emulators and leave them running:
@@ -53,7 +53,7 @@ from Secret Manager. Never print `*-debug.log` (see `AGENTS.md`).
 5. Shortcuts used below:
 
    ```bash
-   F=http://127.0.0.1:5001/demo-whrhs-cs-club/us-central1
+   F=http://127.0.0.1:5001/demo-whrhs-cs-club/us-east1
    GAME=$F/arcade/game/arcade-test-game
    gm() { curl -s -o /dev/null -w "%{http_code}\n" "$GAME/$1"; }
    tok() { curl -s "http://127.0.0.1:9099/identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=fake" -H 'Content-Type: application/json' -d "{\"email\":\"$1\",\"password\":\"emulator-pass-123\",\"returnSecureToken\":true}" | node -pe "JSON.parse(require('fs').readFileSync(0)).idToken"; }
@@ -134,7 +134,7 @@ from the production database, so use a real game id for the play page.)
 ## Part B: production, after deploy
 
 ```bash
-F=https://us-central1-whrhs-cs-club.cloudfunctions.net
+F=https://us-east1-whrhs-cs-club.cloudfunctions.net
 SITE=https://whrhs-cs-club.web.app
 ID=-P4KwU6SWlzTxRDgS-pj   # Loaded Dice
 ```

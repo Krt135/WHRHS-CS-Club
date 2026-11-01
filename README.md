@@ -34,7 +34,7 @@ The Arcade is separated from the main site by subdomain at IT's request. There i
 
 - Uploaded game builds in Storage (`games/{uid}/{gameId}/`) are private. Players get them only through the `arcade` Cloud Function (`functions/arcade.js`).
 - Builds may only contain web-build files (html, js, css, wasm, data, unityweb, pck, apk, json, images, audio, fonts, txt/xml/fnt, and `.br`/`.gz` versions), each stored with a Content-Type that fits its extension. `storage.rules` enforces this, and the uploader skips other files. Separately, the function refuses (404) executables, scripts and archives (`exe msi bat cmd com scr ps1 vbs jar dll zip 7z rar`) even in older uploads, so `.exe` files only reach players as reviewed Windows downloads.
-- Games are served from the Cloud Functions domain (`https://us-central1-whrhs-cs-club.cloudfunctions.net/arcade/game/{gameId}/index.html`), so uploaded game code never runs on the site's own origin. The pages build these URLs with `scriptFolder/arcade-urls.js`.
+- Games are served from the Cloud Functions domain (`https://us-east1-whrhs-cs-club.cloudfunctions.net/arcade/game/{gameId}/index.html`), so uploaded game code never runs on the site's own origin. The pages build these URLs with `scriptFolder/arcade-urls.js`.
 - `GET arcade/status` (and the `/api/arcade/status` Hosting rewrite in `firebase.json`) always answers `{"open": true, ...}`. It only exists so pages cached from the lock era keep working. **Remove both in the next release.**
 
 ### Setup and deploy order
@@ -80,7 +80,7 @@ gcloud iam service-accounts add-iam-policy-binding \
   --project=whrhs-cs-club
 ```
 
-Check the account first with `gcloud functions describe arcade --region=us-central1 --project=whrhs-cs-club --format="value(serviceConfig.serviceAccountEmail)"`. If it prints a different account, use that one in both places. Without this, `/download` returns 500.
+Check the account first with `gcloud functions describe arcade --region=us-east1 --project=whrhs-cs-club --format="value(serviceConfig.serviceAccountEmail)"`. If it prints a different account, use that one in both places. Without this, `/download` returns 500.
 
 ### Game details and covers
 

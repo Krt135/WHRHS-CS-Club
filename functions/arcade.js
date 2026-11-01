@@ -402,7 +402,8 @@ const handler = createArcadeHandler({
 });
 
 exports.arcade = onRequest(
-    {cors: true, timeoutSeconds: 120, memory: "256MiB"}, handler);
+    {region: "us-east1", cors: true, timeoutSeconds: 120, memory: "256MiB"},
+    handler);
 
 // ---------- TRIGGER: GAME FILE CLEANUP ----------
 
@@ -530,7 +531,7 @@ function createDownloadReview(deps) {
   };
 }
 
-exports.approveDownload = onCall(createDownloadReview({
+exports.approveDownload = onCall({region: "us-east1"}, createDownloadReview({
   verifyIdToken: verifyIdTokenRevocable,
   getRole: readRole,
   getGame: async (gameId) =>
