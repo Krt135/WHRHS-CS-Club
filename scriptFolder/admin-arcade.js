@@ -29,7 +29,7 @@ export function mountArcadeTab(container) {
 
     const pendingList = container.querySelector("#arcadePendingList");
     const pendingStatus = container.querySelector("#arcadePendingStatus");
-    const approveDownload = httpsCallable(getFunctions(auth.app), "approveDownload");
+    const approveDownload = httpsCallable(getFunctions(auth.app, "us-east1"), "approveDownload");
     let pendingGames = [];
 
     const renderPending = (games) => {

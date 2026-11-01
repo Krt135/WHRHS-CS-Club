@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "build:arcade": "vite build --config vite.arcade.config.js",
     "preview": "vite preview",
     "test:rules": "firebase emulators:exec --project demo-whrhs-cs-club --only database,storage \"node --test --test-concurrency=1 test/rules/*.test.js\""
   },

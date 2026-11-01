@@ -75,7 +75,7 @@ export const LEARNING = [
     action: "Open",
     items: [
       { name: "WHRHS Discord", note: "Ask questions, share progress", icon: "discord", url: "" },
-      { name: "CS Club Resources", note: "Guides and links from the exec board", icon: null, url: "resources.html" },
+      { name: "CS Club Resources", note: "Guides and links from the exec board", icon: null, url: "https://www.whrhs-cs-club.com/resources.html" },
       { name: "GitHub", note: "Share code and this site's source", icon: "github", url: "https://github.com/Krt135/WHRHS-CS-Club" },
     ],
   },

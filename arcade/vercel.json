@@ -1,0 +1,10 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": null,
+  "installCommand": "cd .. && npm ci",
+  "buildCommand": "cd .. && npx vite build --config vite.arcade.config.js",
+  "outputDirectory": "dist",
+  "rewrites": [
+    { "source": "/", "destination": "/projects.html" }
+  ]
+}

@@ -3,7 +3,7 @@
 
 // VITE_ARCADE_FUNCTION_URL points a build at the local emulator for testing.
 export const ARCADE_FUNCTION_URL = import.meta.env.VITE_ARCADE_FUNCTION_URL
-    || "https://us-central1-whrhs-cs-club.cloudfunctions.net/arcade";
+    || "https://us-east1-whrhs-cs-club.cloudfunctions.net/arcade";
 
 export function arcadeGameUrl(gameId) {
     return `${ARCADE_FUNCTION_URL}/game/${encodeURIComponent(gameId)}/index.html`;
